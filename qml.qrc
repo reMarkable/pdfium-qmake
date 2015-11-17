@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>dragon.png</file>
+        <file>SketchArea.qml</file>
+        <file>MainScreen.qml</file>
+    </qresource>
+</RCC>
