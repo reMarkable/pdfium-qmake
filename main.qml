@@ -71,7 +71,7 @@ Window {
 
                 Repeater {
                     id: tabRepeater
-                    model: ["DOCUMENT NAME", "SKETCH NAME"]
+                    model: ["DOCUMENT", "SKETCH", "DESTIN"]
                     Rectangle {
                         width: 300
                         height: parent.height
@@ -154,6 +154,66 @@ Window {
                 font.family: "Comic Sans MS"
                 font.pointSize: 30
                 text: "kekekekeke"
+            }
+        }
+
+        Image {
+            id: document
+            visible: window.index === 3
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                top: topBar.bottom
+            }
+
+            property int file: 1
+
+            source: "file:///home/sandsmark/Downloads/pdf-png/lol-" + file + ".png"
+            //source: "file:///data/pdf/" + file + ".png"
+
+            Rectangle {
+                id: nextPageButton
+                width: 100
+                height: width
+                visible: document.file < 5
+                border.width: 1
+                anchors {
+                    bottom: top.bottom
+                    right: document.right
+                }
+                Text {
+                    anchors.centerIn: parent
+                    text: ">"
+                }
+                MouseArea {
+                    enabled: nextPageButton.visible
+                    anchors.fill: parent
+                    onClicked: {
+                        document.file++
+                    }
+                }
+            }
+
+            Rectangle {
+                id: prevPageButton
+                width: 100
+                height: width
+                visible: document.file > 1
+                border.width: 1
+                anchors {
+                    bottom: top.bottom
+                    left: document.left
+                }
+                Text {
+                    anchors.centerIn: parent
+                    text: "<"
+                }
+                MouseArea {
+                    enabled: prevPageButton.visible
+                    anchors.fill: parent
+                    onClicked: {
+                        document.file--
+                    }
+                }
             }
         }
     }
