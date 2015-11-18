@@ -148,10 +148,8 @@ void Digitizer::eventLoop()
         if (processEvent(event, &point) && point.isValid()) {
             QSize displaySize = QGuiApplication::primaryScreen()->size();
             QPointF position;
-//            position.setX(point.x * displaySize.width() / xResolution());
-//            position.setY(point.y * displaySize.height() / yResolution());
-            position.setX(point.x * 1600 / xResolution());
-            position.setY(point.y * 1200 / yResolution());
+            position.setX(point.x * displaySize.width() / xResolution());
+            position.setY(point.y * displaySize.height() / yResolution());
 
             if (m_penOn) {
                 //qDebug() << "reporting event at" << position;
