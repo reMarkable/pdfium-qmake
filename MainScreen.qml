@@ -4,6 +4,7 @@ Item {
     id: mainScreen
     signal newNoteClicked
     signal newSketchClicked
+    signal archiveClicked(var archiveIndex)
 
     Row {
         width: parent.width
@@ -114,6 +115,13 @@ Item {
                         text: "DOCUMENT " + modelData
                         color: window.fontColor
                     }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            mainScreen.archiveClicked(index)
+                        }
+                    }
                 }
             }
         }
@@ -167,7 +175,7 @@ Item {
         }
 
         Repeater {
-            model: ["PREFERENCES", "MY.XO", "NOTIFICATIONS", "IN/OUT"]
+            model: ["PREFERENCES", "MY XO", "NOTIFICATIONS", "IN OUT"]
 
             Item {
                 width: parent.width / 4
@@ -188,13 +196,5 @@ Item {
         }
 
     }
-
-//    MouseArea {
-//        anchors.fill: parent
-//        onClicked: {
-//            console.log("we got clicked")
-//        }
-//    }
-
 }
 

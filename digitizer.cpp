@@ -57,6 +57,8 @@ Digitizer::Digitizer(const char *device, QObject *parent) :
         return;
     }
 
+    qDebug() << "Digitizer" << m_deviceName << "initialized";
+
     m_running = true;
     moveToThread(&m_thread);
     QMetaObject::invokeMethod(this, "eventLoop");

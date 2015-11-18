@@ -13,8 +13,14 @@ int main(int argc, char *argv[])
     qputenv("QMLSCENE_DEVICE", "epaper");
     qputenv("QT_QPA_PLATFORM", "minimal:enable_fonts");
     qputenv("QT_QPA_FONTDIR", "/data/fonts/");
+    qputenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS", "/dev/input/event0");
 
     Digitizer digitizer("/dev/input/event1");
+
+    if (!digitizer.isRunning()) {
+        qWarning() << "Failed to initialize digitizer driver!";
+    }
+
 #endif
 
     QApplication app(argc, argv);

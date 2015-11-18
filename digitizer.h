@@ -60,7 +60,7 @@ private:
     int m_fd;
     input_id m_inputId;
 
-    std::string m_deviceName;
+    QString m_deviceName;
     unsigned long m_bitmask[EV_BITS_LONGS];
 
     AxisData m_xAxis;

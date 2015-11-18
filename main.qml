@@ -19,6 +19,7 @@ Window {
     property int index: 0
 
     Item {
+        id: rootItem
         anchors.centerIn: parent
         width: parent.height
         height: parent.width
@@ -116,6 +117,11 @@ Window {
             onNewNoteClicked: {
                 window.index = 1
             }
+            onArchiveClicked: {
+                if (archiveIndex < 3) {
+                    window.index = archiveIndex + 1
+                }
+            }
         }
 
 
@@ -165,10 +171,30 @@ Window {
                 top: topBar.bottom
             }
 
+            onVisibleChanged: {
+                if (visible) {
+                    forceActiveFocus()
+                } else {
+                    rootItem.forceActiveFocus()
+                }
+            }
+
+            Keys.onRightPressed: {
+                if (file < 5) {
+                    file++
+                }
+            }
+
+            Keys.onLeftPressed: {
+                if (file > 1) {
+                    file--
+                }
+            }
+
             property int file: 1
 
-            source: "file:///home/sandsmark/Downloads/pdf-png/lol-" + file + ".png"
-            //source: "file:///data/pdf/" + file + ".png"
+            //source: "file:///home/sandsmark/Downloads/pdf-png/lol-" + file + ".png"
+            source: "file:///data/pdf/" + file + ".png"
 
             Rectangle {
                 id: nextPageButton
