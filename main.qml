@@ -25,6 +25,16 @@ Window {
         height: parent.width
         rotation: 90
 
+        Keys.onPressed: {
+            if (event.key === Qt.Key_Home) {
+                window.index = 0
+                event.accepted = true
+                return
+            }
+
+            console.log("Key pressed: " + event.key)
+        }
+
         Rectangle {
             id: topBar
             height: 40
@@ -182,12 +192,14 @@ Window {
             Keys.onRightPressed: {
                 if (file < 5) {
                     file++
+                    event.accepted = true
                 }
             }
 
             Keys.onLeftPressed: {
                 if (file > 1) {
                     file--
+                    event.accepted = true
                 }
             }
 
