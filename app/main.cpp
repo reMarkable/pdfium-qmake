@@ -28,7 +28,6 @@ int main(int argc, char *argv[])
         qWarning() << "Bailing without digitizer";
         return 1;
     }
-    DrawingArea::initFb("/dev/graphics/fb0");
 #endif
 
     qmlRegisterType<DrawingArea>("com.magmacompany", 1, 0, "DrawingArea");
@@ -37,10 +36,6 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     int ret = app.exec();
-
-#ifdef Q_PROCESSOR_ARM
-    DrawingArea::closeFb();
-#endif
 
     return ret;
 }

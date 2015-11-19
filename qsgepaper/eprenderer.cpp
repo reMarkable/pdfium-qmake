@@ -95,6 +95,7 @@ void EPRenderer::drawRects()
             }
         }
     }
+    qDebug() << Q_FUNC_INFO << timer.restart() << "drawed";
 
     locker.unlock();
     painter.end();
@@ -134,7 +135,7 @@ void EPRenderer::drawRects()
     EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
 #endif
 
-    //qDebug() << Q_FUNC_INFO << timer.restart() << "updated";
+    qDebug() << Q_FUNC_INFO << timer.restart() << "updated";
 }
 
 void EPRenderer::handleEpaperNode(EPNode *node)

@@ -2,6 +2,7 @@ import QtQuick 2.0
 import com.magmacompany 1.0
 
 DrawingArea {
+    currentBrush: DrawingArea.Paintbrush
     Column {
         id: toolBox
         width: 75

@@ -8,11 +8,18 @@
 class DrawingArea : public QQuickPaintedItem
 {
     Q_OBJECT
+    Q_ENUMS(Brush)
+    Q_PROPERTY(Brush currentBrush READ currentBrush WRITE setCurrentBrush NOTIFY currentBrushChanged)
 public:
     DrawingArea();
 
-    static bool initFb(const char *dev);
-    static void closeFb();
+    enum Brush {
+        Paintbrush,
+        Pencil,
+        Pen
+    };
+    Brush currentBrush() const { return m_currentBrush; }
+    void setCurrentBrush(Brush brush) { m_currentBrush = brush; emit currentBrushChanged(); }
 
     void paint(QPainter *painter) override;
 
@@ -20,12 +27,13 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 signals:
-
-public slots:
+    void currentBrushChanged();
 
 private:
     bool m_invert;
     QVector<QVector<PenPoint>> m_lines;
+    Brush m_currentBrush;
+    QImage m_contents;
 };
 
 #endif // DRAWINGAREA_H

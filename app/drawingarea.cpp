@@ -1,114 +1,179 @@
 #include "drawingarea.h"
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <linux/fb.h>
-#include <errno.h>
 #include <QLine>
-#include "mxcfb.h"
-#include <unistd.h>
 #include <QPainter>
 #include <epframebuffer.h>
 
-static int s_framebufferFd = -1;
-fb_fix_screeninfo s_fbFixedInfo;
-fb_var_screeninfo s_fbVarInfo;
-static uchar *s_framebufferMem = nullptr;
-
 DrawingArea::DrawingArea() :
-    m_invert(false)
+    m_invert(false),
+    m_currentBrush(Paintbrush)
 {
+    m_contents = QImage(1600, 1200, QImage::Format_RGB16);
+    m_contents.fill(Qt::white);
     setAcceptedMouseButtons(Qt::LeftButton);
-}
-
-bool DrawingArea::initFb(const char *dev)
-{
-    qDebug() << "initializing fb";
-    if (!dev) {
-        qWarning() << "No framebuffer device given";
-        return false;
-    }
-
-    s_framebufferFd = open(dev, O_RDWR);
-    if (s_framebufferFd < 0) {
-        qWarning() << "Unable to open device" << dev << ":" << strerror(errno);
-        return false;
-    }
-
-    if (ioctl(s_framebufferFd, FBIOGET_FSCREENINFO, &s_fbFixedInfo) != 0) {
-        qWarning() << "Unable to get fixed info from framebuffer";
-        return false;
-    }
-
-    if (ioctl(s_framebufferFd, FBIOGET_VSCREENINFO, &s_fbVarInfo) != 0) {
-        qWarning() << "Unable to get fixed info from framebuffer";
-        return false;
-    }
-
-    QString framebufferId(s_fbFixedInfo.id);
-    if (framebufferId != "mxc_epdc_fb") {
-        qWarning() << "Framebuffer has wrong id:" << framebufferId;
-        return false;
-    }
-
-    qDebug() << "mmaping";
-    s_framebufferMem = (uchar*)mmap(0,
-                            s_fbFixedInfo.smem_len,
-                            (PROT_READ | PROT_WRITE),
-                            MAP_SHARED,
-                            s_framebufferFd,
-                            0);
-
-    if (s_framebufferMem == MAP_FAILED) {
-        qWarning() << "mmap()ing framebuffer" << dev << "failed:" << strerror(errno);
-        s_framebufferMem = nullptr;
-        return false;
-    }
-
-    qDebug() << "Framebuffer" << framebufferId << "initialized";
-    return true;
-}
-
-void DrawingArea::closeFb()
-{
-    if (s_framebufferMem) {
-        if (munmap(s_framebufferMem, s_fbFixedInfo.smem_len) == -1) {
-            qWarning() << "unmapping framebuffer failed:" << strerror(errno);
-        }
-    }
-    if (s_framebufferFd != -1) {
-        close(s_framebufferFd);
-    }
 }
 
 void DrawingArea::paint(QPainter *painter)
 {
-    qDebug() << "drawing muh stufs" << height() << width();
-    for(const QVector<PenPoint> &line : m_lines) {
-        for (int i=1; i<line.length(); i++) {
-            EPFrameBuffer::instance()->drawThickLine(QLine(line[i-1].x, line[i-1].y, line[i].x, line[i].y), 0, line[i].pressure);
-        }
+    painter->drawImage(QRect(0, 0, 1560, 1200), m_contents, QRect(0, 0, 1560, 1200));
+}
+
+
+static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bool invert)
+{
+    if (address >= fb->bits() + fb->byteCount()) {
+//        //printf("overflow in painting by %ld bytes\n", (offset - s_last_byte));
+        return;
     }
-//    painter->fillRect(0, 0, width(), height(), Qt::white);
+    if (address <= fb->bits()) {
+//        //printf("underflow in painting by %ld bytes\n", (s_first_byte - offset));
+        return;
+    }
+
+    double normalized = (distance * 2.0/3.0);
+    normalized = pow(normalized, 2);
+    if (invert) {
+        normalized = 1.0 - normalized;
+    }
+
+    int col = normalized * 16;
+    col *= 16;
+    if (invert) {
+        if (aa) {
+            if (col > 128) {
+                return;
+            }
+        } else {
+            if (col < 128) {
+                return;
+            }
+            col = 255;
+        }
+        col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
+        *address++ |= (col >> 8) & 0xff;
+        *address++ |= col & 0xff;
+    } else {
+        if (aa) {
+            if (col < 128) {
+                return;
+            }
+        } else {
+            if (col > 128) {
+                return;
+            }
+            col = 0;
+        }
+        col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
+        *address++ &= (col >> 8) & 0xff;
+        *address++ &= col & 0xff;
+    }
+}
+
+static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
+{
+    if (!fb->rect().contains(line.p1()) || !fb->rect().contains(line.p2())) {
+        return;
+    }
+
+    int bytesPerPixel = fb->bytesPerLine() / fb->width();
+
+    uchar *addr = fb->scanLine(line.y1()) + line.x1() * bytesPerPixel;
+
+    int u, v;
+    int du, dv;
+    int uincr, vincr;
+    if ((abs(line.dx()) > abs(line.dy()))) {
+        du = abs(line.dx());
+        dv = abs(line.dy());
+        u = line.x2();
+        v = line.y2();
+        uincr = bytesPerPixel;
+        vincr = fb->bytesPerLine();
+        if (line.dx() < 0) uincr = -uincr;
+        if (line.dy() < 0) vincr = -vincr;
+    } else {
+        du = abs(line.dy());
+        dv = abs(line.dx());
+        u = line.y2();
+        v = line.x2();
+        vincr = bytesPerPixel;
+        uincr = fb->bytesPerLine();
+        if (line.dy() < 0) uincr = -uincr;
+        if (line.dx() < 0) vincr = -vincr;
+    }
+
+    const int uend = u + du;
+    int d = (2 * dv) - du;	    /* Initial value as in Bresenham's */
+    const int incrS = 2 * dv;	/* Δd for straight increments */
+    const int incrD = 2 *(dv - du);	/* Δd for diagonal increments */
+    int twovdu = 0;	/* Numerator of distance; starts at 0 */
+    const float invD = 1.0 / (2.0*sqrt(du*du + dv*dv));   /* Precomputed inverse denominator */
+    const float invD2du = 2.0 * (du*invD);   /* Precomputed constant */
+
+    do {
+        drawAAPixel(fb, addr, twovdu*invD, aa, invert);
+        drawAAPixel(fb, addr + vincr, invD2du - twovdu*invD, aa, invert);
+        drawAAPixel(fb, addr - vincr, invD2du + twovdu*invD, aa, invert);
+
+        if (d < 0)
+        {
+            /* choose straight (u direction) */
+            twovdu = d + du;
+            d = d + incrS;
+        }
+        else
+        {
+            /* choose diagonal (u+v direction) */
+            twovdu = d - du;
+            d = d + incrD;
+            v = v+1;
+            addr = addr + vincr;
+        }
+        u = u+1;
+        addr = addr+uincr;
+    } while (u <= uend);
 }
 
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
     qDebug() << "Mouse event!:" << event->globalPos();
-    if (!s_framebufferMem) {
-        qWarning() << "Can't draw without framebuffer";
-        return;
-    }
 
     Digitizer *digitizer = Digitizer::instance();
 
     PenPoint prevPoint(event->globalX(), event->globalY(), 0);
     PenPoint point = digitizer->acquireLock();
-    QVector<PenPoint> line;
-    do {
-        line.append(point);
+    //QVector<PenPoint> line;
 
-        EPFrameBuffer::instance()->drawThickLine(QLine(prevPoint.x, prevPoint.y, point.x, point.y), 0, point.pressure);
+    QPainter painter(EPFrameBuffer::instance()->framebuffer());
+    QPainter selfPainter(&m_contents);
+    QPen thickPen(Qt::black);
+    thickPen.setCapStyle(Qt::RoundCap);
+
+    do {
+        //line.append(point);
+        QLine line(prevPoint.x, prevPoint.y, point.x, point.y);
+
+        switch(m_currentBrush) {
+        case Paintbrush: {
+            qreal pointsize = point.pressure * point.pressure * 10.0;
+            pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
+            if (pointsize < 2) pointsize = 2;
+            thickPen.setWidthF(pointsize);
+            painter.setPen(thickPen);
+            painter.drawLine(line);
+            selfPainter.setPen(thickPen);
+            selfPainter.drawLine(line);
+            break;
+        }
+        case Pencil:
+            painter.drawLine(line);
+            selfPainter.drawLine(line);
+            break;
+        case Pen:
+            drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, false);
+            drawAALine(&m_contents, line, false, false);
+            break;
+        }
+
         EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
 
         prevPoint = point;
@@ -116,8 +181,5 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     digitizer->releaseLock();
     qDebug() << "unlocked digitizer";
-
-    if (line.length() > 1) {
-        m_lines.append(line);
-    }
 }
+

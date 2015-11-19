@@ -2,6 +2,8 @@ import QtQuick 2.0
 import com.magmacompany 1.0
 
 DrawingArea {
+    currentBrush: DrawingArea.Pen
+
     Column {
         anchors.fill: parent
         anchors.topMargin: 75
