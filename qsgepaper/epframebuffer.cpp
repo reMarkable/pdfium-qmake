@@ -4,6 +4,7 @@
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <QElapsedTimer>
+#include "eprenderer.h"
 
 EPFrameBuffer::EPFrameBuffer(EPRenderer *renderer) : QObject(renderer),
     m_renderer(renderer)
@@ -94,18 +95,12 @@ void EPFrameBuffer::draw()
     for(const QRect &area : fastAreas) {
         painter.eraseRect(area);
     }
-    //qDebug() << fastAreas.count();
 
     // Rects are sorted in z-order
     for(EPNode *rect : m_renderer->currentRects) {
         if (rect->dirty) {
-            //painter.fillRect(rect->transformedRect, Qt::Dense2Pattern);
             rect->draw(&painter);
-            //painter.drawRect(rect->transformedRect);
-            //painter.drawText(rect->transformedRect.bottomLeft(), QString::number(rect->z));
-            //painter.drawImage(rect.geometry, rect.content);
             rect->dirty = false;
-            //painter.drawLine(rect->transformedRect.topLeft(), rect->transformedRect.bottomRight());
             fastAreas.append(rect->transformedRect);
             continue;
         }
@@ -116,12 +111,7 @@ void EPFrameBuffer::draw()
                 continue;
             }
             if (rect->transformedRect.intersects(area)) {
-                //painter.fillRect(rect->transformedRect, Qt::DiagCrossPattern);
-                //painter.drawText(rect->transformedRect.topLeft(), QString::number(rect->z));
-                //painter.drawRect(rect->transformedRect);
                 rect->draw(&painter);
-                //painter.drawLine(rect->transformedRect.topLeft(), rect->transformedRect.bottomRight());
-                //painter.drawImage(rect.geometry, rect.content);
                 fastAreas.append(rect->transformedRect);
                 break;
             }
@@ -131,17 +121,8 @@ void EPFrameBuffer::draw()
     locker.unlock();
     painter.end();
 
-    //qDebug() << Q_FUNC_INFO << timer.restart() << "painted";
 
 #if 0
-    /*QList<EpaperRect>::iterator rect = m_renderer->currentRects.begin();
-    while (rect != m_renderer->currentRects.end()) {
-        if (rect->dirty) {
-            sendUpdate(rect->geometry, Fast, PartialUpdate);
-            rect->dirty = false;
-        }
-        rect++;
-    }*/
     // FIXME: do something more clever here plz
     for (int i=0; i<fastAreas.size(); i++) {
         if (fastAreas[i].isEmpty()) {
@@ -215,5 +196,3 @@ void EPFrameBuffer::sendUpdate(QRect rect, Waveform waveform, UpdateMode mode, b
         ioctl(m_deviceFile.handle(), MXCFB_WAIT_FOR_UPDATE_COMPLETE, &updateMarker);
     }
 }
-
-

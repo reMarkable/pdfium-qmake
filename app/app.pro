@@ -5,6 +5,8 @@ CONFIG += c++11
 CONFIG += android_app
 QMAKE_LFLAGS_APP -= -shared
 
+INCLUDEPATH += ../qsgepaper
+
 TARGET = xochitl
 TARGETDEPS += ../qsgepaper/libqsgepaper.a
 

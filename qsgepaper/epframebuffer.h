@@ -4,7 +4,8 @@
 #include <QtCore/QObject>
 #include <QtGui/QImage>
 #include <QtCore/QFile>
-#include "eprenderer.h"
+
+class EPRenderer;
 
 class EPFrameBuffer : public QObject
 {

@@ -9,6 +9,7 @@
 #include "mxcfb.h"
 #include <unistd.h>
 #include <QPainter>
+#include <epframebuffer.h>
 
 static int s_framebufferFd = -1;
 fb_fix_screeninfo s_fbFixedInfo;
