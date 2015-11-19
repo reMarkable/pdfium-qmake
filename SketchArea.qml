@@ -1,6 +1,7 @@
 import QtQuick 2.0
+import com.magmacompany 1.0
 
-Item {
+DrawingArea {
     Column {
         anchors.fill: parent
         anchors.topMargin: 75

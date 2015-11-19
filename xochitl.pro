@@ -6,7 +6,8 @@ CONFIG += android_app
 QMAKE_LFLAGS_APP -= -shared
 
 SOURCES += main.cpp \
-    digitizer.cpp
+    digitizer.cpp \
+    drawingarea.cpp
 
 RESOURCES += qml.qrc
 
@@ -17,5 +18,6 @@ QML_IMPORT_PATH =
 include(deployment.pri)
 
 HEADERS += \
-    digitizer.h
+    digitizer.h \
+    drawingarea.h
 

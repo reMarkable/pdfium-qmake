@@ -10,6 +10,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+static Digitizer *s_instance = nullptr;
+
 Digitizer::Digitizer(const char *device, QObject *parent) :
     QObject(parent),
     m_device(device),
@@ -59,6 +61,8 @@ Digitizer::Digitizer(const char *device, QObject *parent) :
 
     qDebug() << "Digitizer" << m_deviceName << "initialized";
 
+    m_displaySize = QSize(1600, 1200);//QGuiApplication::primaryScreen()->size();
+
     m_running = true;
     moveToThread(&m_thread);
     QMetaObject::invokeMethod(this, "eventLoop");
@@ -70,16 +74,14 @@ Digitizer::~Digitizer()
     if (m_fd >= 0) {
         close(m_fd);
     }
-    m_mutex.lock();
+    m_readLock.lock();
     m_running = false;
-    m_mutex.unlock();
+    m_readLock.unlock();
     m_thread.wait();
 }
 
 bool Digitizer::getPoint(PenPoint *point)
 {
-    QMutexLocker locker(&m_mutex);
-
     if (!m_running) {
         return false;
     }
@@ -123,11 +125,34 @@ bool Digitizer::getPoint(PenPoint *point)
     return false;
 }
 
+Digitizer *Digitizer::instance()
+{
+    return s_instance;
+}
+
+bool Digitizer::initialize(const char *device)
+{
+    if (s_instance) {
+        qWarning() << "Digitizer already initialized!";
+        return false;
+    }
+
+    s_instance = new Digitizer(device);
+    if (!s_instance->isRunning()) {
+        qWarning() << "Failed to initialize digitizer!";
+        delete s_instance;
+        s_instance = nullptr;
+        return false;
+    }
+
+    return true;
+}
+
 void Digitizer::eventLoop()
 {
     PenPoint point;
     forever {
-        QMutexLocker locker(&m_mutex);
+        QMutexLocker locker(&m_readLock);
 
         fd_set fdset;
         FD_ZERO(&fdset);
@@ -144,16 +169,16 @@ void Digitizer::eventLoop()
             break;
         }
 
-        // We got a sync event, and we have a valid point
-        if (processEvent(event, &point) && point.isValid()) {
-            QSize displaySize = QGuiApplication::primaryScreen()->size();
-            QPointF position;
-            position.setX(point.x * displaySize.width() / xResolution());
-            position.setY(point.y * displaySize.height() / yResolution());
+        if (!processEvent(event, &point)) { // No report yet
+            continue;
+        }
+        locker.unlock();
 
-            if (m_penOn) {
-                //qDebug() << "reporting event at" << position;
-            }
+        QMutexLocker reportLocker(&m_reportLock);
+        // We got a sync event, and we have a valid point
+        if (point.isValid()) {
+            QPointF position(point.x, point.y);
+
             QWindowSystemInterface::handleMouseEvent(0, // No specified window
                                                      QPointF(0, 0), // No local position
                                                      position, // Global position
@@ -173,11 +198,11 @@ bool Digitizer::processEvent(const input_event &event, PenPoint *point)
         switch (event.code) {
         case ABS_X:
           //  std::cout << "absolute x: " << event.value;
-            point->x = event.value;
+            point->x = (event.value * m_displaySize.width() / xResolution());
             break;
         case ABS_Y:
           //  std::cout << "absolute y: " << event.value;
-            point->y = event.value;
+            point->y = (event.value * m_displaySize.height() / yResolution());
             break;
         case ABS_PRESSURE:
             //std::cout << "absolute pressure: " << event.value;
