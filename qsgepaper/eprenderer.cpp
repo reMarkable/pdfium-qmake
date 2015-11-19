@@ -17,7 +17,7 @@ EPRenderer::EPRenderer(EPRenderContext *context) :
 {
     m_redrawTimer.setInterval(10);
     m_redrawTimer.setSingleShot(true);
-    connect(&m_redrawTimer, SIGNAL(timeout()), SIGNAL(renderComplete()));
+    connect(&m_redrawTimer, SIGNAL(timeout()), SLOT(drawRects()));
 }
 
 
