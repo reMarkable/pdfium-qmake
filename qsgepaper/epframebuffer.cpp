@@ -1,10 +1,11 @@
 #include "epframebuffer.h"
+
 #include <mxcfb.h>
 #include <linux/fb.h>
 #include <sys/ioctl.h>
 #include <errno.h>
 #include <QElapsedTimer>
-#include "eprenderer.h"
+#include <QDebug>
 
 EPFrameBuffer::EPFrameBuffer() : QObject()
 {
