@@ -3,6 +3,7 @@
 
 #include <QQuickPaintedItem>
 #include <QImage>
+#include "digitizer.h"
 
 class DrawingArea : public QQuickPaintedItem
 {
@@ -24,6 +25,7 @@ public slots:
 
 private:
     bool m_invert;
+    QVector<QVector<PenPoint>> m_lines;
 };
 
 #endif // DRAWINGAREA_H

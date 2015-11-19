@@ -89,7 +89,7 @@ bool Digitizer::getPoint(PenPoint *point)
     bool done = false;
     point->x = -1;
     point->y = -1;
-    point->pressure = 0;
+    point->pressure = -1;
 
     while (!done) {
         fd_set fdset;
@@ -172,6 +172,9 @@ void Digitizer::eventLoop()
         if (!processEvent(event, &point)) { // No report yet
             continue;
         }
+        if (point.isValid()) {
+            m_lastPoint = point;
+        }
         locker.unlock();
 
         QMutexLocker reportLocker(&m_reportLock);
@@ -198,15 +201,15 @@ bool Digitizer::processEvent(const input_event &event, PenPoint *point)
         switch (event.code) {
         case ABS_X:
           //  std::cout << "absolute x: " << event.value;
-            point->x = (event.value * m_displaySize.width() / xResolution());
+            point->x = (event.value * m_displaySize.width() / m_xAxis.resolution);
             break;
         case ABS_Y:
           //  std::cout << "absolute y: " << event.value;
-            point->y = (event.value * m_displaySize.height() / yResolution());
+            point->y = (event.value * m_displaySize.height() / m_yAxis.resolution);
             break;
         case ABS_PRESSURE:
             //std::cout << "absolute pressure: " << event.value;
-            point->pressure = event.value;
+            point->pressure = (float)event.value / m_pressureAxis.resolution;
             break;
         default:
             qWarning() << "Unexpected absolute event code: 0x" << std::hex << event.code << std::dec;

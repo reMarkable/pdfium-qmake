@@ -20,9 +20,9 @@ struct PenPoint {
     PenPoint(int nx, int ny, int p) : x(nx), y(ny), pressure(p) {}
     int x;
     int y;
-    int pressure;
+    float pressure;
 
-    bool isValid() { return (x != -1 && y != -1); }
+    bool isValid() { return (x != -1 && y != -1 && pressure != -1); }
 };
 
 class Digitizer : public QObject

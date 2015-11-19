@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <QElapsedTimer>
 #include <QDebug>
+#include <QPainter>
 
 EPFrameBuffer::EPFrameBuffer() : QObject(),
     m_invert(false)
@@ -46,18 +47,17 @@ EPFrameBuffer::EPFrameBuffer() : QObject(),
         qWarning() << "Unable to set auto mode";
         return;
     }*/
-/*
+
     int mode = UPDATE_SCHEME_QUEUE_AND_MERGE;
-    while (ioctl(m_deviceFile.handle(), MXCFB_SET_UPDATE_SCHEME, &mode)) {
-        if (errno == -EAGAIN) {
-            qDebug() << "we need to wait for stuff to happen";
-            QThread::usleep(5000);
-        } else {
-            qWarning() << "failed to set update scheme:" << strerror(errno);
-            return;
-        }
+    int ret = ioctl(m_deviceFile.handle(), MXCFB_SET_UPDATE_SCHEME, &mode);
+    if (ret == -EAGAIN) {
+        qDebug() << "we need to wait for stuff to happen";
+
+    } else {
+        qWarning() << "failed to set update scheme:" << strerror(errno);
+
     }
-*/
+
     uchar *fbMem = m_deviceFile.map(0, fixedInfo.smem_len);
 
     m_fb = QImage(fbMem, varInfo.xres, varInfo.yres, QImage::Format_RGB16);
@@ -199,30 +199,6 @@ void EPFrameBuffer::drawSinglePoint(int x, int y, int color)
     *addr++ = ((color >> 8) & 0xFF);
 }
 
-#define MAX_RADIUS 10
-void EPFrameBuffer::drawFullPoint(int cx, int cy, int color, float size)
-{
-    for (int dx = 0; dx <= MAX_RADIUS; dx++) {
-        for (int dy = 0; dy <= MAX_RADIUS; dy++) {
-            unsigned x = cx + dx;
-            unsigned y = cy + dy;
-            if (x > m_fb.width() ||
-                y > m_fb.height()) {
-                continue;
-            }
-            uchar *pix = getAddress(x, y);
-            if (hypot(dx, dy) < size) {
-                *pix++ = (color & 0xFF);
-                *pix++ = ((color >> 8) & 0xFF);
-            } else if (hypot(dx, dy) + 1.0 < size/2 && (y + x) % 2) {
-                *pix++ = (color & 0xFF);
-                *pix++ = ((color >> 8) & 0xFF);
-            }
-
-        }
-    }
-}
-
 void EPFrameBuffer::drawThinLine(QLine line, int color)
 {
     if (!m_fb.rect().contains(line.p1()) || !m_fb.rect().contains(line.p2())) {
@@ -271,6 +247,85 @@ void EPFrameBuffer::drawThinLine(QLine line, int color)
     }
 
     sendUpdate(QRect(line.p1(), line.p2()), Fast, PartialUpdate);
+}
+
+#define MAX_RADIUS 10.0
+void EPFrameBuffer::drawFullPoint(int cx, int cy, int color, float size)
+{
+    for (int dx = 0; dx <= MAX_RADIUS; dx++) {
+        for (int dy = 0; dy <= MAX_RADIUS; dy++) {
+            int x = cx + dx;
+            int y = cy + dy;
+            if (x < 0 || y < 0 ||
+                x > m_fb.width() ||
+                y > m_fb.height()) {
+                continue;
+            }
+            uchar *pix = getAddress(x, y);
+            if (hypot(dx, dy) < size) {
+                *pix++ = (color & 0xFF);
+                *pix++ = ((color >> 8) & 0xFF);
+            } else if (hypot(dx, dy) + 1.0 < size/2 && (y + x) % 2) {
+                *pix++ = (color & 0xFF);
+                *pix++ = ((color >> 8) & 0xFF);
+            }
+
+        }
+    }
+}
+
+void EPFrameBuffer::drawThickLine(QLine line, int color, float pressure)
+{
+    if (!m_fb.rect().contains(line.p1()) || !m_fb.rect().contains(line.p2())) {
+        return;
+    }
+
+    float pointsize = pressure * pressure * MAX_RADIUS;
+    pointsize -= (fabs(line.dx()) + fabs(line.dy())) / MAX_RADIUS;
+    if (pointsize < 2) pointsize = 2;
+
+    const int dx = line.dx();
+    const int dy = line.dy();
+
+    // Single pixel line
+    if (dx == 0 && dy == 0) {
+        drawFullPoint(line.x1(), line.y1(), color, pressure);
+        return;
+    }
+
+    bool vertical = (abs(dx) < abs(dy));
+
+    int x1, y1, x2, y2;
+    if ((vertical && (dy > 0)) || (!vertical && (dx > 0))) {
+        x1 = line.x1();
+        y1 = line.y1();
+        x2 = line.x2();
+        y2 = line.y2();
+    } else {
+        x1 = line.x2();
+        y1 = line.y2();
+        x2 = line.x1();
+        y2 = line.y1();
+    }
+
+
+
+    if (vertical) {
+        const int x0 = x1 - ((dx * y1) / dy);
+        for (int x = x1, y = y1;
+             y <= y2;
+             x = ((dx * (++y)) / dy) + x0) {
+            drawFullPoint(x, y, color, pointsize);
+        }
+    } else {
+        const int y0 = y1 - ((dy * x1) / dx);
+
+        for (int x = x1, y = y1;
+             x <= x2;
+             y = ((dy * (++x)) / dx) + y0) {
+            drawFullPoint(x, y, color, pointsize);
+        }
+    }
 }
 
 #if 0
@@ -376,7 +431,11 @@ void EPFrameBuffer::sendUpdate(QRect rect, Waveform waveform, UpdateMode mode, b
     data.update_region.height = rect.height();
     data.update_mode = mode;
     static int updateCounter = 1;
-    data.update_marker = updateCounter++;
+    if (sync) {
+        data.update_marker = updateCounter++;
+    } else {
+        data.update_marker = 0;
+    }
     data.waveform_mode = waveform;
     data.temp = 24;
     data.flags = 0;

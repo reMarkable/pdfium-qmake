@@ -14,11 +14,11 @@ public:
     enum Waveform {
         Initialize = 0,
         Fast = 6,
-        Grayscale = 2
+        Grayscale = 3
     };
     enum UpdateMode {
-        PartialUpdate,
-        FullUpdate
+        PartialUpdate = 0x0,
+        FullUpdate = 0x1
     };
 
     QImage *framebuffer() {
@@ -31,6 +31,7 @@ public slots:
     void drawAAPixel(uchar *address, double distance, bool aa);
     void drawAALine(const QLine &line, bool aa);
     void drawThinLine(QLine line, int color);
+    void drawThickLine(QLine line, int color, float pressure);
     void drawSinglePoint(int x, int y, int color);
     void drawFullPoint(int cx, int cy, int color, float size);
     uchar *getAddress(int x, int y);

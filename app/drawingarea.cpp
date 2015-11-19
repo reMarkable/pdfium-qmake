@@ -5,7 +5,6 @@
 #include <linux/fb.h>
 #include <errno.h>
 #include <QLine>
-#include "digitizer.h"
 #include "mxcfb.h"
 #include <unistd.h>
 #include <QPainter>
@@ -85,7 +84,12 @@ void DrawingArea::closeFb()
 void DrawingArea::paint(QPainter *painter)
 {
     qDebug() << "drawing muh stufs" << height() << width();
-    painter->fillRect(0, 0, width(), height(), Qt::white);
+    for(const QVector<PenPoint> &line : m_lines) {
+        for (int i=1; i<line.length(); i++) {
+            EPFrameBuffer::instance()->drawThickLine(QLine(line[i-1].x, line[i-1].y, line[i].x, line[i].y), 0, line[i].pressure);
+        }
+    }
+//    painter->fillRect(0, 0, width(), height(), Qt::white);
 }
 
 void DrawingArea::mousePressEvent(QMouseEvent *event)
@@ -100,12 +104,20 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     PenPoint prevPoint(event->globalX(), event->globalY(), 0);
     PenPoint point = digitizer->acquireLock();
+    QVector<PenPoint> line;
     do {
-        EPFrameBuffer::instance()->drawThinLine(QLine(prevPoint.x, prevPoint.y, point.x, point.y), 0);
+        line.append(point);
+
+        EPFrameBuffer::instance()->drawThickLine(QLine(prevPoint.x, prevPoint.y, point.x, point.y), 0, point.pressure);
+        EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
 
         prevPoint = point;
     } while (digitizer->getPoint(&point));
 
     digitizer->releaseLock();
     qDebug() << "unlocked digitizer";
+
+    if (line.length() > 1) {
+        m_lines.append(line);
+    }
 }

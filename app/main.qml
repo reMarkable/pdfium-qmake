@@ -144,13 +144,6 @@ Window {
                 left: parent.left
                 bottom: parent.bottom
             }
-
-            Text {
-                anchors.centerIn: parent
-                font.family: "Comic Sans MS"
-                font.pointSize: 40
-                text: "HEI LOL"
-            }
         }
 
 
@@ -162,14 +155,6 @@ Window {
                 right: parent.right
                 left: parent.left
                 bottom: parent.bottom
-            }
-
-            Text {
-                x: 300
-                y: 400
-                font.family: "Comic Sans MS"
-                font.pointSize: 30
-                text: "kekekekeke"
             }
         }
 

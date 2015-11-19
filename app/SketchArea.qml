@@ -11,8 +11,8 @@ DrawingArea {
             model: 50
             Rectangle {
                 width: parent.width - 30
-                height: 2
-                color: "#cecece"
+                height: 1
+                color: "#321123"
             }
         }
     }
@@ -26,8 +26,8 @@ DrawingArea {
             leftMargin: 150
         }
 
-        width: 2
-        color: "#cecece"
+        width: 1
+        color: "#321123"
     }
 
     Column {
