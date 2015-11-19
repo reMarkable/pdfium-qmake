@@ -171,6 +171,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         case Pen:
             drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, false);
             drawAALine(&m_contents, line, false, false);
+            drawAALine(&m_contents, line, true, false);
             break;
         }
 
