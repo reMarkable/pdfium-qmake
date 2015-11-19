@@ -6,8 +6,7 @@
 #include <QElapsedTimer>
 #include "eprenderer.h"
 
-EPFrameBuffer::EPFrameBuffer(EPRenderer *renderer) : QObject(renderer),
-    m_renderer(renderer)
+EPFrameBuffer::EPFrameBuffer() : QObject()
 {
     m_deviceFile.setFileName("/dev/graphics/fb0");
     if (!m_deviceFile.open(QIODevice::ReadWrite)) {
@@ -62,101 +61,12 @@ EPFrameBuffer::EPFrameBuffer(EPRenderer *renderer) : QObject(renderer),
     m_fb = QImage(fbMem, varInfo.xres, varInfo.yres, QImage::Format_RGB16);
 
     clearScreen();
-
-    connect(m_renderer, &EPRenderer::renderComplete, this, &EPFrameBuffer::draw);
 }
 
-void EPFrameBuffer::draw()
+EPFrameBuffer *EPFrameBuffer::instance()
 {
-    if (m_fb.isNull()) {
-        qWarning() << "Can't draw without a framebuffer";
-    }
-
-    QElapsedTimer timer;
-    timer.start();
-    QMutexLocker locker(&m_renderer->rectanglesMutex);
-
-    QList<QRect> fastAreas;
-
-    QMutableListIterator<EPNode*> it(m_renderer->currentRects);
-    while (it.hasNext()) {
-        EPNode *rect = it.next();
-        if (!rect->visible) {
-            fastAreas.append(rect->transformedRect);
-            it.remove();
-        } else if (!rect->transformedRect.intersects(m_fb.rect())) {
-            it.remove();
-        }
-    }
-
-    QPainter painter(&m_fb);
-    painter.setBackground(Qt::white);
-
-    for(const QRect &area : fastAreas) {
-        painter.eraseRect(area);
-    }
-
-    // Rects are sorted in z-order
-    for(EPNode *rect : m_renderer->currentRects) {
-        if (rect->dirty) {
-            rect->draw(&painter);
-            rect->dirty = false;
-            fastAreas.append(rect->transformedRect);
-            continue;
-        }
-
-        for (const QRect &area : fastAreas) {
-            if (rect->transformedRect == m_fb.rect()) {
-                qDebug() << "Skipping background rect?" << rect->transformedRect;
-                continue;
-            }
-            if (rect->transformedRect.intersects(area)) {
-                rect->draw(&painter);
-                fastAreas.append(rect->transformedRect);
-                break;
-            }
-        }
-    }
-
-    locker.unlock();
-    painter.end();
-
-
-#if 0
-    // FIXME: do something more clever here plz
-    for (int i=0; i<fastAreas.size(); i++) {
-        if (fastAreas[i].isEmpty()) {
-            continue;
-        }
-        for (int j=0; j<fastAreas.size(); j++) {
-            if (i==j) continue;
-            if (fastAreas[i].intersects(fastAreas[j])) {
-                fastAreas[i] = fastAreas[i].united(fastAreas[j]);
-                fastAreas[j] = QRect();
-            }
-        }
-    }
-
-    qDebug() << "count" << damagedAreas.count();
-    if (damagedAreas.count() > 20) {
-        sendUpdate(m_fb.rect(), Grayscale, PartialUpdate, true);
-    } else {
-        int i = 0;
-        for(const QRect &area : fastAreas) {
-            if (area.isEmpty()) {
-                continue;
-            }
-            sendUpdate(area, Fast, PartialUpdate);
-            i++;
-        }
-        qDebug() << "damaged areas:" << i;
-    }
-
-#else
-    sendUpdate(m_fb.rect(), Grayscale, FullUpdate, true);
-#endif
-
-    //qDebug() << Q_FUNC_INFO << timer.restart() << "updated";
+    static EPFrameBuffer framebuffer;
+    return &framebuffer;
 }
 
 void EPFrameBuffer::clearScreen()

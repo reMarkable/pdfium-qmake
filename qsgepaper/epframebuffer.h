@@ -5,13 +5,11 @@
 #include <QtGui/QImage>
 #include <QtCore/QFile>
 
-class EPRenderer;
-
 class EPFrameBuffer : public QObject
 {
     Q_OBJECT
 public:
-    explicit EPFrameBuffer(EPRenderer *renderer);
+    static EPFrameBuffer *instance();
 
     enum Waveform {
         Initialize = 0,
@@ -23,13 +21,16 @@ public:
         FullUpdate
     };
 
+    QImage *framebuffer() {
+        return &m_fb;
+    }
+
 public slots:
-    void draw();
     void clearScreen();
+    void sendUpdate(QRect rect, Waveform waveform, UpdateMode mode, bool sync = false);
 
 private:
-    void sendUpdate(QRect rect, Waveform waveform, UpdateMode mode, bool sync = false);
-    EPRenderer *m_renderer;
+    EPFrameBuffer();
     QImage m_fb;
     QFile m_deviceFile;
 };

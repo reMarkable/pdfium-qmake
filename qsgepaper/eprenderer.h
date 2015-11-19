@@ -46,6 +46,9 @@ public:
 signals:
     void renderComplete();
 
+private slots:
+    void drawRects();
+
 protected:
     // QSGRenderer interface
     void render() override;
@@ -56,7 +59,6 @@ private:
     EPRenderContext *m_context;
     QMatrix4x4 m_transform;
     int m_depth;
-    EPFrameBuffer *m_fb;
     QTimer m_redrawTimer;
 };
 
