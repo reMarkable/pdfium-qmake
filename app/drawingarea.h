@@ -13,9 +13,10 @@ public:
     static bool initFb(const char *dev);
     static void closeFb();
 
+    void paint(QPainter *painter) override;
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
-    QSGNode *updatePaintNode(QSGNode *node, UpdatePaintNodeData *data) override;
 
 signals:
 

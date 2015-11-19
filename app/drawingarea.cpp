@@ -7,6 +7,8 @@
 #include <QLine>
 #include "digitizer.h"
 #include "mxcfb.h"
+#include <unistd.h>
+#include <QPainter>
 
 static int s_framebufferFd = -1;
 fb_fix_screeninfo s_fbFixedInfo;
@@ -77,6 +79,12 @@ void DrawingArea::closeFb()
     if (s_framebufferFd != -1) {
         close(s_framebufferFd);
     }
+}
+
+void DrawingArea::paint(QPainter *painter)
+{
+    qDebug() << "drawing muh stufs" << height() << width();
+    painter->fillRect(0, 0, width(), height(), Qt::white);
 }
 
 #define MAX(a, b) (a > b ? a : b)

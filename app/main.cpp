@@ -6,6 +6,11 @@
 #include "digitizer.h"
 #include "drawingarea.h"
 
+#ifdef Q_PROCESSOR_ARM
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QsgEpaperPlugin)
+#endif
+
 int main(int argc, char *argv[])
 {
 #ifdef Q_PROCESSOR_ARM
