@@ -14,7 +14,7 @@ public:
     enum Waveform {
         Initialize = 0,
         Fast = 6,
-        Grayscale = 3
+        Grayscale = 2
     };
     enum UpdateMode {
         PartialUpdate = 0x0,

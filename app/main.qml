@@ -135,8 +135,8 @@ Window {
         }
 
 
-        SketchArea {
-            id: sketchArea
+        NoteArea {
+            id: noteArea
             visible: window.index === 1
             anchors {
                 top: topBar.bottom
@@ -148,7 +148,7 @@ Window {
 
 
         SketchArea {
-            id: sketchArea2
+            id: sketchArea
             visible: window.index === 2
             anchors {
                 top: topBar.bottom

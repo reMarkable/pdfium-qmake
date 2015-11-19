@@ -3,6 +3,34 @@ import com.magmacompany 1.0
 
 DrawingArea {
     Column {
+        anchors.fill: parent
+        anchors.topMargin: 75
+        anchors.leftMargin: 20
+        spacing: 30
+        Repeater {
+            model: 50
+            Rectangle {
+                width: parent.width - 30
+                height: 1
+                color: "#321123"
+            }
+        }
+    }
+
+    Rectangle {
+        anchors {
+            top: parent.top
+            left: parent.left
+            bottom: parent.bottom
+            topMargin: 40
+            leftMargin: 150
+        }
+
+        width: 1
+        color: "#321123"
+    }
+
+    Column {
         id: toolBox
         width: 75
         height: 100
