@@ -8,9 +8,9 @@ DrawingArea {
         anchors.fill: parent
         anchors.topMargin: 75
         anchors.leftMargin: 20
-        spacing: 30
+        spacing: 50
         Repeater {
-            model: 50
+            model: 32
             Rectangle {
                 width: parent.width - 30
                 height: 1

@@ -171,8 +171,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     int freeLuts = 1;
 
 
-    Predictor xPredictor(prevPoint.x);
-    Predictor yPredictor(prevPoint.y);
+    Predictor xPredictor;
+    Predictor yPredictor;
     do {
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
@@ -225,13 +225,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             queuedLines.append(line);
 
             // Try to do semi-intelligently handling of LUT usage for DUs
-            if (freeLuts < 1) {
-                //qint64 elapsed = lutTimer.restart();
-                if (lutTimer.elapsed() > 250) {
-                    qDebug() << "free the luts!";
-                    freeLuts++;
-                }
+            if (freeLuts < 1 && lutTimer.elapsed() > 250) {
+                freeLuts++;
             }
+
             if (freeLuts < 1) {
                 break;
             }
@@ -243,7 +240,11 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 QLine oldLine = it.next();
 
                 // Avoid overlapping with the rect we just updated
-                QRect proposedUpdateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
+                QRect testRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
+                testRect.setX(testRect.x() - 12);
+                testRect.setY(testRect.y() - 16);
+                testRect.setWidth(testRect.width() + 24);
+                testRect.setHeight(testRect.height() + 32);
 
                 // Calculate minimal distance
                 int distanceX =             abs(oldLine.x1() - line.x1());
@@ -257,15 +258,15 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 distanceY = qMin(distanceY, abs(oldLine.y2() - line.y2()));
 
                 if (hypot(distanceX, distanceY) < 1000 * hypot(xPredictor.trendDelta, yPredictor.trendDelta) ||
-                        proposedUpdateRect.contains(line.p1()) ||
-                        proposedUpdateRect.contains(line.p2())) {
+                        testRect.contains(line.p1()) ||
+                        testRect.contains(line.p2())) {
                     continue;
                 }
 
                 // Re-draw line with AA pixels
                 it.remove();
                 drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
-                updateRect = proposedUpdateRect;
+                updateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
             }
 
             if (updateRect.isEmpty()) {
@@ -275,9 +276,9 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             // If we're going to do an update (expensive), do all the (cheap) drawings as well
             it.toFront();
             while (it.hasNext()) {
-                QLine oldLine = it.next();
-                if (updateRect.contains(oldLine.p1()) && updateRect.contains(oldLine.p2())) {
-                    drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
+                QLine queuedLine = it.next();
+                if (updateRect.contains(queuedLine.p1()) && updateRect.contains(queuedLine.p2())) {
+                    drawAALine(EPFrameBuffer::instance()->framebuffer(), queuedLine, true, m_invert);
                     it.remove();
                 }
             }
