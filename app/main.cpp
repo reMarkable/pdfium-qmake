@@ -3,10 +3,11 @@
 #include <QDebug>
 #include <QScreen>
 
-#include "digitizer.h"
 #include "drawingarea.h"
 
 #ifdef Q_PROCESSOR_ARM
+#include "digitizer.h"
+
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QsgEpaperPlugin)
 #endif

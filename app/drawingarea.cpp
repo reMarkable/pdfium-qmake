@@ -1,7 +1,11 @@
 #include "drawingarea.h"
 #include <QLine>
 #include <QPainter>
+#include <QElapsedTimer>
+
+#ifdef Q_PROCESSOR_ARM
 #include <epframebuffer.h>
+#endif
 
 DrawingArea::DrawingArea() :
     m_invert(false),
@@ -135,6 +139,7 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
 
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
+#ifdef Q_PROCESSOR_ARM
     qDebug() << "Mouse event!:" << event->globalPos();
 
     Digitizer *digitizer = Digitizer::instance();
@@ -147,6 +152,11 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     QPainter selfPainter(&m_contents);
     QPen thickPen(Qt::black);
     thickPen.setCapStyle(Qt::RoundCap);
+
+    int skippedUpdatesCounter = 0;
+    QRect delayedUpdateRect;
+    QVector<QLine> lines;
+    QElapsedTimer lutTimer;
 
     do {
         //line.append(point);
@@ -162,17 +172,41 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.drawLine(line);
             selfPainter.setPen(thickPen);
             selfPainter.drawLine(line);
+            EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
             break;
         }
+
         case Pencil:
             painter.drawLine(line);
             selfPainter.drawLine(line);
+            EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
             break;
-        case Pen:
-            drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, false);
+
+        case Pen: {
             drawAALine(&m_contents, line, false, false);
             drawAALine(&m_contents, line, true, false);
+
+            drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, false);
+
+            // Do a short dance to minimize the amount of LUTs we use
+            if (skippedUpdatesCounter > 2) {
+                EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+                skippedUpdatesCounter = 0;
+            }
+
+            QRect updateRect = QRect(prevPoint.x, prevPoint.y, point.x, point.y);
+            if (skippedUpdatesCounter == 0) {
+                delayedUpdateRect = updateRect;
+            } else {
+                delayedUpdateRect = delayedUpdateRect.united(updateRect);
+            }
+            skippedUpdatesCounter++;
+
+            // Do delayed updates for drawing with DU
+            lines.append(line);
+
             break;
+        }
         }
 
         EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
@@ -182,5 +216,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     digitizer->releaseLock();
     qDebug() << "unlocked digitizer";
+#endif
 }
 

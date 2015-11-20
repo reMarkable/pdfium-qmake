@@ -1,6 +1,10 @@
 TEMPLATE = subdirs
-SUBDIRS = app qsgepaper
+SUBDIRS = app
 
 app.subdir = app
-app.depends = qsgepaper
-qsgepaper.subdir = qsgepaper
+
+contains(QT_ARCH, arm) {
+    SUBDIRS += qsgepaper
+    app.depends = qsgepaper
+    qsgepaper.subdir = qsgepaper
+}
