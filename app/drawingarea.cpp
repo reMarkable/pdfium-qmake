@@ -156,23 +156,29 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     PenPoint prevPoint(event->globalX(), event->globalY(), 0);
     PenPoint point = digitizer->acquireLock();
-    //QVector<PenPoint> line;
+
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_contents);
     QPen thickPen(Qt::black);
     thickPen.setCapStyle(Qt::RoundCap);
 
+    // For drawing AA lines
     int skippedUpdatesCounter = 0;
     QRect delayedUpdateRect;
-    QVector<QLine> lines;
+    QVector<QLine> queuedLines;
     QElapsedTimer lutTimer;
-    lutTimer.start();
     int freeLuts = 1;
 
+
+    Predictor xPredictor(prevPoint.x);
+    Predictor yPredictor(prevPoint.y);
     do {
-        //line.append(point);
+        point.x = xPredictor.getPrediction(point.x);
+        point.y = yPredictor.getPrediction(point.y);
+
         QLine line(prevPoint.x, prevPoint.y, point.x, point.y);
+        QRect updateRect(line.p1(), line.p2());
 
         switch(m_currentBrush) {
         case Paintbrush: {
@@ -184,14 +190,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.drawLine(line);
             selfPainter.setPen(thickPen);
             selfPainter.drawLine(line);
-            EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+            EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
             break;
         }
 
         case Pencil:
             painter.drawLine(line);
             selfPainter.drawLine(line);
-            EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+            EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
             break;
 
         case Pen: {
@@ -200,27 +206,29 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
             drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
 
-            // Do a short dance to minimize the amount of LUTs we use
+            // Because we use DU, we only have 16 LUTs available, and therefore need to batch
+            // up updates we send
             if (skippedUpdatesCounter > 2) {
                 EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
                 skippedUpdatesCounter = 0;
             }
 
-            const QRect currentUpdateRect(QPoint(prevPoint.x, prevPoint.y), QPoint(point.x, point.y));
+
             if (skippedUpdatesCounter == 0) {
-                delayedUpdateRect = currentUpdateRect;
+                delayedUpdateRect = updateRect;
             } else {
-                delayedUpdateRect = delayedUpdateRect.united(currentUpdateRect);
+                delayedUpdateRect = delayedUpdateRect.united(updateRect);
             }
             skippedUpdatesCounter++;
 
             // Do delayed updates for drawing with DU
-            lines.append(line);
+            queuedLines.append(line);
 
             // Try to do semi-intelligently handling of LUT usage for DUs
             if (freeLuts < 1) {
-                qint64 elapsed = lutTimer.restart();
-                if (elapsed > 250) {
+                //qint64 elapsed = lutTimer.restart();
+                if (lutTimer.elapsed() > 250) {
+                    qDebug() << "free the luts!";
                     freeLuts++;
                 }
             }
@@ -229,34 +237,38 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             }
 
             // Start looping over stored lines to see if we can do AA drawing on some of them
-            QMutableVectorIterator<QLine> it(lines);
-            bool hasUpdate = false;
-            QRect updateRect;
+            QMutableVectorIterator<QLine> it(queuedLines);
+            updateRect = QRect();
             while(it.hasNext()) {
                 QLine oldLine = it.next();
 
                 // Avoid overlapping with the rect we just updated
-                QRect testRect(oldLine.p1(), oldLine.p2());
-                if (hasUpdate) {
-                    testRect = updateRect.united(updateRect);
-                }
-                double distance = minDistance(line, oldLine);
-                if (distance < 10 || testRect.contains(line.p1()) || testRect.contains(line.p2())) {
+                QRect proposedUpdateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
+
+                // Calculate minimal distance
+                int distanceX =             abs(oldLine.x1() - line.x1());
+                distanceX = qMin(distanceX, abs(oldLine.x2() - line.x1()));
+                distanceX = qMin(distanceX, abs(oldLine.x1() - line.x2()));
+                distanceX = qMin(distanceX, abs(oldLine.x2() - line.x2()));
+
+                int distanceY =             abs(oldLine.y1() - line.y1());
+                distanceY = qMin(distanceY, abs(oldLine.y2() - line.y1()));
+                distanceY = qMin(distanceY, abs(oldLine.y1() - line.y2()));
+                distanceY = qMin(distanceY, abs(oldLine.y2() - line.y2()));
+
+                if (hypot(distanceX, distanceY) < 1000 * hypot(xPredictor.trendDelta, yPredictor.trendDelta) ||
+                        proposedUpdateRect.contains(line.p1()) ||
+                        proposedUpdateRect.contains(line.p2())) {
                     continue;
                 }
 
                 // Re-draw line with AA pixels
                 it.remove();
                 drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
-                if (!hasUpdate) {
-                    hasUpdate = true;
-                    updateRect = QRect(oldLine.p1(), oldLine.p2());
-                } else {
-                    updateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
-                }
+                updateRect = proposedUpdateRect;
             }
 
-            if (!hasUpdate) {
+            if (updateRect.isEmpty()) {
                 break;
             }
 
@@ -277,12 +289,27 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         }
         }
 
-        EPFrameBuffer::instance()->sendUpdate(QRect(prevPoint.x, prevPoint.y, point.x, point.y), EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
-
         prevPoint = point;
     } while (digitizer->getPoint(&point));
 
     digitizer->releaseLock();
+
+    // Check if we have queued AA lines to draw
+    if (m_currentBrush != Pen || queuedLines.isEmpty()) {
+        return;
+    }
+
+    if (skippedUpdatesCounter > 0) {
+        EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate, true);
+    }
+
+    QRect updateRect;
+    for (const QLine &line : queuedLines) {
+        drawAALine(EPFrameBuffer::instance()->framebuffer(), line, true, m_invert);
+        updateRect = updateRect.united(QRect(line.p1(), line.p2()));
+    }
+    EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate);
+
     qDebug() << "unlocked digitizer";
 #endif
 }

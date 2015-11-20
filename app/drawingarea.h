@@ -5,6 +5,44 @@
 #include <QImage>
 #include "digitizer.h"
 
+struct Predictor
+{
+    Predictor(double firstValue) :
+        lastValue(firstValue),
+        valueCount(0)
+    {
+    }
+
+    double getPrediction(double newValue) {
+        valueCount++;
+        double delta = newValue - lastValue;
+
+        if (valueCount == 2) {
+            trendDelta = delta - lastDelta;
+        } else if (valueCount > 2) {
+            delta = smoothFactor * delta + (1.0 - smoothFactor) * (lastDelta + trendDelta);
+            trendDelta  = trendFactor * (delta - lastDelta) + (1.0 - trendFactor) * trendDelta;
+            double slowstartScale = pow(1.0 - 1.0 / valueCount, 3);
+            newValue += delta + trendDelta * predictionFactor * slowstartScale;
+        }
+
+        lastValue = newValue;
+        lastDelta = delta;
+
+        return lastValue;
+    }
+
+    double lastValue;
+    double lastDelta;
+    double trendDelta;
+
+    double predictionFactor = 7.5;
+    double smoothFactor = 0.098;
+    double trendFactor = 0.054;
+
+    int valueCount;
+};
+
 class DrawingArea : public QQuickPaintedItem
 {
     Q_OBJECT
