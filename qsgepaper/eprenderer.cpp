@@ -54,13 +54,13 @@ void EPRenderer::drawRects()
     timer.start();
     QMutexLocker locker(&rectanglesMutex);
 
-    QList<QRect> fastAreas;
+    QList<QRect> damagedAreas;
 
     QMutableListIterator<EPNode*> it(currentRects);
     while (it.hasNext()) {
         EPNode *rect = it.next();
         if (!rect->visible) {
-            fastAreas.append(rect->transformedRect);
+            damagedAreas.append(rect->transformedRect);
             it.remove();
         } else if (!rect->transformedRect.intersects(fb->rect())) {
             it.remove();
@@ -70,8 +70,14 @@ void EPRenderer::drawRects()
     QPainter painter(fb);
     painter.setBackground(Qt::white);
 
-    for(const QRect &area : fastAreas) {
+    for(const QRect &area : damagedAreas) {
         painter.eraseRect(area);
+    }
+
+    for(EPNode *rect : currentRects) {
+        if (rect->dirty) {
+            damagedAreas.append(rect->transformedRect);
+        }
     }
 
     // Rects are sorted in z-order
@@ -79,18 +85,13 @@ void EPRenderer::drawRects()
         if (rect->dirty) {
             rect->draw(&painter);
             rect->dirty = false;
-            fastAreas.append(rect->transformedRect);
             continue;
         }
 
-        for (const QRect &area : fastAreas) {
-            if (rect->transformedRect == fb->rect()) {
-                qDebug() << "Skipping background rect?" << rect->transformedRect;
-                continue;
-            }
+        for (const QRect &area : damagedAreas) {
             if (rect->transformedRect.intersects(area)) {
                 rect->draw(&painter);
-                fastAreas.append(rect->transformedRect);
+                damagedAreas.append(rect->transformedRect);
                 break;
             }
         }
@@ -135,7 +136,7 @@ void EPRenderer::drawRects()
     EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
 #endif
 
-    qDebug() << Q_FUNC_INFO << timer.restart() << "updated";
+//    qDebug() << Q_FUNC_INFO << timer.restart() << "updated";
 }
 
 void EPRenderer::handleEpaperNode(EPNode *node)

@@ -51,7 +51,7 @@ Rectangle {
                 anchors.fill: parent
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                text: "REGRET\nTOOL"
+                text: "CLEAR"
                 font.pointSize: 7
                 MouseArea {
                     anchors.fill: parent

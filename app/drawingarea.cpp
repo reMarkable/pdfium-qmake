@@ -165,7 +165,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     PenPoint prevPoint(event->globalX(), event->globalY(), 0);
     PenPoint point = digitizer->acquireLock();
 
-
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_contents);
     QPen thickPen(Qt::black);

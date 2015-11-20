@@ -9,8 +9,6 @@ EPPainterNode::EPPainterNode(QQuickPaintedItem *item) :
     dirty = true;
 }
 
-
-
 void EPPainterNode::draw(QPainter *painter) const
 {
     painter->save();
@@ -35,6 +33,7 @@ void EPPainterNode::setSize(const QSize &size)
 
 void EPPainterNode::setDirty(const QRect &dirtyRect)
 {
+    dirty = true;
     Q_UNUSED(dirtyRect)
 }
 
