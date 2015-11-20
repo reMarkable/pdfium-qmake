@@ -14,7 +14,8 @@ RESOURCES += qml.qrc
 include(deployment.pri)
 
 HEADERS += \
-    drawingarea.h
+    drawingarea.h \
+    predictor.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app

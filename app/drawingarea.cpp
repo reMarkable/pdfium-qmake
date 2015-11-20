@@ -7,6 +7,8 @@
 #include <epframebuffer.h>
 #endif
 
+#include "predictor.h"
+
 DrawingArea::DrawingArea() :
     m_invert(false),
     m_currentBrush(Paintbrush)
