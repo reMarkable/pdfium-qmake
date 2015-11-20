@@ -38,7 +38,7 @@ Window {
 
         Rectangle {
             id: topBar
-            height: 40
+            height: 60
             anchors {
                 top: parent.top
                 left: parent.left
