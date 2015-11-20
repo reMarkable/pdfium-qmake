@@ -20,12 +20,13 @@ DrawingArea::DrawingArea() :
 
 void DrawingArea::paint(QPainter *painter)
 {
-    //painter->drawImage(QRect(0, 0, 1560, 1200), m_contents, QRect(0, 0, 1560, 1200));
+    painter->drawImage(QRect(0, 0, 1560, 1200), m_contents, QRect(0, 0, 1560, 1200));
 }
 
 void DrawingArea::clear()
 {
     m_contents.fill(Qt::transparent);
+    update();
 }
 
 

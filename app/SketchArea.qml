@@ -3,6 +3,7 @@ import com.magmacompany 1.0
 
 Rectangle {
     DrawingArea {
+        id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Paintbrush
     }
@@ -55,8 +56,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        regretToolSelect.clicked = !regretToolSelect.clicked
-                        penToolList.visible = false
+                        drawingArea.clear()
                     }
                 }
             }

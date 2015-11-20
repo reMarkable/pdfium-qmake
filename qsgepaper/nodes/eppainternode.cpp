@@ -14,7 +14,6 @@ EPPainterNode::EPPainterNode(QQuickPaintedItem *item) :
 void EPPainterNode::draw(QPainter *painter) const
 {
     painter->save();
-    //painter->setTransform(transform);
     m_item->paint(painter);
     painter->restore();
 }
@@ -81,6 +80,7 @@ QImage EPPainterNode::toImage() const
 
 void EPPainterNode::update()
 {
+    dirty = true;
 }
 
 QSGTexture *EPPainterNode::texture() const
