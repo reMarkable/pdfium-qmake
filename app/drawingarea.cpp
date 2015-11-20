@@ -137,6 +137,16 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
     } while (u <= uend);
 }
 
+inline double minDistance(const QLine &a, const QLine &b)
+{
+    int minDistSquared =                  QPoint::dotProduct(a.p1(), b.p1());
+    minDistSquared = qMin(minDistSquared, QPoint::dotProduct(a.p1(), b.p2()));
+    minDistSquared = qMin(minDistSquared, QPoint::dotProduct(a.p2(), b.p1()));
+    minDistSquared = qMin(minDistSquared, QPoint::dotProduct(a.p2(), b.p2()));
+
+    return sqrt(minDistSquared);
+}
+
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
 #ifdef Q_PROCESSOR_ARM
@@ -157,6 +167,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     QRect delayedUpdateRect;
     QVector<QLine> lines;
     QElapsedTimer lutTimer;
+    lutTimer.start();
+    int freeLuts = 1;
 
     do {
         //line.append(point);
@@ -183,10 +195,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             break;
 
         case Pen: {
-            drawAALine(&m_contents, line, false, false);
-            drawAALine(&m_contents, line, true, false);
+            drawAALine(&m_contents, line, false, m_invert);
+            drawAALine(&m_contents, line, true, m_invert);
 
-            drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, false);
+            drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
 
             // Do a short dance to minimize the amount of LUTs we use
             if (skippedUpdatesCounter > 2) {
@@ -194,16 +206,72 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 skippedUpdatesCounter = 0;
             }
 
-            QRect updateRect = QRect(prevPoint.x, prevPoint.y, point.x, point.y);
+            const QRect currentUpdateRect(QPoint(prevPoint.x, prevPoint.y), QPoint(point.x, point.y));
             if (skippedUpdatesCounter == 0) {
-                delayedUpdateRect = updateRect;
+                delayedUpdateRect = currentUpdateRect;
             } else {
-                delayedUpdateRect = delayedUpdateRect.united(updateRect);
+                delayedUpdateRect = delayedUpdateRect.united(currentUpdateRect);
             }
             skippedUpdatesCounter++;
 
             // Do delayed updates for drawing with DU
             lines.append(line);
+
+            // Try to do semi-intelligently handling of LUT usage for DUs
+            if (freeLuts < 1) {
+                qint64 elapsed = lutTimer.restart();
+                if (elapsed > 250) {
+                    freeLuts++;
+                }
+            }
+            if (freeLuts < 1) {
+                break;
+            }
+
+            // Start looping over stored lines to see if we can do AA drawing on some of them
+            QMutableVectorIterator<QLine> it(lines);
+            bool hasUpdate = false;
+            QRect updateRect;
+            while(it.hasNext()) {
+                QLine oldLine = it.next();
+
+                // Avoid overlapping with the rect we just updated
+                QRect testRect(oldLine.p1(), oldLine.p2());
+                if (hasUpdate) {
+                    testRect = updateRect.united(updateRect);
+                }
+                double distance = minDistance(line, oldLine);
+                if (distance < 10 || testRect.contains(line.p1()) || testRect.contains(line.p2())) {
+                    continue;
+                }
+
+                // Re-draw line with AA pixels
+                it.remove();
+                drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
+                if (!hasUpdate) {
+                    hasUpdate = true;
+                    updateRect = QRect(oldLine.p1(), oldLine.p2());
+                } else {
+                    updateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
+                }
+            }
+
+            if (!hasUpdate) {
+                break;
+            }
+
+            // If we're going to do an update (expensive), do all the (cheap) drawings as well
+            it.toFront();
+            while (it.hasNext()) {
+                QLine oldLine = it.next();
+                if (updateRect.contains(oldLine.p1()) && updateRect.contains(oldLine.p2())) {
+                    drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
+                    it.remove();
+                }
+            }
+            freeLuts--;
+            lutTimer.restart();
+            EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate);
 
             break;
         }
