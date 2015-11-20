@@ -13,14 +13,19 @@ DrawingArea::DrawingArea() :
     m_invert(false),
     m_currentBrush(Paintbrush)
 {
-    m_contents = QImage(1600, 1200, QImage::Format_RGB16);
-    m_contents.fill(Qt::white);
+    m_contents = QImage(1600, 1200, QImage::Format_ARGB32_Premultiplied);
+    m_contents.fill(Qt::transparent);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
 void DrawingArea::paint(QPainter *painter)
 {
-    painter->drawImage(QRect(0, 0, 1560, 1200), m_contents, QRect(0, 0, 1560, 1200));
+    //painter->drawImage(QRect(0, 0, 1560, 1200), m_contents, QRect(0, 0, 1560, 1200));
+}
+
+void DrawingArea::clear()
+{
+    m_contents.fill(Qt::transparent);
 }
 
 
@@ -172,6 +177,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     QElapsedTimer lutTimer;
     int freeLuts = 1;
 
+    if (m_currentBrush == Pen) {
+        thickPen.setWidth(3);
+        selfPainter.setPen(thickPen);
+        selfPainter.setRenderHint(QPainter::Antialiasing);
+    }
+
 
     Predictor xPredictor;
     Predictor yPredictor;
@@ -203,8 +214,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             break;
 
         case Pen: {
-            drawAALine(&m_contents, line, false, m_invert);
-            drawAALine(&m_contents, line, true, m_invert);
+            selfPainter.drawLine(line);
 
             drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
 

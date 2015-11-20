@@ -1,5 +1,6 @@
 import QtQuick 2.3
 import QtQuick.Window 2.2
+import com.magmacompany 1.0
 
 Window {
     id: window
@@ -186,6 +187,11 @@ Window {
                     file--
                     event.accepted = true
                 }
+            }
+
+            DrawingArea {
+                currentBrush: DrawingArea.Pen
+                anchors.fill: parent
             }
 
             property int file: 1

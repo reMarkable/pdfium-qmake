@@ -23,6 +23,9 @@ public:
 
     void paint(QPainter *painter) override;
 
+public slots:
+    void clear();
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
 
