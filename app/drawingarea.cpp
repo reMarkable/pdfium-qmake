@@ -162,8 +162,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     Digitizer *digitizer = Digitizer::instance();
 
-    PenPoint prevPoint(event->globalX(), event->globalY(), 0);
-    PenPoint point = digitizer->acquireLock();
+    PenPoint point;
+    PenPoint prevPoint = digitizer->acquireLock();
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_contents);
@@ -186,7 +186,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     Predictor xPredictor;
     Predictor yPredictor;
-    do {
+    while (digitizer->getPoint(&point)) {
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
 
@@ -303,7 +303,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         }
 
         prevPoint = point;
-    } while (digitizer->getPoint(&point));
+    }
 
     digitizer->releaseLock();
 
