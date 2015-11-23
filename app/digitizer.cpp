@@ -201,11 +201,11 @@ bool Digitizer::processEvent(const input_event &event, PenPoint *point)
         switch (event.code) {
         case ABS_X:
           //  std::cout << "absolute x: " << event.value;
-            point->x = (event.value * m_displaySize.width() / m_xAxis.resolution);
+            point->x = event.value * m_displaySize.width() / m_xAxis.resolution;
             break;
         case ABS_Y:
           //  std::cout << "absolute y: " << event.value;
-            point->y = (event.value * m_displaySize.height() / m_yAxis.resolution);
+            point->y = event.value * m_displaySize.height() / m_yAxis.resolution;
             break;
         case ABS_PRESSURE:
             //std::cout << "absolute pressure: " << event.value;

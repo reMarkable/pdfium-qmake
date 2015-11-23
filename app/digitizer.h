@@ -18,8 +18,8 @@ extern "C" {
 struct PenPoint {
     PenPoint() : x(-1), y(-1), pressure(-1) {}
     PenPoint(int nx, int ny, int p) : x(nx), y(ny), pressure(p) {}
-    int x;
-    int y;
+    double x;
+    double y;
     float pressure;
 
     bool isValid() { return (x != -1 && y != -1 && pressure != -1); }
@@ -89,7 +89,7 @@ private:
     QMutex m_reportLock;
     QThread m_thread;
     bool m_running;
-    QSize m_displaySize;
+    QSizeF m_displaySize;
     PenPoint m_lastPoint;
 };
 
