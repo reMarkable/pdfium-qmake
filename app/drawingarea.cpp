@@ -304,7 +304,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     }
 
     if (skippedUpdatesCounter > 0) {
-        EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate, true);
+        EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
     }
 
     QRect updateRect;
