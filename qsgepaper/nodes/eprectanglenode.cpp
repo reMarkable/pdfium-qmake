@@ -18,7 +18,6 @@ void EPRectangleNode::draw(QPainter *painter) const
     painter->save();
     painter->setTransform(transform);
 
-    painter->fillRect(rect, m_bgColor);
     painter->setBrush(m_bgColor);
 
     // Account for stupid QPainter drawing outside of the rectangle...

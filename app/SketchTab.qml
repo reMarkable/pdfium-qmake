@@ -86,6 +86,15 @@ Rectangle {
                 radius: width
                 color: "black"
             }
+
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentBrush = DrawingArea.Paintbrush
+                    penToolList.visible = false
+                }
+            }
         }
 
         Rectangle {
@@ -101,29 +110,12 @@ Rectangle {
                 radius: width
                 color: "black"
             }
-        }
 
-        Rectangle {
-            id: colorBlackSelect
-            height: parent.height
-            width: height
-            border.width: 1
-
-            Rectangle {
-                anchors.centerIn: parent
-                width: parent.height - 20
-                height: width
-                color: "black"
-                border {
-                    width: 2
-                    color: "white"
-                }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "BLACK"
-                    color: "white"
-                    font.pointSize: 7
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentBrush = DrawingArea.Pencil
+                    penToolList.visible = false
                 }
             }
         }
