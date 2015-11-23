@@ -35,7 +35,9 @@ void EPRenderer::render()
     m_depth = 0;
     visitChildren(rootNode());
 
-    std::sort(currentRects.begin(), currentRects.end());
+    std::sort(currentRects.begin(), currentRects.end(), [](EPNode *a, EPNode *b){
+        return a->z < b->z;
+    });
 
     rectanglesMutex.unlock();
 
@@ -84,6 +86,8 @@ void EPRenderer::drawRects()
     for(EPNode *rect : currentRects) {
         if (rect->dirty) {
             rect->draw(&painter);
+            //painter.drawRect(QRect(rect->transformedRect.x(), rect->transformedRect.y(), rect->transformedRect.width() - 1, rect->transformedRect.height()-1));
+            //painter.drawText(rect->transformedRect.bottomLeft(), QString::number(rect->z));
             rect->dirty = false;
             continue;
         }
