@@ -2,8 +2,10 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>dragon.png</file>
-        <file>SketchArea.qml</file>
+        <file>SketchTab.qml</file>
         <file>MainScreen.qml</file>
-        <file>NoteArea.qml</file>
+        <file>NoteTab.qml</file>
+        <file>DocumentTab.qml</file>
+        <file>ArchiveView.qml</file>
     </qresource>
 </RCC>

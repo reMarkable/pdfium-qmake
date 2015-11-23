@@ -170,11 +170,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     int freeLuts = 1;
 
     if (m_currentBrush == Pen) {
-        thickPen.setWidth(3);
+        thickPen.setWidthF(2.5);
         selfPainter.setPen(thickPen);
         selfPainter.setRenderHint(QPainter::Antialiasing);
     }
-
 
     Predictor xPredictor;
     Predictor yPredictor;
@@ -182,7 +181,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
 
-        QLine line(prevPoint.x, prevPoint.y, point.x, point.y);
+        const QLine line(prevPoint.x, prevPoint.y, point.x, point.y);
         QRect updateRect(line.p1(), line.p2());
 
         switch(m_currentBrush) {

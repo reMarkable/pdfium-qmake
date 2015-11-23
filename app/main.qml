@@ -1,6 +1,5 @@
 import QtQuick 2.3
 import QtQuick.Window 2.2
-import com.magmacompany 1.0
 
 Window {
     id: window
@@ -8,10 +7,6 @@ Window {
     height: 1200
     width: 1600
     flags: Qt.Dialog
-
-//    property string inactiveColor: "#999"
-//    property string fontColor: "gray"
-//    color: "#ddd"
 
     property string inactiveColor: "black"
     property string fontColor: "black"
@@ -83,9 +78,9 @@ Window {
 
                 Repeater {
                     id: tabRepeater
-                    model: ["DOCUMENT", "SKETCH", "DESTIN"]
+                    model: ["ARCHIVE", "NOTES", "SKETCH", "DOCUMENT"]
                     Rectangle {
-                        width: 300
+                        width: 200
                         height: parent.height
                         Text {
                             id: text
@@ -129,16 +124,20 @@ Window {
                 window.index = 1
             }
             onArchiveClicked: {
+                if (archiveIndex === -1) {
+                    window.index = 1
+                    return
+                }
+
                 if (archiveIndex < 3) {
                     window.index = archiveIndex + 1
                 }
             }
         }
 
-
-        NoteArea {
-            id: noteArea
-            visible: window.index === 1
+        ArchiveView {
+            id: archiveView
+            visible: (window.index === 1)
             anchors {
                 top: topBar.bottom
                 right: parent.right
@@ -148,8 +147,8 @@ Window {
         }
 
 
-        SketchArea {
-            id: sketchArea
+        NoteTab {
+            id: noteArea
             visible: window.index === 2
             anchors {
                 top: topBar.bottom
@@ -159,91 +158,27 @@ Window {
             }
         }
 
-        Image {
-            id: document
+
+        SketchTab {
+            id: sketchArea
             visible: window.index === 3
             anchors {
-                horizontalCenter: parent.horizontalCenter
                 top: topBar.bottom
+                right: parent.right
+                left: parent.left
+                bottom: parent.bottom
+            }
+        }
+
+        DocumentTab {
+            visible: window.index === 4
+            anchors {
+                top: topBar.bottom
+                right: parent.right
+                left: parent.left
+                bottom: parent.bottom
             }
 
-            onVisibleChanged: {
-                if (visible) {
-                    forceActiveFocus()
-                } else {
-                    rootItem.forceActiveFocus()
-                }
-            }
-
-            Keys.onRightPressed: {
-                if (file < 5) {
-                    file++
-                    event.accepted = true
-                }
-            }
-
-            Keys.onLeftPressed: {
-                if (file > 1) {
-                    file--
-                    event.accepted = true
-                }
-            }
-
-            DrawingArea {
-                currentBrush: DrawingArea.Pen
-                anchors.fill: parent
-            }
-
-            property int file: 1
-
-            //source: "file:///home/sandsmark/Downloads/pdf-png/lol-" + file + ".png"
-            source: "file:///data/pdf/" + file + ".png"
-
-            Rectangle {
-                id: nextPageButton
-                width: 100
-                height: width
-                visible: document.file < 5
-                border.width: 1
-                anchors {
-                    bottom: top.bottom
-                    right: document.right
-                }
-                Text {
-                    anchors.centerIn: parent
-                    text: ">"
-                }
-                MouseArea {
-                    enabled: nextPageButton.visible
-                    anchors.fill: parent
-                    onClicked: {
-                        document.file++
-                    }
-                }
-            }
-
-            Rectangle {
-                id: prevPageButton
-                width: 100
-                height: width
-                visible: document.file > 1
-                border.width: 1
-                anchors {
-                    bottom: top.bottom
-                    left: document.left
-                }
-                Text {
-                    anchors.centerIn: parent
-                    text: "<"
-                }
-                MouseArea {
-                    enabled: prevPageButton.visible
-                    anchors.fill: parent
-                    onClicked: {
-                        document.file--
-                    }
-                }
-            }
         }
     }
 }

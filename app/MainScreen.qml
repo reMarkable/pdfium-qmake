@@ -23,7 +23,7 @@ Item {
                 height: mainScreen.width / 3
                 width: height
                 anchors.centerIn: parent
-                border.width: 1
+                border.width: 2
                 Text {
                     anchors.centerIn: parent
                     text: "NEW NOTE"
@@ -44,7 +44,7 @@ Item {
                 height: mainScreen.width / 3
                 width: height
                 anchors.centerIn: parent
-                border.width: 1
+                border.width: 2
                 Text {
                     anchors.centerIn: parent
                     text: "NEW SKETCH"
@@ -105,7 +105,7 @@ Item {
                     anchors.centerIn: parent
                     height: mainScreen.width / archiveGrid.columns - 20
                     width: height
-                    border.width: 1
+                    border.width: 2
 
 
                     Text {
@@ -136,16 +136,18 @@ Item {
                 anchors.centerIn: parent
                 color: window.color
                 border.width: 1
-                Image {
-                    anchors.fill: parent
-                    source: "qrc:/dragon.png"
+                Text {
+                    anchors.centerIn: parent
+                    text: "GO TO ARCHIVE"
+                    color: window.fontColor
+                    horizontalAlignment: Text.AlignHCenter
                 }
-//                Text {
-//                    anchors.centerIn: parent
-//                    text: ">"
-//                    font.pixelSize: parent.height - 10
-//                    color: window.fontColor
-//                }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        mainScreen.archiveClicked(-1)
+                    }
+                }
             }
         }
     }
@@ -185,7 +187,7 @@ Item {
                     height: mainScreen.width / 4 - 20
                     width: height
                     anchors.centerIn: parent
-                    border.width: 1
+                    border.width: 2
                     Text {
                         anchors.centerIn: parent
                         text: modelData

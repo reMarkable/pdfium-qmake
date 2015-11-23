@@ -4,14 +4,13 @@
 struct Predictor
 {
     double getPrediction(double value) {
-
         double delta = value - lastValue;
 
         if (valueCount == 2) {
             trendDelta = delta - lastDelta;
         } else if (valueCount > 2) {
             delta = smoothFactor * delta + (1.0 - smoothFactor) * (lastDelta + trendDelta);
-            trendDelta  = trendFactor * (delta - lastDelta) + (1.0 - trendFactor) * trendDelta;
+            trendDelta = trendFactor * (delta - lastDelta) + (1.0 - trendFactor) * trendDelta;
 
             double slowstartScale = pow(1.0 - 1.0 / valueCount, 3);
             value += delta + trendDelta * predictionFactor * slowstartScale;
