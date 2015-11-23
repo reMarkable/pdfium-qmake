@@ -2,6 +2,7 @@
 #include <QLine>
 #include <QPainter>
 #include <QElapsedTimer>
+#include <QThread>
 
 #ifdef Q_PROCESSOR_ARM
 #include <epframebuffer.h>
@@ -145,19 +146,10 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
     } while (u <= uend);
 }
 
-inline double minDistance(const QLine &a, const QLine &b)
-{
-    int minDistSquared =                  QPoint::dotProduct(a.p1(), b.p1());
-    minDistSquared = qMin(minDistSquared, QPoint::dotProduct(a.p1(), b.p2()));
-    minDistSquared = qMin(minDistSquared, QPoint::dotProduct(a.p2(), b.p1()));
-    minDistSquared = qMin(minDistSquared, QPoint::dotProduct(a.p2(), b.p2()));
-
-    return sqrt(minDistSquared);
-}
-
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
 #ifdef Q_PROCESSOR_ARM
+    QThread::currentThread()->setPriority(QThread::HighestPriority);
     qDebug() << "Mouse event!:" << event->globalPos();
 
     Digitizer *digitizer = Digitizer::instance();
