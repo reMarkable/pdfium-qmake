@@ -75,9 +75,14 @@ static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bo
             }
             col = 0;
         }
-        col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
-        *address++ &= (col >> 8) & 0xff;
-        *address++ &= col & 0xff;
+        if (fb->format() == QImage::Format_ARGB32_Premultiplied) {
+            QRgb *pix = (QRgb*)address;
+            *pix = qRgb(col, col, col);
+        } else {
+            col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
+            *address++ &= (col >> 8) & 0xff;
+            *address++ &= col & 0xff;
+        }
     }
 }
 
@@ -205,8 +210,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             break;
 
         case Pen: {
-            selfPainter.drawLine(line);
-
+            drawAALine(&m_contents, line, false, m_invert);
             drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
 
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
@@ -269,6 +273,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 // Re-draw line with AA pixels
                 it.remove();
                 drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
+                drawAALine(&m_contents, oldLine, true, m_invert);
                 updateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
             }
 
@@ -282,6 +287,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 QLine queuedLine = it.next();
                 if (updateRect.contains(queuedLine.p1()) && updateRect.contains(queuedLine.p2())) {
                     drawAALine(EPFrameBuffer::instance()->framebuffer(), queuedLine, true, m_invert);
+                    drawAALine(&m_contents, queuedLine, true, m_invert);
                     it.remove();
                 }
             }
