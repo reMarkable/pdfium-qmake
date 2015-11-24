@@ -35,7 +35,7 @@ void EPRenderer::render()
     m_depth = 0;
     visitChildren(rootNode());
 
-    std::sort(currentRects.begin(), currentRects.end(), [](const std::shared_ptr<EPNode::EPNodeContent> &a, const std::shared_ptr<EPNode::EPNodeContent> &b){
+    std::sort(currentRects.begin(), currentRects.end(), [](const std::shared_ptr<EPNode::Content> &a, const std::shared_ptr<EPNode::Content> &b){
         return a->z < b->z;
     });
 
@@ -58,9 +58,9 @@ void EPRenderer::drawRects()
 
     QList<QRect> damagedAreas;
 
-    QMutableListIterator<std::shared_ptr<EPNode::EPNodeContent>> it(currentRects);
+    QMutableListIterator<std::shared_ptr<EPNode::Content>> it(currentRects);
     while (it.hasNext()) {
-        std::shared_ptr<EPNode::EPNodeContent> rect = it.next();
+        std::shared_ptr<EPNode::Content> rect = it.next();
         Q_ASSERT(rect.get());
         if (!rect->visible) {
             damagedAreas.append(rect->transformedRect);
@@ -77,7 +77,7 @@ void EPRenderer::drawRects()
         painter.eraseRect(area);
     }
 
-    for(std::shared_ptr<EPNode::EPNodeContent> rect : currentRects) {
+    for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         Q_ASSERT(rect.get());
         if (rect->dirty) {
             damagedAreas.append(rect->transformedRect);
@@ -85,7 +85,7 @@ void EPRenderer::drawRects()
     }
 
     // Rects are sorted in z-order
-    for(std::shared_ptr<EPNode::EPNodeContent> rect : currentRects) {
+    for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         if (rect->dirty) {
             rect->draw(&painter);
             rect->dirty = false;

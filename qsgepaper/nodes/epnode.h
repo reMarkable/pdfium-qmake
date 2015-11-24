@@ -12,7 +12,7 @@ struct EPNode
         qDebug() << "epaper node dying";
     }
 
-    struct EPNodeContent {
+    struct Content {
         virtual void draw(QPainter *) const = 0;
 
         QRect rect;
@@ -26,7 +26,7 @@ struct EPNode
         QTransform transform;
     };
 
-    std::shared_ptr<EPNodeContent> content;
+    std::shared_ptr<Content> content;
 };
 
 #endif // EPNODE_H

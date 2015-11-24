@@ -25,7 +25,7 @@ public:
     void setVerticalWrapMode(QSGTexture::WrapMode wrapMode) override;
     void update() override;
 
-    struct EPImageNodeContent : public EPNodeContent {
+    struct EPImageNodeContent : public Content {
         void draw(QPainter *painter) const override;
 
         QImage m_sourceImage;

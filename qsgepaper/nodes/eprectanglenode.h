@@ -21,7 +21,7 @@ public:
     void setAligned(bool aligned) override;
     void update() override;
 
-    struct EPRectangleNodeContent : public EPNodeContent {
+    struct EPRectangleNodeContent : public Content {
         void draw(QPainter *painter) const override;
         QColor m_bgColor = Qt::transparent;
         QColor m_fgColor = Qt::transparent;

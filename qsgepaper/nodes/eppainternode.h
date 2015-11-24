@@ -28,7 +28,7 @@ public:
     void update() override;
     QSGTexture *texture() const override;
 
-    struct EPPainterNodeContent : public EPNodeContent {
+    struct EPPainterNodeContent : public Content {
         void draw(QPainter *) const override;
         QQuickPaintedItem *m_item;
     };

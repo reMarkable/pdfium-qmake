@@ -20,7 +20,7 @@ public:
     void setPreferredAntialiasingMode(AntialiasingMode) override;
     void update() override;
 
-    struct EPGlyphNodeContent : public EPNodeContent {
+    struct EPGlyphNodeContent : public Content {
         void draw(QPainter *painter) const override;
 
         QPointF m_baseline;
