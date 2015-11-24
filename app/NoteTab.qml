@@ -31,6 +31,7 @@ Rectangle {
     }
 
     DrawingArea {
+        id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Pen
     }
@@ -48,110 +49,20 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: width
-
-            border.color: penToolList.visible ? "black" : "white"
+            color: "white"
+            border.width: 1
 
             Text {
                 anchors.fill: parent
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                text: "PEN\nTOOL"
+                text: "CLEAR"
                 font.pointSize: 7
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        penToolList.visible = !penToolList.visible
+                        drawingArea.clear()
                     }
-                }
-            }
-        }
-        Rectangle {
-            id: regretToolSelect
-            width: parent.width
-            height: width
-
-            border.color: clicked ? "black" : "white"
-
-            property bool clicked: false
-
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: "REGRET\nTOOL"
-                font.pointSize: 7
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        regretToolSelect.clicked = !regretToolSelect.clicked
-                        penToolList.visible = false
-                    }
-                }
-            }
-        }
-    }
-
-    Row {
-        id: penToolList
-        visible: false
-        height: 75
-        width: 300
-        anchors {
-            top: toolBox.top
-            left: toolBox.right
-        }
-
-        Rectangle {
-            id: thickBrushSelect
-            height: parent.height
-            width: height
-            border.width: 1
-
-            Rectangle {
-                anchors.centerIn: parent
-                width: 50
-                height: width
-                radius: width
-                color: "black"
-            }
-        }
-
-        Rectangle {
-            id: thinBrushSelect
-            height: parent.height
-            width: height
-            border.width: 1
-
-            Rectangle {
-                anchors.centerIn: parent
-                width: 20
-                height: width
-                radius: width
-                color: "black"
-            }
-        }
-
-        Rectangle {
-            id: colorBlackSelect
-            height: parent.height
-            width: height
-            border.width: 1
-
-            Rectangle {
-                anchors.centerIn: parent
-                width: parent.height - 20
-                height: width
-                color: "black"
-                border {
-                    width: 2
-                    color: "white"
-                }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "BLACK"
-                    color: "white"
-                    font.pointSize: 7
                 }
             }
         }
