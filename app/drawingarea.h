@@ -37,6 +37,7 @@ private:
     QVector<QVector<PenPoint>> m_lines;
     Brush m_currentBrush;
     QImage m_contents;
+    bool m_hasEdited;
 };
 
 #endif // DRAWINGAREA_H

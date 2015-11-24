@@ -14,7 +14,6 @@ void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
     painter->save();
     painter->setTransform(transform);
     painter->drawImage(rect, m_scaledImage);
-    //painter->drawImage(rect, m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     painter->restore();
 }
 
@@ -22,7 +21,6 @@ void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
 
 void EPImageNode::setTargetRect(const QRectF &targetRect)
 {
-    qDebug() << targetRect;
     EPImageNodeContent *p = static_cast<EPImageNodeContent*>(content.get());
     p->rect = targetRect.toRect();
     p->m_scaledImage = p->m_sourceImage.scaled(p->rect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);

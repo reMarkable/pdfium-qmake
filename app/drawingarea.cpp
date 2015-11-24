@@ -13,7 +13,8 @@
 
 DrawingArea::DrawingArea() :
     m_invert(false),
-    m_currentBrush(Paintbrush)
+    m_currentBrush(Paintbrush),
+    m_hasEdited(false)
 {
     m_contents = QImage(1600, 1200, QImage::Format_ARGB32_Premultiplied);
     m_contents.fill(Qt::transparent);
@@ -27,8 +28,16 @@ void DrawingArea::paint(QPainter *painter)
 
 void DrawingArea::clear()
 {
-    m_contents.fill(Qt::transparent);
-    update();
+    // If the user just reclicks without drawing more, we assume he wants to clear out some ghosting
+    if (!m_hasEdited) {
+        EPFrameBuffer::instance()->sendUpdate(EPFrameBuffer::instance()->framebuffer()->rect(),
+                                              EPFrameBuffer::Grayscale,
+                                              EPFrameBuffer::FullUpdate);
+    } else {
+        m_contents.fill(Qt::transparent);
+        update();
+        m_hasEdited = false;
+    }
 }
 
 
@@ -154,6 +163,8 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
 
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
+    m_hasEdited = true;
+
 #ifdef Q_PROCESSOR_ARM
     QThread::currentThread()->setPriority(QThread::HighestPriority);
     qDebug() << "Mouse event!:" << event->globalPos();

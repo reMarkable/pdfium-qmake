@@ -77,9 +77,11 @@ void EPRenderer::drawRects()
         painter.eraseRect(area);
     }
 
+    QRect totalDamaged;
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         Q_ASSERT(rect.get());
         if (rect->dirty) {
+            totalDamaged = totalDamaged.united(rect->transformedRect);
             damagedAreas.append(rect->transformedRect);
         }
     }
@@ -89,6 +91,7 @@ void EPRenderer::drawRects()
         if (rect->dirty) {
             rect->draw(&painter);
             rect->dirty = false;
+            totalDamaged = totalDamaged.united(rect->transformedRect);
             continue;
         }
 
@@ -105,6 +108,8 @@ void EPRenderer::drawRects()
     locker.unlock();
     painter.end();
 
+    qDebug() << "Damaged:" << totalDamaged;
+    qDebug() << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "percent damaged";
 
 #if 0
     // FIXME: do something more clever here plz
@@ -161,7 +166,6 @@ void EPRenderer::handleEpaperNode(EPNode *node)
     node->content->transformedRect = node->content->transform.mapRect(node->content->rect);
     node->content->z = m_depth;
     node->content->visible = true;
-    node->content->dirty = true;
 }
 
 
