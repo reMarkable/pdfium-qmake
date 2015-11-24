@@ -13,14 +13,14 @@ Item {
     }
 
     Keys.onRightPressed: {
-        if (page < 5) {
+        if (page < 4) {
             page++
             event.accepted = true
         }
     }
 
     Keys.onLeftPressed: {
-        if (page > 1) {
+        if (page > 0) {
             page--
             event.accepted = true
         }
@@ -70,7 +70,7 @@ Item {
         id: nextPageButton
         width: 100
         height: width
-        visible: document.page < 5
+        visible: document.page < 4
         border.width: 1
         anchors {
             bottom: parent.bottom
@@ -116,7 +116,7 @@ Item {
         id: prevPageButton
         width: 100
         height: width
-        visible: document.page > 1
+        visible: document.page > 0
         border.width: 1
         anchors {
             bottom: parent.bottom

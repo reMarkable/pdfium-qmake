@@ -16,7 +16,8 @@ Digitizer::Digitizer(const char *device, QObject *parent) :
     QObject(parent),
     m_device(device),
     m_fd(-1),
-    m_penOn(false)
+    m_penOn(false),
+    m_stylusButton(false)
 {
     m_fd = open(m_device, O_RDONLY);
 
@@ -220,9 +221,11 @@ bool Digitizer::processEvent(const input_event &event, PenPoint *point)
             return true;
         }
     } else if (event.type == EV_KEY) {
-        //qDebug() << "key event, touch?: " << (event.code == BTN_TOUCH) << " btn0?: " << (event.code == BTN_0);
-        if (event.code == BTN_TOUCH || event.code == BTN_0) {
+        //qDebug() << "key event, touch?: " << (event.code == BTN_TOUCH) << " btn0?: " << (event.code == BTN_0) << event.code;
+        if (event.code == BTN_TOUCH) {
             m_penOn = event.value;
+        } else if (event.code == BTN_STYLUS) {
+            m_stylusButton = event.value;
         }
     } else if (event.type == EV_REL) {
         qWarning() << "Unexpected relative event";

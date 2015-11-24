@@ -57,6 +57,7 @@ public:
 
     static Digitizer *instance();
     static bool initialize(const char *device);
+    bool buttonPressed() { return m_stylusButton; }
 
 signals:
 
@@ -91,6 +92,7 @@ private:
     bool m_running;
     QSizeF m_displaySize;
     PenPoint m_lastPoint;
+    bool m_stylusButton;
 };
 
 #endif // DIGITIZER_H
