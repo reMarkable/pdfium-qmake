@@ -41,7 +41,7 @@ public:
     void endVisit(QSGOpacityNode *) override;
 
     QMutex rectanglesMutex;
-    QList<EPNode*> currentRects;
+    QList<std::shared_ptr<EPNode::EPNodeContent>> currentRects;
 
 signals:
     void renderComplete();

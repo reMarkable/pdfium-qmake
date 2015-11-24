@@ -4,46 +4,29 @@
 #include <QtGui/QImage>
 #include <QtCore/QRect>
 #include <QDebug>
+#include <memory>
 
-class EPNode
+struct EPNode
 {
-public:
-    EPNode();
     virtual ~EPNode() {
         qDebug() << "epaper node dying";
     }
 
-    virtual void draw(QPainter *) const {}
+    struct EPNodeContent {
+        virtual void draw(QPainter *) const = 0;
 
-    QRect rect;
+        QRect rect;
+        QRect transformedRect;
+        bool dirty;
 
-    QRect transformedRect;
+        bool visible;
 
-    quint64 id;
+        int z;
 
-    bool dirty;
+        QTransform transform;
+    };
 
-    bool visible;
-
-    int z;
-
-    QTransform transform;
-
-    virtual bool fast() = 0;
-
-    inline bool operator==(const EPNode &other) const {
-        return other.id == id && other.transformedRect == transformedRect && other.transform == transform;
-    }
-    inline bool operator<(const EPNode &other) {
-        return z < other.z;
-    }
+    std::shared_ptr<EPNodeContent> content;
 };
-
-
-//inline uint qHash(const EpaperNode &rect, uint seed)
-//{
-//    return (qHash(rect.id, seed) ^ rect.transformedRect.x() ^ rect.transformedRect.y() ^ rect.transformedRect.width() ^ rect.transformedRect.height());
-//}
-
 
 #endif // EPNODE_H

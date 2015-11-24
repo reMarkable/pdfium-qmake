@@ -43,21 +43,6 @@ EPFrameBuffer::EPFrameBuffer() : QObject(),
         return;
     }
 
-    /*if (ioctl(m_deviceFile.handle() , MXCFB_SET_AUTO_UPDATE_MODE, AUTO_UPDATE_MODE_AUTOMATIC_MODE) != 0) {
-        qWarning() << "Unable to set auto mode";
-        return;
-    }*/
-
-    int mode = UPDATE_SCHEME_QUEUE_AND_MERGE;
-    int ret = ioctl(m_deviceFile.handle(), MXCFB_SET_UPDATE_SCHEME, &mode);
-    if (ret == -EAGAIN) {
-        qDebug() << "we need to wait for stuff to happen";
-
-    } else {
-        qWarning() << "failed to set update scheme:" << strerror(errno);
-
-    }
-
     uchar *fbMem = m_deviceFile.map(0, fixedInfo.smem_len);
 
     m_fb = QImage(fbMem, varInfo.xres, varInfo.yres, QImage::Format_RGB16);

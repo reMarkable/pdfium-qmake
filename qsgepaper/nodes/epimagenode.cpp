@@ -6,10 +6,10 @@ EPImageNode::EPImageNode() :
     QSGImageNode(),
     EPNode()
 {
-
+    content = std::make_shared<EPImageNodeContent>();
 }
 
-void EPImageNode::draw(QPainter *painter) const
+void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
 {
     painter->save();
     painter->setTransform(transform);
@@ -21,7 +21,8 @@ void EPImageNode::draw(QPainter *painter) const
 
 void EPImageNode::setTargetRect(const QRectF &targetRect)
 {
-    rect = targetRect.toRect();
+    EPImageNodeContent *p = static_cast<EPImageNodeContent*>(content.get());
+    p->rect = targetRect.toRect();
 }
 
 void EPImageNode::setInnerTargetRect(const QRectF &rect)
@@ -38,19 +39,21 @@ void EPImageNode::setSubSourceRect(const QRectF &rect)
 
 void EPImageNode::setTexture(QSGTexture *t)
 {
+    EPImageNodeContent *p = static_cast<EPImageNodeContent*>(content.get());
     EPTexture *texture = static_cast<EPTexture*>(t);
-    m_sourceImage = texture->image;
-    if (rect.isNull()) {
-        rect = m_sourceImage.rect();
+    p->m_sourceImage = texture->image;
+    if (p->rect.isNull()) {
+        p->rect = p->m_sourceImage.rect();
     }
-    dirty = true;
+    p->dirty = true;
 }
 
 void EPImageNode::setMirror(bool mirror)
 {
     //TODO FIXME
     //image = image.mirrored();
-    dirty = true;
+    EPImageNodeContent *p = static_cast<EPImageNodeContent*>(content.get());
+    p->dirty = true;
 }
 
 void EPImageNode::setMipmapFiltering(QSGTexture::Filtering filtering)

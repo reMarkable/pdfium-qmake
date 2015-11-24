@@ -4,16 +4,12 @@
 
 EPRectangleNode::EPRectangleNode() :
     QSGRectangleNode(),
-    EPNode(),
-    m_bgColor(Qt::transparent),
-    m_fgColor(Qt::transparent),
-    m_borderWidth(0),
-    m_radius(0)
+    EPNode()
 {
-    //    qDebug(Q_FUNC_INFO);
+    content = std::make_shared<EPRectangleNodeContent>();
 }
 
-void EPRectangleNode::draw(QPainter *painter) const
+void EPRectangleNode::EPRectangleNodeContent::draw(QPainter *painter) const
 {
     painter->save();
     painter->setTransform(transform);
@@ -37,42 +33,46 @@ void EPRectangleNode::draw(QPainter *painter) const
 
 void EPRectangleNode::setRect(const QRectF &rectangle)
 {
-    if (rectangle == rect) {
+    EPRectangleNodeContent *p = static_cast<EPRectangleNodeContent*>(content.get());
+    if (rectangle == p->rect) {
         return;
     }
 
-    rect = rectangle.toRect();
-    dirty = true;
+    p->rect = rectangle.toRect();
+    p->dirty = true;
 }
 
 void EPRectangleNode::setColor(const QColor &color)
 {
-    if (color == m_bgColor) {
+    EPRectangleNodeContent *p = static_cast<EPRectangleNodeContent*>(content.get());
+    if (color == p->m_bgColor) {
         return;
     }
 
-    m_bgColor = color;
-    dirty = true;
+    p->m_bgColor = color;
+    p->dirty = true;
 }
 
 void EPRectangleNode::setPenColor(const QColor &color)
 {
-    if (color == m_fgColor) {
+    EPRectangleNodeContent *p = static_cast<EPRectangleNodeContent*>(content.get());
+    if (color == p->m_fgColor) {
         return;
     }
 
-    m_fgColor = color;
-    dirty = true;
+    p->m_fgColor = color;
+    p->dirty = true;
 }
 
 void EPRectangleNode::setPenWidth(qreal width)
 {
-    if (width == m_borderWidth) {
+    EPRectangleNodeContent *p = static_cast<EPRectangleNodeContent*>(content.get());
+    if (width == p->m_borderWidth) {
         return;
     }
 
-    m_borderWidth = width;
-    dirty = true;
+    p->m_borderWidth = width;
+    p->dirty = true;
 }
 
 void EPRectangleNode::setGradientStops(const QGradientStops &stops)
@@ -82,12 +82,13 @@ void EPRectangleNode::setGradientStops(const QGradientStops &stops)
 
 void EPRectangleNode::setRadius(qreal radius)
 {
-    if (radius == m_radius) {
+    EPRectangleNodeContent *p = static_cast<EPRectangleNodeContent*>(content.get());
+    if (radius == p->m_radius) {
         return;
     }
 
-    m_radius = radius;
-    dirty = true;
+    p->m_radius = radius;
+    p->dirty = true;
 }
 
 void EPRectangleNode::setAligned(bool aligned)

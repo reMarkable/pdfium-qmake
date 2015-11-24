@@ -12,11 +12,6 @@ class EPPainterNode : public QSGPainterNode, public EPNode
 public:
     EPPainterNode(QQuickPaintedItem *item);
 
-    // EpaperNode interface
-public:
-    void draw(QPainter *) const override;
-    bool fast() override;
-
     // QSGPainterNode interface
 public:
     void setPreferredRenderTarget(QQuickPaintedItem::RenderTarget target) override;
@@ -33,8 +28,10 @@ public:
     void update() override;
     QSGTexture *texture() const override;
 
-private:
-    QQuickPaintedItem *m_item;
+    struct EPPainterNodeContent : public EPNodeContent {
+        void draw(QPainter *) const override;
+        QQuickPaintedItem *m_item;
+    };
 };
 
 #endif // EPPAINTERNODE_H

@@ -2,23 +2,21 @@
 
 EPPainterNode::EPPainterNode(QQuickPaintedItem *item) :
     QSGPainterNode(),
-    EPNode(),
-    m_item(item)
+    EPNode()
 {
-    rect = QRect(0, 0, item->width(), item->height());
-    dirty = true;
+    content = std::make_shared<EPPainterNodeContent>();
+    EPPainterNodeContent *p = static_cast<EPPainterNodeContent*>(content.get());
+    p->m_item = item;
+    p->rect = QRect(0, 0, item->width(), item->height());
+    p->dirty = true;
 }
 
-void EPPainterNode::draw(QPainter *painter) const
+void EPPainterNode::EPPainterNodeContent::draw(QPainter *painter) const
 {
+    Q_ASSERT(m_item);
     painter->save();
     m_item->paint(painter);
     painter->restore();
-}
-
-bool EPPainterNode::fast()
-{
-    return false;
 }
 
 void EPPainterNode::setPreferredRenderTarget(QQuickPaintedItem::RenderTarget target)
@@ -28,12 +26,14 @@ void EPPainterNode::setPreferredRenderTarget(QQuickPaintedItem::RenderTarget tar
 
 void EPPainterNode::setSize(const QSize &size)
 {
-    rect = QRect(QPoint(0, 0), size);
+    EPPainterNodeContent *p = static_cast<EPPainterNodeContent*>(content.get());
+    p->rect = QRect(QPoint(0, 0), size);
 }
 
 void EPPainterNode::setDirty(const QRect &dirtyRect)
 {
-    dirty = true;
+    EPPainterNodeContent *p = static_cast<EPPainterNodeContent*>(content.get());
+    p->dirty = true;
     Q_UNUSED(dirtyRect)
 }
 
@@ -79,7 +79,8 @@ QImage EPPainterNode::toImage() const
 
 void EPPainterNode::update()
 {
-    dirty = true;
+    EPPainterNodeContent *p = static_cast<EPPainterNodeContent*>(content.get());
+    p->dirty = true;
 }
 
 QSGTexture *EPPainterNode::texture() const

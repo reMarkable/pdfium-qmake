@@ -10,14 +10,6 @@ class EPGlyphNode : public QSGGlyphNode, public EPNode
 public:
     EPGlyphNode();
 
-    void draw(QPainter *painter) const override;
-
-    bool fast() { return false; }
-
-signals:
-
-public slots:
-
     // QSGGlyphNode interface
 public:
     void setGlyphs(const QPointF &position, const QGlyphRun &glyphs) override;
@@ -28,10 +20,13 @@ public:
     void setPreferredAntialiasingMode(AntialiasingMode) override;
     void update() override;
 
-private:
-    QPointF m_baseline;
-    QColor m_color;
-    QGlyphRun m_glyphs;
+    struct EPGlyphNodeContent : public EPNodeContent {
+        void draw(QPainter *painter) const override;
+
+        QPointF m_baseline;
+        QColor m_color = Qt::white;
+        QGlyphRun m_glyphs;
+    };
 };
 
 #endif // GLYPHNODE_H

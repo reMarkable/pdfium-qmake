@@ -27,15 +27,15 @@ void EPRenderer::render()
     rectanglesMutex.lock();
     //qDebug() << Q_FUNC_INFO << "past mutex";
 
-    for(EPNode *rect : currentRects) {
-        rect->visible = false;
+    for (int i=0; i<currentRects.size(); i++) {
+        currentRects[i]->visible = false;
     }
 
     m_transform.setToIdentity();;
     m_depth = 0;
     visitChildren(rootNode());
 
-    std::sort(currentRects.begin(), currentRects.end(), [](EPNode *a, EPNode *b){
+    std::sort(currentRects.begin(), currentRects.end(), [](const std::shared_ptr<EPNode::EPNodeContent> &a, const std::shared_ptr<EPNode::EPNodeContent> &b){
         return a->z < b->z;
     });
 
@@ -58,9 +58,10 @@ void EPRenderer::drawRects()
 
     QList<QRect> damagedAreas;
 
-    QMutableListIterator<EPNode*> it(currentRects);
+    QMutableListIterator<std::shared_ptr<EPNode::EPNodeContent>> it(currentRects);
     while (it.hasNext()) {
-        EPNode *rect = it.next();
+        std::shared_ptr<EPNode::EPNodeContent> rect = it.next();
+        Q_ASSERT(rect.get());
         if (!rect->visible) {
             damagedAreas.append(rect->transformedRect);
             it.remove();
@@ -76,18 +77,17 @@ void EPRenderer::drawRects()
         painter.eraseRect(area);
     }
 
-    for(EPNode *rect : currentRects) {
+    for(std::shared_ptr<EPNode::EPNodeContent> rect : currentRects) {
+        Q_ASSERT(rect.get());
         if (rect->dirty) {
             damagedAreas.append(rect->transformedRect);
         }
     }
 
     // Rects are sorted in z-order
-    for(EPNode *rect : currentRects) {
+    for(std::shared_ptr<EPNode::EPNodeContent> rect : currentRects) {
         if (rect->dirty) {
             rect->draw(&painter);
-            //painter.drawRect(QRect(rect->transformedRect.x(), rect->transformedRect.y(), rect->transformedRect.width() - 1, rect->transformedRect.height()-1));
-            //painter.drawText(rect->transformedRect.bottomLeft(), QString::number(rect->z));
             rect->dirty = false;
             continue;
         }
@@ -145,19 +145,23 @@ void EPRenderer::drawRects()
 
 void EPRenderer::handleEpaperNode(EPNode *node)
 {
-    node->transform = m_transform.toTransform();
-    node->transformedRect = node->transform.mapRect(node->rect);
-    node->z = m_depth;
-
-    int index = currentRects.indexOf(node);
-    if (index != -1) {
-        currentRects[index]->visible = true;
-        return;
+    bool found = false;
+    for (int i=0; i<currentRects.size(); i++) {
+        if (currentRects[i].get() == node->content.get()) {
+            found = true;
+            break;
+        }
     }
-    node->dirty = true;
-    node->visible = true;
 
-    currentRects.append(node);
+    if (!found) {
+        currentRects.append(node->content);
+    }
+
+    node->content->transform = m_transform.toTransform();
+    node->content->transformedRect = node->content->transform.mapRect(node->content->rect);
+    node->content->z = m_depth;
+    node->content->visible = true;
+    node->content->dirty = true;
 }
 
 

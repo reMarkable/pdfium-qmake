@@ -11,12 +11,6 @@ class EPImageNode : public QSGImageNode, public EPNode
 public:
     EPImageNode();
 
-    void draw(QPainter *painter) const override;
-    bool fast() { return false; }
-signals:
-
-public slots:
-
     // QSGImageNode interface
 public:
     void setTargetRect(const QRectF &rect) override;
@@ -31,8 +25,11 @@ public:
     void setVerticalWrapMode(QSGTexture::WrapMode wrapMode) override;
     void update() override;
 
-private:
-    QImage m_sourceImage;
+    struct EPImageNodeContent : public EPNodeContent {
+        void draw(QPainter *painter) const override;
+
+        QImage m_sourceImage;
+    };
 };
 
 #endif // EPIMAGENODE_H
