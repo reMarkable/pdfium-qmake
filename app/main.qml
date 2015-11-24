@@ -23,7 +23,11 @@ Window {
 
         Keys.onPressed: {
             if (event.key === Qt.Key_Home) {
-                window.index = 0
+                if (window.index === 0) {
+                    window.index = 2
+                } else {
+                    window.index = 0
+                }
                 event.accepted = true
                 return
             }
@@ -121,8 +125,13 @@ Window {
             }
 
             onNewNoteClicked: {
-                window.index = 1
+                window.index = 2
             }
+
+            onNewSketchClicked: {
+                window.index = 3
+            }
+
             onArchiveClicked: {
                 if (archiveIndex === -1) {
                     window.index = 1
