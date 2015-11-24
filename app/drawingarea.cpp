@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QElapsedTimer>
 #include <QThread>
+#include <QTimer>
 
 #ifdef Q_PROCESSOR_ARM
 #include <epframebuffer.h>

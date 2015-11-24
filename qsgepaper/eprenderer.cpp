@@ -137,7 +137,7 @@ void EPRenderer::drawRects()
     }
 
 #else
-    EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+    EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
 #endif
 
 //    qDebug() << Q_FUNC_INFO << timer.restart() << "updated";

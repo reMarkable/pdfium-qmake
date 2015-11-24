@@ -26,15 +26,15 @@ Item {
         }
     }
 
-    property int page: 1
+    property int page: 0
 
     Repeater {
         id: pageRepeater
-        model: [1,2,3,4,5]
+        model: 5
         delegate: Image {
             anchors.fill: document
-            visible: document.page === index
-            source: "file:///data/pdf/" + index + ".png"
+            visible: document.page === modelData
+            source: "file:///data/pdf/" + (index + 1) + ".png"
 
 
             DrawingArea {
@@ -51,7 +51,7 @@ Item {
         visible: document.page < 5
         border.width: 1
         anchors {
-            bottom: top.bottom
+            bottom: parent.bottom
             right: document.right
         }
         Text {
@@ -68,6 +68,29 @@ Item {
         }
     }
 
+
+    Rectangle {
+        id: indexButton
+        width: 100
+        height: width
+        border.width: 1
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+        }
+        Text {
+            anchors.centerIn: parent
+            text: "INDEX"
+            horizontalAlignment: Text.AlignHCenter
+        }
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                thumbnailGrid.visible = !thumbnailGrid.visible
+            }
+        }
+    }
+
     Rectangle {
         id: prevPageButton
         width: 100
@@ -75,7 +98,7 @@ Item {
         visible: document.page > 1
         border.width: 1
         anchors {
-            bottom: top.bottom
+            bottom: parent.bottom
             left: document.left
         }
         Text {
@@ -88,6 +111,38 @@ Item {
             anchors.fill: parent
             onClicked: {
                 document.page--
+            }
+        }
+    }
+
+    GridView {
+        id: thumbnailGrid
+        anchors.centerIn: parent
+        width: 650
+        height: 1200
+        visible: false
+        model: 5
+        cellWidth: 300
+        cellHeight: 400
+        interactive: false
+        delegate: Rectangle {
+            width: 300
+            height: 400
+            border.width: document.page === index ? 2 : 1
+            color: "white"
+            Image {
+                anchors.centerIn: parent
+                height: parent.height - 5
+                width: parent.width - 5
+                source: "file:///data/pdf/" + (index + 1) + ".png"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    document.page = index
+                    thumbnailGrid.visible = false
+                }
             }
         }
     }
