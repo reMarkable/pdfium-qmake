@@ -38,8 +38,30 @@ Item {
 
 
             DrawingArea {
+                id: drawingArea
                 currentBrush: DrawingArea.Pen
                 anchors.fill: parent
+
+                Rectangle {
+                    width: 100
+                    height: width
+                    border.width: 1
+                    anchors {
+                        left: parent.left
+                        top: parent.top
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: "CLEAN"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            drawingArea.clear()
+                        }
+                    }
+                }
             }
         }
     }
@@ -67,7 +89,6 @@ Item {
             }
         }
     }
-
 
     Rectangle {
         id: indexButton
