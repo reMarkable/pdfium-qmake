@@ -5,6 +5,7 @@
 #include <QImage>
 #include "digitizer.h"
 
+
 class DrawingArea : public QQuickPaintedItem
 {
     Q_OBJECT
@@ -16,8 +17,16 @@ public:
     enum Brush {
         Paintbrush,
         Pencil,
-        Pen
+        Pen,
+        InvalidBrush = -1
     };
+
+
+    struct DrawnLine {
+        Brush brush = InvalidBrush;
+        QList<PenPoint> points;
+    };
+
     Brush currentBrush() const { return m_currentBrush; }
     void setCurrentBrush(Brush brush) { m_currentBrush = brush; emit currentBrushChanged(); }
 
@@ -25,6 +34,7 @@ public:
 
 public slots:
     void clear();
+    void undo();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -34,10 +44,10 @@ signals:
 
 private:
     bool m_invert;
-    QVector<QVector<PenPoint>> m_lines;
     Brush m_currentBrush;
     QImage m_contents;
     bool m_hasEdited;
+    QList<DrawnLine> m_lines;
 };
 
 #endif // DRAWINGAREA_H

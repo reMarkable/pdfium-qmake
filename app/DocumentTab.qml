@@ -62,6 +62,27 @@ Item {
                         }
                     }
                 }
+
+                Rectangle {
+                    width: 100
+                    height: width
+                    border.width: 1
+                    anchors {
+                        right: parent.right
+                        top: parent.top
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        text: "UNDO"
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            drawingArea.undo()
+                        }
+                    }
+                }
             }
         }
     }

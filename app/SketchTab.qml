@@ -39,13 +39,10 @@ Rectangle {
             }
         }
         Rectangle {
-            id: regretToolSelect
             width: parent.width
             height: width
-
-            border.color: clicked ? "black" : "white"
-
-            property bool clicked: false
+            color: "white"
+            border.width: 1
 
             Text {
                 anchors.fill: parent
@@ -57,6 +54,27 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         drawingArea.clear()
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            width: parent.width
+            height: width
+            color: "white"
+            border.width: 1
+
+            Text {
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                text: "UNDO"
+                font.pointSize: 7
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        drawingArea.undo()
                     }
                 }
             }
