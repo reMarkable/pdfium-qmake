@@ -14,7 +14,9 @@
 DrawingArea::DrawingArea() :
     m_invert(false),
     m_currentBrush(Paintbrush),
-    m_hasEdited(false)
+    m_hasEdited(false),
+    m_zoomFactor(1.0),
+    m_zoomRect(0, 0, 1.0, 1.0)
 {
     m_contents = QImage(1600, 1200, QImage::Format_ARGB32_Premultiplied);
     m_contents.fill(Qt::transparent);
@@ -72,6 +74,19 @@ void DrawingArea::redo()
     m_lines.append(m_undoneLines.takeLast());
     redrawBackbuffer();
     m_hasEdited = true;
+    update();
+}
+
+void DrawingArea::setZoom(double x, double y, double width, double height)
+{
+    if (width == 0 || height == 0) {
+        qDebug() << "invalid zoom specified";
+        return;
+    }
+
+    m_zoomRect = QRectF(x, y, width, height);
+    m_zoomFactor = qMax(1.0/width, 1.0/height);
+    redrawBackbuffer();
     update();
 }
 
@@ -210,8 +225,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_contents);
-    QPen thickPen(Qt::black);
-    thickPen.setCapStyle(Qt::RoundCap);
+    QPen pen(Qt::black);
+    pen.setCapStyle(Qt::RoundCap);
 
     // For drawing AA lines
     int skippedUpdatesCounter = 0;
@@ -221,14 +236,16 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     int freeLuts = 1;
 
     if (m_currentBrush == Pen) {
-        thickPen.setWidthF(2.5);
-        selfPainter.setPen(thickPen);
+        pen.setWidthF(2.5);
+        selfPainter.setPen(pen);
         selfPainter.setRenderHint(QPainter::Antialiasing);
     }
 
     DrawnLine drawnLine;
     drawnLine.brush = m_currentBrush;
-    drawnLine.points.append(prevPoint);
+    drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() - m_zoomRect.x(),
+                                     prevPoint.y * m_zoomRect.height() - m_zoomRect.y(),
+                                     prevPoint.pressure));
 
     Predictor xPredictor;
     Predictor yPredictor;
@@ -236,7 +253,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
 
-        const QLine line(prevPoint.x, prevPoint.y, point.x, point.y);
+        const QLine line(prevPoint.x * 1600, prevPoint.y * 1200, point.x * 1600, point.y * 1200);
         QRect updateRect(line.p1(), line.p2());
 
         switch(m_currentBrush) {
@@ -244,17 +261,20 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             qreal pointsize = point.pressure * point.pressure * 10.0;
             pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
             if (pointsize < 2) pointsize = 2;
-            thickPen.setWidthF(pointsize);
-            painter.setPen(thickPen);
+            pen.setWidthF(pointsize * m_zoomFactor);
+            painter.setPen(pen);
             painter.drawLine(line);
-            selfPainter.setPen(thickPen);
+            selfPainter.setPen(pen);
             selfPainter.drawLine(line);
             EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
             break;
         }
 
         case Pencil:
+            pen.setWidthF(m_zoomFactor);
+            painter.setPen(pen);
             painter.drawLine(line);
+            selfPainter.setPen(pen);
             selfPainter.drawLine(line);
             EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
             break;
@@ -351,7 +371,11 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             break;
         }
 
-        drawnLine.points.append(point);
+
+        drawnLine.points.append(PenPoint(point.x * m_zoomRect.width() - m_zoomRect.x(),
+                                         point.y * m_zoomRect.height() - m_zoomRect.y(),
+                                         point.pressure));
+
         prevPoint = point;
     }
 
@@ -384,27 +408,32 @@ void DrawingArea::redrawBackbuffer()
 {
     m_contents.fill(Qt::transparent);
     QPainter painter(&m_contents);
-    QPen thickPen(Qt::black);
-    thickPen.setCapStyle(Qt::RoundCap);
+    QPen pen(Qt::black);
+    pen.setCapStyle(Qt::RoundCap);
     for (const DrawnLine &drawnLine : m_lines) {
         if (drawnLine.brush == InvalidBrush) { // FIXME: hack for detecting clears
             m_contents.fill(Qt::transparent);
             continue;
         }
         for (int i=1; i<drawnLine.points.size(); i++) {
-            QLine line(drawnLine.points[i-1].x, drawnLine.points[i-1].y,
-                       drawnLine.points[i].x,   drawnLine.points[i].y);
+            QLine line((drawnLine.points[i-1].x + m_zoomRect.x()) / m_zoomRect.width() * 1600,
+                       (drawnLine.points[i-1].y + m_zoomRect.y()) / m_zoomRect.height() * 1200,
+                       (drawnLine.points[i].x + m_zoomRect.x()) / m_zoomRect.width() * 1600,
+                       (drawnLine.points[i].y + m_zoomRect.y()) / m_zoomRect.height() * 1200);
+
             switch(drawnLine.brush){
             case Paintbrush: {
                 qreal pointsize = drawnLine.points[i].pressure * drawnLine.points[i].pressure * 10.0;
                 pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
                 if (pointsize < 2) pointsize = 2;
-                thickPen.setWidthF(pointsize);
-                painter.setPen(thickPen);
+                pen.setWidthF(pointsize * m_zoomFactor);
+                painter.setPen(pen);
                 painter.drawLine(line);
                 break;
             }
             case Pencil:
+                pen.setWidthF(m_zoomFactor);
+                painter.setPen(pen);
                 painter.drawLine(line);
                 break;
             case Pen:
@@ -417,4 +446,3 @@ void DrawingArea::redrawBackbuffer()
         }
     }
 }
-

@@ -99,6 +99,36 @@ Rectangle {
                 }
             }
         }
+
+
+        Rectangle {
+            width: parent.width
+            height: width
+            color: "white"
+            border.width: 1
+
+            Text {
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                text: "ZOOM"
+                font.pointSize: 7
+                MouseArea {
+                    anchors.fill: parent
+                    property bool zoomed: false
+                    onClicked: {
+                        if (zoomed) {
+                            drawingArea.setZoom(0, 0, 1.0, 1.0)
+                            zoomed = false
+                        } else {
+                            drawingArea.setZoom(0, 0, 0.5, 0.5)
+                            zoomed = true
+                        }
+
+                    }
+                }
+            }
+        }
     }
 
     Row {

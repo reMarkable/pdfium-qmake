@@ -181,7 +181,8 @@ void Digitizer::eventLoop()
         QMutexLocker reportLocker(&m_reportLock);
         // We got a sync event, and we have a valid point
         if (point.isValid()) {
-            QPointF position(point.x, point.y);
+            QPointF position(point.x * m_displaySize.width(),
+                             point.y * m_displaySize.height());
 
             QWindowSystemInterface::handleMouseEvent(0, // No specified window
                                                      QPointF(0, 0), // No local position
@@ -202,11 +203,11 @@ bool Digitizer::processEvent(const input_event &event, PenPoint *point)
         switch (event.code) {
         case ABS_X:
           //  std::cout << "absolute x: " << event.value;
-            point->x = event.value * m_displaySize.width() / m_xAxis.resolution;
+            point->x = (double)event.value / m_xAxis.resolution;
             break;
         case ABS_Y:
           //  std::cout << "absolute y: " << event.value;
-            point->y = event.value * m_displaySize.height() / m_yAxis.resolution;
+            point->y = (double)event.value / m_yAxis.resolution;
             break;
         case ABS_PRESSURE:
             //std::cout << "absolute pressure: " << event.value;

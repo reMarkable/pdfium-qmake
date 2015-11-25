@@ -36,6 +36,7 @@ public slots:
     void clear();
     void undo();
     void redo();
+    void setZoom(double x, double y, double width, double height);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -52,6 +53,8 @@ private:
     bool m_hasEdited;
     QList<DrawnLine> m_lines;
     QList<DrawnLine> m_undoneLines;
+    double m_zoomFactor;
+    QRectF m_zoomRect;
 };
 
 #endif // DRAWINGAREA_H

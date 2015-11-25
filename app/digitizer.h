@@ -17,7 +17,7 @@ extern "C" {
 
 struct PenPoint {
     PenPoint() : x(-1), y(-1), pressure(-1) {}
-    PenPoint(int nx, int ny, int p) : x(nx), y(ny), pressure(p) {}
+    PenPoint(double nx, double ny, float p) : x(nx), y(ny), pressure(p) {}
     double x;
     double y;
     float pressure;
