@@ -206,6 +206,9 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
     } while (u <= uend);
 }
 
+#define SMOOTHFACTOR_P 0.370
+#define TRENDFACTOR_P 0.245
+
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
     m_hasEdited = true;
@@ -247,11 +250,20 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                                      prevPoint.y * m_zoomRect.height() + m_zoomRect.y(),
                                      prevPoint.pressure));
 
+    double pressureTrend = -1;
+
     Predictor xPredictor;
     Predictor yPredictor;
     while (digitizer->getPoint(&point)) {
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
+
+        if (pressureTrend == -1) {
+            pressureTrend = point.pressure - prevPoint.pressure;
+        } else {
+            point.pressure = SMOOTHFACTOR_P * point.pressure + (1.0 - SMOOTHFACTOR_P) * (prevPoint.pressure + pressureTrend);
+            pressureTrend = TRENDFACTOR_P * (point.pressure - prevPoint.pressure) + (1.0 - TRENDFACTOR_P) * pressureTrend;
+        }
 
         const QLine line(prevPoint.x * 1600, prevPoint.y * 1200, point.x * 1600, point.y * 1200);
         QRect updateRect(line.p1(), line.p2());
