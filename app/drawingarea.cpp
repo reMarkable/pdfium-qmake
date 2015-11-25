@@ -5,10 +5,6 @@
 #include <QThread>
 #include <QTimer>
 
-#ifdef Q_PROCESSOR_ARM
-#include <epframebuffer.h>
-#endif
-
 #include "predictor.h"
 
 DrawingArea::DrawingArea() :
@@ -266,7 +262,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.drawLine(line);
             selfPainter.setPen(pen);
             selfPainter.drawLine(line);
-            EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+            sendUpdate(updateRect, EPFrameBuffer::Fast);
             break;
         }
 
@@ -276,7 +272,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.drawLine(line);
             selfPainter.setPen(pen);
             selfPainter.drawLine(line);
-            EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+            sendUpdate(updateRect, EPFrameBuffer::Fast);
             break;
 
         case Pen: {
@@ -286,7 +282,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
             // up updates we send
             if (skippedUpdatesCounter > 2) {
-                EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+                sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast);
                 skippedUpdatesCounter = 0;
             }
 
@@ -363,7 +359,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             }
             freeLuts--;
             lutTimer.restart();
-            EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate);
+            sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 
             break;
         }
@@ -390,7 +386,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     }
 
     if (skippedUpdatesCounter > 0) {
-        EPFrameBuffer::instance()->sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast, EPFrameBuffer::PartialUpdate);
+        sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast);
     }
 
     QRect updateRect;
@@ -398,7 +394,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         drawAALine(EPFrameBuffer::instance()->framebuffer(), line, true, m_invert);
         updateRect = updateRect.united(QRect(line.p1(), line.p2()));
     }
-    EPFrameBuffer::instance()->sendUpdate(updateRect, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate);
+    sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 
     qDebug() << "unlocked digitizer";
 #endif
@@ -445,4 +441,13 @@ void DrawingArea::redrawBackbuffer()
             }
         }
     }
+}
+
+void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform)
+{
+    rect.setWidth(rect.width() + 24 * m_zoomFactor);
+    rect.setHeight(rect.height() + 32 * m_zoomFactor);
+    rect.setX(rect.x() - 12 * m_zoomFactor);
+    rect.setY(rect.y() - 16 * m_zoomFactor);
+    EPFrameBuffer::instance()->sendUpdate(rect, waveform, EPFrameBuffer::PartialUpdate);
 }

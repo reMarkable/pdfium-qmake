@@ -5,6 +5,9 @@
 #include <QImage>
 #include "digitizer.h"
 
+#ifdef Q_PROCESSOR_ARM
+#include <epframebuffer.h>
+#endif
 
 class DrawingArea : public QQuickPaintedItem
 {
@@ -46,6 +49,7 @@ signals:
 
 private:
     void redrawBackbuffer();
+    void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform);
 
     bool m_invert;
     Brush m_currentBrush;

@@ -64,10 +64,7 @@ void EPFrameBuffer::clearScreen()
 
 void EPFrameBuffer::sendUpdate(QRect rect, Waveform waveform, UpdateMode mode, bool sync)
 {
-    rect.setWidth(rect.width() + 24);
-    rect.setHeight(rect.height() + 32);
-    rect.setX(rect.x() - 12);
-    rect.setY(rect.y() - 16);
+    // Clip to display
     rect = rect.intersected(m_fb.rect());
     if (rect.isEmpty()) {
         return;
