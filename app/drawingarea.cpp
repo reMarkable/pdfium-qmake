@@ -414,6 +414,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     QRect updateRect;
     for (const QLine &line : queuedLines) {
         drawAALine(EPFrameBuffer::instance()->framebuffer(), line, true, m_invert);
+
         updateRect = updateRect.united(QRect(line.p1(), line.p2()));
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);

@@ -23,7 +23,7 @@ Rectangle {
             id: thickBrushSelect
             width: parent.width
             height: width
-            border.width: drawingArea.currentBrush === DrawingArea.Paintbrush ? 2 : 1
+            border.width: drawingArea.currentBrush === DrawingArea.Paintbrush ? 3 : 1
 
             Image {
                 anchors.fill: parent
@@ -44,7 +44,7 @@ Rectangle {
             id: thinBrushSelect
             width: parent.width
             height: width
-            border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 2 : 1
+            border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 3 : 1
 
             Image {
                 anchors.fill: parent
@@ -64,7 +64,7 @@ Rectangle {
             id: eraserSelect
             width: parent.width
             height: width
-            border.width: drawingArea.currentBrush === DrawingArea.Eraser ? 2 : 1
+            border.width: drawingArea.currentBrush === DrawingArea.Eraser ? 3 : 1
 
             Image {
                 anchors.fill: parent
