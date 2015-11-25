@@ -21,6 +21,7 @@ public:
         Paintbrush,
         Pencil,
         Pen,
+        Eraser,
         InvalidBrush = -1
     };
 

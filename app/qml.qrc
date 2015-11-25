@@ -11,5 +11,6 @@
         <file>icons/pencil.png</file>
         <file>icons/zoom-in.png</file>
         <file>icons/zoom-out.png</file>
+        <file>icons/eraser.png</file>
     </qresource>
 </RCC>

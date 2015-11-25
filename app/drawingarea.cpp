@@ -231,10 +231,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     QElapsedTimer lutTimer;
     int freeLuts = 1;
 
-    if (m_currentBrush == Pen) {
-        pen.setWidthF(2.5);
+    if (m_currentBrush == Eraser) {
+        qDebug() << "setting to SOURCE";
+        pen.setWidthF(10 * m_zoomFactor);
+        pen.setColor(Qt::white);
+        painter.setPen(pen);
+        selfPainter.setCompositionMode(QPainter::CompositionMode_Clear);
+        pen.setColor(Qt::transparent);
         selfPainter.setPen(pen);
-        selfPainter.setRenderHint(QPainter::Antialiasing);
     }
 
     DrawnLine drawnLine;
@@ -265,6 +269,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             sendUpdate(updateRect, EPFrameBuffer::Fast);
             break;
         }
+
+        case Eraser:
+            painter.drawLine(line);
+            selfPainter.drawLine(line);
+            sendUpdate(updateRect, EPFrameBuffer::Fast);
+            break;
 
         case Pencil:
             pen.setWidthF(m_zoomFactor);
@@ -427,6 +437,12 @@ void DrawingArea::redrawBackbuffer()
                 painter.drawLine(line);
                 break;
             }
+            case Eraser:
+                pen.setWidthF(10 * m_zoomFactor);
+                pen.setColor(Qt::transparent);
+                painter.setPen(pen);
+                painter.drawLine(line);
+                break;
             case Pencil:
                 pen.setWidthF(m_zoomFactor);
                 painter.setPen(pen);

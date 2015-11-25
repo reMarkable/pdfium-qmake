@@ -18,25 +18,68 @@ Rectangle {
             leftMargin: 5
             topMargin: 100
         }
+
         Rectangle {
+            id: thickBrushSelect
             width: parent.width
             height: width
-            border.width: 1
+            border.width: drawingArea.currentBrush === DrawingArea.Paintbrush ? 2 : 1
 
             Image {
                 anchors.fill: parent
                 anchors.margins: 5
-                source: (drawingArea.currentBrush === DrawingArea.Paintbrush) ?
-                            "qrc:/icons/paintbrush.png" : "qrc:/icons/pencil.png"
+                source: "qrc:/icons/paintbrush.png"
+            }
+
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentBrush = DrawingArea.Paintbrush
+                }
+            }
+        }
+
+        Rectangle {
+            id: thinBrushSelect
+            width: parent.width
+            height: width
+            border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 2 : 1
+
+            Image {
+                anchors.fill: parent
+                anchors.margins: 5
+                source: "qrc:/icons/pencil.png"
             }
 
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    penToolList.visible = !penToolList.visible
+                    drawingArea.currentBrush = DrawingArea.Pencil
                 }
             }
         }
+
+        Rectangle {
+            id: eraserSelect
+            width: parent.width
+            height: width
+            border.width: drawingArea.currentBrush === DrawingArea.Eraser ? 2 : 1
+
+            Image {
+                anchors.fill: parent
+                anchors.margins: 5
+                source: "qrc:/icons/eraser.png"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentBrush = DrawingArea.Eraser
+                }
+            }
+        }
+
         Rectangle {
             width: parent.width
             height: width
@@ -185,61 +228,6 @@ Rectangle {
                     onClicked: {
                         zoomTool.zoomIn(2)
                     }
-                }
-            }
-        }
-    }
-
-    Row {
-        id: penToolList
-        visible: false
-        height: 75
-        width: 300
-        anchors {
-            top: toolBox.top
-            left: toolBox.right
-        }
-
-        Rectangle {
-            id: thickBrushSelect
-            height: parent.height
-            width: height
-            border.width: 1
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: 2
-                source: "qrc:/icons/paintbrush.png"
-            }
-
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.currentBrush = DrawingArea.Paintbrush
-                    penToolList.visible = false
-                }
-            }
-        }
-
-        Rectangle {
-            id: thinBrushSelect
-            height: parent.height
-            width: height
-            border.width: 1
-
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: 2
-                source: "qrc:/icons/pencil.png"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.currentBrush = DrawingArea.Pencil
-                    penToolList.visible = false
                 }
             }
         }
