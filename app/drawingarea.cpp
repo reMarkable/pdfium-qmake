@@ -44,6 +44,25 @@ void DrawingArea::clear()
     }
 }
 
+void DrawingArea::undo()
+{
+    if (m_lines.isEmpty()) {
+        return;
+    }
+
+    QElapsedTimer timer;
+    timer.start();
+
+    m_lines.removeLast();
+    m_contents.fill(Qt::transparent);
+
+    redrawBackbuffer();
+
+    m_hasEdited = true;
+    qDebug() << Q_FUNC_INFO << "Undo completed in" << timer.elapsed();
+    update();
+}
+
 static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bool invert)
 {
     if (address >= fb->bits() + fb->byteCount()) {
@@ -162,54 +181,6 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
         u = u+1;
         addr = addr+uincr;
     } while (u <= uend);
-}
-
-void DrawingArea::undo()
-{
-    if (m_lines.isEmpty()) {
-        return;
-    }
-
-    QElapsedTimer timer;
-    timer.start();
-
-    m_lines.removeLast();
-    m_contents.fill(Qt::transparent);
-    QPainter painter(&m_contents);
-    QPen thickPen(Qt::black);
-    thickPen.setCapStyle(Qt::RoundCap);
-    for (const DrawnLine &drawnLine : m_lines) {
-        if (drawnLine.brush == InvalidBrush) { // FIXME: hack for detecting clears
-            m_contents.fill(Qt::transparent);
-            continue;
-        }
-        for (int i=1; i<drawnLine.points.size(); i++) {
-            QLine line(drawnLine.points[i-1].x, drawnLine.points[i-1].y,
-                       drawnLine.points[i].x,   drawnLine.points[i].y);
-            switch(drawnLine.brush){
-            case Paintbrush: {
-                qreal pointsize = drawnLine.points[i].pressure * drawnLine.points[i].pressure * 10.0;
-                pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
-                if (pointsize < 2) pointsize = 2;
-                thickPen.setWidthF(pointsize);
-                painter.setPen(thickPen);
-                painter.drawLine(line);
-                break;
-            }
-            case Pencil:
-                painter.drawLine(line);
-                break;
-            case Pen:
-                drawAALine(&m_contents, line, false, m_invert);
-                drawAALine(&m_contents, line, true, m_invert);
-                break;
-            }
-        }
-    }
-
-    m_hasEdited = true;
-    qDebug() << Q_FUNC_INFO << "Undo completed in" << timer.elapsed();
-    update();
 }
 
 void DrawingArea::mousePressEvent(QMouseEvent *event)
@@ -392,5 +363,40 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     qDebug() << "unlocked digitizer";
 #endif
+}
+
+void DrawingArea::redrawBackbuffer()
+{
+    QPainter painter(&m_contents);
+    QPen thickPen(Qt::black);
+    thickPen.setCapStyle(Qt::RoundCap);
+    for (const DrawnLine &drawnLine : m_lines) {
+        if (drawnLine.brush == InvalidBrush) { // FIXME: hack for detecting clears
+            m_contents.fill(Qt::transparent);
+            continue;
+        }
+        for (int i=1; i<drawnLine.points.size(); i++) {
+            QLine line(drawnLine.points[i-1].x, drawnLine.points[i-1].y,
+                       drawnLine.points[i].x,   drawnLine.points[i].y);
+            switch(drawnLine.brush){
+            case Paintbrush: {
+                qreal pointsize = drawnLine.points[i].pressure * drawnLine.points[i].pressure * 10.0;
+                pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
+                if (pointsize < 2) pointsize = 2;
+                thickPen.setWidthF(pointsize);
+                painter.setPen(thickPen);
+                painter.drawLine(line);
+                break;
+            }
+            case Pencil:
+                painter.drawLine(line);
+                break;
+            case Pen:
+                drawAALine(&m_contents, line, false, m_invert);
+                drawAALine(&m_contents, line, true, m_invert);
+                break;
+            }
+        }
+    }
 }
 

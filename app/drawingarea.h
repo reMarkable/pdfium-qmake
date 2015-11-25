@@ -43,6 +43,8 @@ signals:
     void currentBrushChanged();
 
 private:
+    void redrawBackbuffer();
+
     bool m_invert;
     Brush m_currentBrush;
     QImage m_contents;
