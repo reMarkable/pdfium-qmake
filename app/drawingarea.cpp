@@ -40,6 +40,7 @@ void DrawingArea::clear()
         m_contents.fill(Qt::transparent);
         update();
         m_hasEdited = false;
+        m_undoneLines.clear();
         m_lines.append(DrawnLine()); // empty dummy for undoing
     }
 }
@@ -53,13 +54,24 @@ void DrawingArea::undo()
     QElapsedTimer timer;
     timer.start();
 
-    m_lines.removeLast();
-    m_contents.fill(Qt::transparent);
+    m_undoneLines.append(m_lines.takeLast());
 
     redrawBackbuffer();
 
     m_hasEdited = true;
     qDebug() << Q_FUNC_INFO << "Undo completed in" << timer.elapsed();
+    update();
+}
+
+void DrawingArea::redo()
+{
+    if (m_undoneLines.isEmpty()) {
+        return;
+    }
+
+    m_lines.append(m_undoneLines.takeLast());
+    redrawBackbuffer();
+    m_hasEdited = true;
     update();
 }
 
@@ -335,6 +347,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
             break;
         }
+        default:
+            break;
         }
 
         drawnLine.points.append(point);
@@ -343,6 +357,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     digitizer->releaseLock();
 
+    m_undoneLines.clear();
     m_lines.append(drawnLine);
 
     // Check if we have queued AA lines to draw
@@ -367,6 +382,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
 void DrawingArea::redrawBackbuffer()
 {
+    m_contents.fill(Qt::transparent);
     QPainter painter(&m_contents);
     QPen thickPen(Qt::black);
     thickPen.setCapStyle(Qt::RoundCap);
@@ -394,6 +410,8 @@ void DrawingArea::redrawBackbuffer()
             case Pen:
                 drawAALine(&m_contents, line, false, m_invert);
                 drawAALine(&m_contents, line, true, m_invert);
+                break;
+            default:
                 break;
             }
         }

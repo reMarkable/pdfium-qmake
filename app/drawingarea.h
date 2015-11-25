@@ -35,6 +35,7 @@ public:
 public slots:
     void clear();
     void undo();
+    void redo();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -50,6 +51,7 @@ private:
     QImage m_contents;
     bool m_hasEdited;
     QList<DrawnLine> m_lines;
+    QList<DrawnLine> m_undoneLines;
 };
 
 #endif // DRAWINGAREA_H

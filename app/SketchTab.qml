@@ -79,6 +79,27 @@ Rectangle {
                 }
             }
         }
+
+        Rectangle {
+            width: parent.width
+            height: width
+            color: "white"
+            border.width: 1
+
+            Text {
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                text: "REDO"
+                font.pointSize: 7
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        drawingArea.redo()
+                    }
+                }
+            }
+        }
     }
 
     Row {
