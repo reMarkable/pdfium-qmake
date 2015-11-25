@@ -159,6 +159,7 @@ void EPRenderer::handleEpaperNode(EPNode *node)
     }
 
     if (!found) {
+        node->content->dirty = true;
         currentRects.append(node->content);
     }
 
