@@ -21,11 +21,11 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: width
-
-            border.color: penToolList.visible ? "black" : "white"
+            border.width: 1
 
             Image {
                 anchors.fill: parent
+                anchors.margins: 5
                 source: (drawingArea.currentBrush === DrawingArea.Paintbrush) ?
                             "qrc:/icons/paintbrush.png" : "qrc:/icons/pencil.png"
             }
