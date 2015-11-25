@@ -30,6 +30,10 @@ Window {
                 }
                 event.accepted = true
                 return
+            } else if (event.key === Qt.Key_PowerOff) {
+                console.log("Poweroff requested")
+                event.accepted = true
+                return
             }
 
             console.log("Key pressed: " + event.key)
