@@ -9,5 +9,7 @@
         <file>ArchiveView.qml</file>
         <file>icons/paintbrush.png</file>
         <file>icons/pencil.png</file>
+        <file>icons/zoom-in.png</file>
+        <file>icons/zoom-out.png</file>
     </qresource>
 </RCC>

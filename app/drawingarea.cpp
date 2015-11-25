@@ -243,8 +243,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     DrawnLine drawnLine;
     drawnLine.brush = m_currentBrush;
-    drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() - m_zoomRect.x(),
-                                     prevPoint.y * m_zoomRect.height() - m_zoomRect.y(),
+    drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() + m_zoomRect.x(),
+                                     prevPoint.y * m_zoomRect.height() + m_zoomRect.y(),
                                      prevPoint.pressure));
 
     Predictor xPredictor;
@@ -372,8 +372,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         }
 
 
-        drawnLine.points.append(PenPoint(point.x * m_zoomRect.width() - m_zoomRect.x(),
-                                         point.y * m_zoomRect.height() - m_zoomRect.y(),
+        drawnLine.points.append(PenPoint(point.x * m_zoomRect.width() + m_zoomRect.x(),
+                                         point.y * m_zoomRect.height() + m_zoomRect.y(),
                                          point.pressure));
 
         prevPoint = point;
@@ -416,10 +416,10 @@ void DrawingArea::redrawBackbuffer()
             continue;
         }
         for (int i=1; i<drawnLine.points.size(); i++) {
-            QLine line((drawnLine.points[i-1].x + m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                       (drawnLine.points[i-1].y + m_zoomRect.y()) / m_zoomRect.height() * 1200,
-                       (drawnLine.points[i].x + m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                       (drawnLine.points[i].y + m_zoomRect.y()) / m_zoomRect.height() * 1200);
+            QLine line((drawnLine.points[i-1].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
+                       (drawnLine.points[i-1].y - m_zoomRect.y()) / m_zoomRect.height() * 1200,
+                       (drawnLine.points[i].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
+                       (drawnLine.points[i].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
 
             switch(drawnLine.brush){
             case Paintbrush: {

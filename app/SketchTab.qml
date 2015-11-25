@@ -102,29 +102,88 @@ Rectangle {
 
 
         Rectangle {
+            id: zoomTool
             width: parent.width
             height: width
-            color: "white"
             border.width: 1
 
-            Text {
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: "ZOOM"
-                font.pointSize: 7
+            property int zoomQuadrant: -1
+
+            function zoomIn(quadrant) {
+                if (quadrant === zoomQuadrant) {
+                    drawingArea.setZoom(0, 0, 1, 1)
+                    zoomQuadrant = -1
+                } else if (quadrant === 0) {
+                    drawingArea.setZoom(0, 0, 0.5, 0.5)
+                    zoomQuadrant = 0
+                } else if (quadrant === 1) {
+                    drawingArea.setZoom(0.5, 0, 0.5, 0.5)
+                    zoomQuadrant = 1
+                } else if (quadrant === 2) {
+                    drawingArea.setZoom(0, 0.5, 0.5, 0.5)
+                    zoomQuadrant = 2
+                } else if (quadrant === 3) {
+                    drawingArea.setZoom(0.5, 0.5, 0.5, 0.5)
+                    zoomQuadrant = 3
+                }
+            }
+
+            Image {
+                width: parent.width / 2
+                height: width
+                anchors.left: parent.left
+                anchors.top: parent.top
+                source: zoomTool.zoomQuadrant === 1 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
+
                 MouseArea {
                     anchors.fill: parent
-                    property bool zoomed: false
                     onClicked: {
-                        if (zoomed) {
-                            drawingArea.setZoom(0, 0, 1.0, 1.0)
-                            zoomed = false
-                        } else {
-                            drawingArea.setZoom(0, 0, 0.5, 0.5)
-                            zoomed = true
-                        }
+                        zoomTool.zoomIn(1)
+                    }
+                }
+            }
+            Image {
+                width: parent.width / 2
+                height: width
+                anchors.right: parent.right
+                anchors.top: parent.top
+                property bool zoomedIn: false
+                source: zoomTool.zoomQuadrant === 3 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
 
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        zoomTool.zoomIn(3)
+                    }
+                }
+            }
+            Image {
+                width: parent.width / 2
+                height: width
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                property bool zoomedIn: false
+                source: zoomTool.zoomQuadrant === 0 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        zoomTool.zoomIn(0)
+                    }
+                }
+            }
+            Image {
+                width: parent.width / 2
+                height: width
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                property bool zoomedIn: false
+                source: zoomTool.zoomQuadrant === 2 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        zoomTool.zoomIn(2)
                     }
                 }
             }
