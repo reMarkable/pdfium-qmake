@@ -24,17 +24,16 @@ Rectangle {
 
             border.color: penToolList.visible ? "black" : "white"
 
-            Text {
+            Image {
                 anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: "PEN\nTOOL"
-                font.pointSize: 7
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        penToolList.visible = !penToolList.visible
-                    }
+                source: (drawingArea.currentBrush === DrawingArea.Paintbrush) ?
+                            "qrc:/icons/paintbrush.png" : "qrc:/icons/pencil.png"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    penToolList.visible = !penToolList.visible
                 }
             }
         }
@@ -118,12 +117,10 @@ Rectangle {
             width: height
             border.width: 1
 
-            Rectangle {
-                anchors.centerIn: parent
-                width: 50
-                height: width
-                radius: width
-                color: "black"
+            Image {
+                anchors.fill: parent
+                anchors.margins: 2
+                source: "qrc:/icons/paintbrush.png"
             }
 
 
@@ -142,12 +139,11 @@ Rectangle {
             width: height
             border.width: 1
 
-            Rectangle {
-                anchors.centerIn: parent
-                width: 20
-                height: width
-                radius: width
-                color: "black"
+
+            Image {
+                anchors.fill: parent
+                anchors.margins: 2
+                source: "qrc:/icons/pencil.png"
             }
 
             MouseArea {

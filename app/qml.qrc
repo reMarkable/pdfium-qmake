@@ -7,5 +7,7 @@
         <file>NoteTab.qml</file>
         <file>DocumentTab.qml</file>
         <file>ArchiveView.qml</file>
+        <file>icons/paintbrush.png</file>
+        <file>icons/pencil.png</file>
     </qresource>
 </RCC>
