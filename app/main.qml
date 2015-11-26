@@ -86,7 +86,7 @@ Window {
 
                 Repeater {
                     id: tabRepeater
-                    model: ["ARCHIVE", "NOTES", "SKETCH", "DOCUMENT"]
+                    model: ["ARCHIVE", "NOTES", "SKETCH", "DOCUMENT", "PICTURES"]
                     Rectangle {
                         width: 200
                         height: parent.height
@@ -198,6 +198,22 @@ Window {
                 "file:///data/pdf/3.png",
                 "file:///data/pdf/4.png",
                 "file:///data/pdf/5.png"
+            ]
+        }
+
+
+        DocumentTab {
+            visible: window.index === 5
+            anchors {
+                top: topBar.bottom
+                right: parent.right
+                left: parent.left
+                bottom: parent.bottom
+            }
+
+            pageModel: [
+                "file:///data/typoskjerm.png",
+                "file:///data/testillustr.jpg"
             ]
         }
     }
