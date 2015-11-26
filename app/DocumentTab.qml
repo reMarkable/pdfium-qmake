@@ -37,6 +37,8 @@ Item {
             anchors.fill: document
             visible: document.page === index
             source: modelData
+            asynchronous: true
+            fillMode: Image.PreserveAspectFit
 
 
             DrawingArea {
@@ -175,6 +177,7 @@ Item {
             border.width: document.page === index ? 2 : 1
             color: "white"
             Image {
+                asynchronous: true
                 anchors.centerIn: parent
                 height: parent.height - 5
                 width: parent.width - 5
