@@ -192,6 +192,13 @@ Window {
                 bottom: parent.bottom
             }
 
+            pageModel: [
+                "file:///data/pdf/1.png",
+                "file:///data/pdf/2.png",
+                "file:///data/pdf/3.png",
+                "file:///data/pdf/4.png",
+                "file:///data/pdf/5.png"
+            ]
         }
     }
 }

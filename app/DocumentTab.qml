@@ -4,6 +4,8 @@ import com.magmacompany 1.0
 Item {
     id: document
 
+    property var pageModel: []
+
     onVisibleChanged: {
         if (visible) {
             forceActiveFocus()
@@ -13,7 +15,7 @@ Item {
     }
 
     Keys.onRightPressed: {
-        if (page < 4) {
+        if (page < pageModel.length - 1) {
             page++
             event.accepted = true
         }
@@ -30,11 +32,11 @@ Item {
 
     Repeater {
         id: pageRepeater
-        model: 5
+        model: document.pageModel
         delegate: Image {
             anchors.fill: document
-            visible: document.page === modelData
-            source: "file:///data/pdf/" + (index + 1) + ".png"
+            visible: document.page === index
+            source: modelData
 
 
             DrawingArea {
@@ -91,7 +93,7 @@ Item {
         id: nextPageButton
         width: 100
         height: width
-        visible: document.page < 4
+        visible: document.page < document.pageModel.length - 1
         border.width: 1
         anchors {
             bottom: parent.bottom
@@ -163,7 +165,7 @@ Item {
         width: 650
         height: 1200
         visible: false
-        model: 5
+        model: document.pageModel
         cellWidth: 300
         cellHeight: 400
         interactive: false
@@ -176,7 +178,7 @@ Item {
                 anchors.centerIn: parent
                 height: parent.height - 5
                 width: parent.width - 5
-                source: "file:///data/pdf/" + (index + 1) + ".png"
+                source: modelData
             }
 
             MouseArea {
