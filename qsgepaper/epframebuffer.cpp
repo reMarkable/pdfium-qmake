@@ -46,8 +46,6 @@ EPFrameBuffer::EPFrameBuffer() : QObject(),
     uchar *fbMem = m_deviceFile.map(0, fixedInfo.smem_len);
 
     m_fb = QImage(fbMem, varInfo.xres, varInfo.yres, QImage::Format_RGB16);
-
-    clearScreen();
 }
 
 EPFrameBuffer *EPFrameBuffer::instance()

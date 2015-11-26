@@ -7,6 +7,7 @@
 
 #ifdef Q_PROCESSOR_ARM
 #include "digitizer.h"
+#include <epframebuffer.h>
 
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QsgEpaperPlugin)
@@ -21,6 +22,8 @@ int main(int argc, char *argv[])
     qputenv("QT_QPA_PLATFORM", "minimal:enable_fonts");
     qputenv("QT_QPA_FONTDIR", "/data/fonts/");
     qputenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS", "/dev/input/event0");
+
+    EPFrameBuffer::instance()->clearScreen();
 #endif
     QApplication app(argc, argv);
 
