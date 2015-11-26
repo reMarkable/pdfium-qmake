@@ -22,8 +22,11 @@ void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
 void EPImageNode::setTargetRect(const QRectF &targetRect)
 {
     EPImageNodeContent *p = static_cast<EPImageNodeContent*>(content.get());
+    if (targetRect.toRect() == p->rect) {
+        return;
+    }
     p->rect = targetRect.toRect();
-    p->m_scaledImage = p->m_sourceImage.scaled(p->rect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    p->m_scaledImage = p->m_sourceImage.scaled(p->rect.size(), Qt::IgnoreAspectRatio, p->m_transformationMode);
 }
 
 void EPImageNode::setInnerTargetRect(const QRectF &rect)
@@ -63,6 +66,12 @@ void EPImageNode::setMipmapFiltering(QSGTexture::Filtering filtering)
 
 void EPImageNode::setFiltering(QSGTexture::Filtering filtering)
 {
+    EPImageNodeContent *p = static_cast<EPImageNodeContent*>(content.get());
+    if (filtering == QSGTexture::Linear) {
+        p->m_transformationMode = Qt::SmoothTransformation;
+    } else {
+        p->m_transformationMode = Qt::FastTransformation;
+    }
 }
 
 void EPImageNode::setHorizontalWrapMode(QSGTexture::WrapMode wrapMode)

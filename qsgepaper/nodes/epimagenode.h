@@ -30,6 +30,7 @@ public:
 
         QImage m_scaledImage;
         QImage m_sourceImage;
+        Qt::TransformationMode m_transformationMode = Qt::FastTransformation;
     };
 };
 
