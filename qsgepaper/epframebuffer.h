@@ -13,7 +13,7 @@ public:
 
     enum Waveform {
         Initialize = 0,
-        Fast = 1,
+        Mono = 1,
         Grayscale = 2
     };
     enum UpdateMode {

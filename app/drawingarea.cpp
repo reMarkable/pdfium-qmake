@@ -278,14 +278,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.drawLine(line);
             selfPainter.setPen(pen);
             selfPainter.drawLine(line);
-            sendUpdate(updateRect, EPFrameBuffer::Fast);
+            sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
         }
 
         case Eraser:
             painter.drawLine(line);
             selfPainter.drawLine(line);
-            sendUpdate(updateRect, EPFrameBuffer::Fast);
+            sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
 
         case Pencil:
@@ -294,7 +294,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.drawLine(line);
             selfPainter.setPen(pen);
             selfPainter.drawLine(line);
-            sendUpdate(updateRect, EPFrameBuffer::Fast);
+            sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
 
         case Pen: {
@@ -304,7 +304,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
             // up updates we send
             if (skippedUpdatesCounter > 2) {
-                sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast);
+                sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
                 skippedUpdatesCounter = 0;
             }
 
@@ -408,7 +408,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     }
 
     if (skippedUpdatesCounter > 0) {
-        sendUpdate(delayedUpdateRect, EPFrameBuffer::Fast);
+        sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
     }
 
     QRect updateRect;
