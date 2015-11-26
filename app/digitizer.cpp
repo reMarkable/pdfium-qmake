@@ -90,7 +90,6 @@ bool Digitizer::getPoint(PenPoint *point)
     bool done = false;
     point->x = -1;
     point->y = -1;
-    point->pressure = -1;
 
     while (!done) {
         fd_set fdset;
