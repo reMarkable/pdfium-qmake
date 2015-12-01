@@ -17,12 +17,13 @@ void EPGlyphNode::EPGlyphNodeContent::draw(QPainter *painter) const
 
     const QVector<quint32> indices = m_glyphs.glyphIndexes();
     const QVector<QPointF> positions = m_glyphs.positions();
-    painter->translate(m_baseline);
+    painter->translate(m_baseline.x(), m_baseline.y());
+    qreal offset = positions[0].y();
     for (int i=0; i<indices.size(); i++) {
         QPainterPath path = m_glyphs.rawFont().pathForGlyph(indices[i]);
-        painter->translate(positions[i].x(), 0);
+        painter->translate(positions[i].x(), (positions[i].y() - offset));
         painter->fillPath(path, m_color);;
-        painter->translate(-positions[i].x(), 0);
+        painter->translate(-positions[i].x(), -(positions[i].y() - offset));
     }
 
     //painter->drawGlyphRun(m_baseline, m_glyphs);
