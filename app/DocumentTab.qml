@@ -5,6 +5,7 @@ Item {
     id: document
 
     property var pageModel: []
+    property int page: 0
 
     onVisibleChanged: {
         if (visible) {
@@ -15,7 +16,7 @@ Item {
     }
 
     Keys.onRightPressed: {
-        if (page < pageModel.length - 1) {
+        if (page < pageModel.count - 1) {
             page++
             event.accepted = true
         }
@@ -28,8 +29,6 @@ Item {
         }
     }
 
-    property int page: 0
-
     Repeater {
         id: pageRepeater
         model: document.pageModel
@@ -37,8 +36,6 @@ Item {
             anchors.fill: document
             visible: document.page === index
             source: modelData
-            fillMode: Image.PreserveAspectFit
-
 
             DrawingArea {
                 id: drawingArea
@@ -90,15 +87,19 @@ Item {
         }
     }
 
+    onPageModelChanged: {
+        console.log(pageModel)
+    }
+
     Rectangle {
         id: nextPageButton
         width: 100
         height: width
-        visible: document.page < document.pageModel.length - 1
+        visible: document.page < document.pageModel.count - 1
         border.width: 1
         anchors {
             bottom: parent.bottom
-            right: document.right
+            right: parent.right
         }
         Text {
             anchors.centerIn: parent
@@ -144,7 +145,7 @@ Item {
         border.width: 1
         anchors {
             bottom: parent.bottom
-            left: document.left
+            left: parent.left
         }
         Text {
             anchors.centerIn: parent
@@ -180,6 +181,7 @@ Item {
                 height: parent.height - 5
                 width: parent.width - 5
                 source: modelData
+                smooth: false
             }
 
             MouseArea {

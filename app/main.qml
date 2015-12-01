@@ -12,8 +12,6 @@ Window {
     property string fontColor: "black"
     property string inactiveFontColor: "white"
 
-    property int index: 0
-
     Item {
         id: rootItem
         anchors.centerIn: parent
@@ -39,97 +37,45 @@ Window {
             console.log("Key pressed: " + event.key)
         }
 
-        Rectangle {
-            id: topBar
+        TabBar {
+            id: tabBar
             height: 60
             anchors {
                 top: parent.top
                 left: parent.left
                 right: parent.right
             }
-            color: "black"
 
-            Row {
-                anchors.fill: parent
-                spacing: 1
+            tabModel: ["ARCHIVE"]
+        }
 
-                Rectangle {
-                    id: homebutton
-                    width: 100
-                    height: parent.height
-                    color: "white"
-                    Text {
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        color: "black"
-                        text: "XO"
-                        font.family: "Helvetica"
-                    }
-                    Rectangle {
-                        anchors {
-                            bottom: parent.bottom
-                            left: parent.left
-                            right: parent.right
-                        }
-                        height: 10
-                        color: window.index === 0 ? "white" : "black"
-                    }
+        Component {
+            id: documentComponent
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            window.index = 0
-                        }
-                    }
+            DocumentTab {
+                visible: tabBar.currentTab === tabIndex
+                anchors {
+                    top: tabBar.bottom
+                    right: parent.right
+                    left: parent.left
+                    bottom: parent.bottom
                 }
 
-                Repeater {
-                    id: tabRepeater
-                    model: ["ARCHIVE", "NOTES", "SKETCH", "DOCUMENT", "PICTURES"]
-                    Rectangle {
-                        width: 200
-                        height: parent.height
-                        Text {
-                            id: text
-                            anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            color: "black"
-                            text: modelData
-                        }
-                        Rectangle {
-                            anchors {
-                                bottom: parent.bottom
-                                left: parent.left
-                                right: parent.right
-                            }
-                            height: 10
-                            color: window.index === index + 1 ? "white" : "black"
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                window.index = index + 1
-                            }
-                        }
-                    }
-                }
+                property int tabIndex
             }
         }
 
         MainScreen {
             id: mainScreen
-            visible: (window.index === 0)
+            visible: (tabBar.currentTab === 0)
             anchors {
-                top: topBar.bottom
+                top: tabBar.bottom
                 right: parent.right
                 left: parent.left
                 bottom: parent.bottom
             }
 
             onNewNoteClicked: {
-                window.index = 2
             }
 
             onNewSketchClicked: {
@@ -138,83 +84,61 @@ Window {
 
             onArchiveClicked: {
                 if (archiveIndex === -1) {
-                    window.index = 1
+                    tabBar.currentTab = 1
                     return
-                }
-
-                if (archiveIndex < 3) {
-                    window.index = archiveIndex + 1
                 }
             }
         }
 
         ArchiveView {
             id: archiveView
-            visible: (window.index === 1)
+            visible: (tabBar.currentTab === 1)
             anchors {
-                top: topBar.bottom
-                right: parent.right
-                left: parent.left
-                bottom: parent.bottom
-            }
-        }
-
-
-        NoteTab {
-            id: noteArea
-            visible: window.index === 2
-            anchors {
-                top: topBar.bottom
-                right: parent.right
-                left: parent.left
-                bottom: parent.bottom
-            }
-        }
-
-
-        SketchTab {
-            id: sketchArea
-            visible: window.index === 3
-            anchors {
-                top: topBar.bottom
-                right: parent.right
-                left: parent.left
-                bottom: parent.bottom
-            }
-        }
-
-        DocumentTab {
-            visible: window.index === 4
-            anchors {
-                top: topBar.bottom
+                top: tabBar.bottom
                 right: parent.right
                 left: parent.left
                 bottom: parent.bottom
             }
 
-            pageModel: [
-                "file:///data/pdf/1.png",
-                "file:///data/pdf/2.png",
-                "file:///data/pdf/3.png",
-                "file:///data/pdf/4.png",
-                "file:///data/pdf/5.png"
-            ]
-        }
+            onOpenBook: {
+                var index = tabBar.tabModel.indexOf(name)
 
-
-        DocumentTab {
-            visible: window.index === 5
-            anchors {
-                top: topBar.bottom
-                right: parent.right
-                left: parent.left
-                bottom: parent.bottom
+                if (index === -1) {
+                    var newIndex = tabBar.tabModel.length + 1
+                    documentComponent.createObject(rootItem, {"tabIndex": newIndex, "pageModel": files})
+                    var tabModel = tabBar.tabModel
+                    tabModel.push(name)
+                    tabBar.tabModel = tabModel
+                    tabBar.currentTab = newIndex
+                } else {
+                    tabBar.currentTab = index
+                }
             }
 
-            pageModel: [
-                "file:///data/typoskjerm.png",
-                "file:///data/testillustr.jpg"
-            ]
+            folderModel: ListModel {
+                ListElement {
+                    name: "DROPBOX"
+                    files: [
+                        ListElement {
+                            name: "DESTIN"
+                            files: [
+                                ListElement { path: "file:///data/pdf/1.png" },
+                                ListElement { path: "file:///data/pdf/2.png" },
+                                ListElement { path: "file:///data/pdf/3.png" },
+                                ListElement { path: "file:///data/pdf/4.png" },
+                                ListElement { path: "file:///data/pdf/5.png" }
+                            ]
+                        },
+                        ListElement {
+                            name: "PHOTOS"
+                            files: [
+                                ListElement { path: "file:///data/testillustr.jpg" },
+                                ListElement { path: "file:///data/typoskjerm.png" }
+                            ]
+                        }
+                    ]
+                }
+            }
         }
     }
 }

@@ -3,6 +3,10 @@ import QtQuick 2.0
 Rectangle {
     id: archiveView
 
+    signal openBook(var name, var files)
+
+    property var folderModel
+
     Text {
         id: header
         text: "ARCHIVE"
@@ -14,29 +18,9 @@ Rectangle {
         }
     }
 
-    ListModel {
-        id: folders
-        ListElement {
-            name: "DROPBOX"
-            files: [
-                ListElement { name: "DRAWING"},
-                ListElement { name: "NOTE"},
-                ListElement { name: "DOCUMENT"}
-            ]
-        }
-        ListElement {
-            name: "LOCAL"
-            files: [
-                ListElement { name: "DOCUMENT LOL"},
-                ListElement { name: "DOCUMENT KEK"},
-                ListElement { name: "NOTE KKEKEKE"}
-            ]
-        }
-    }
-
     Rectangle {
         id: folderlistContainer
-        width: parent.width / 4
+        width: parent.width / 2
         anchors {
             top: header.bottom
             left: parent.left
@@ -51,13 +35,13 @@ Rectangle {
             anchors.fill: parent
 
             spacing: 5
-            model: folders
+            model: archiveView.folderModel
 
             property int selected: -1
 
             delegate: Rectangle {
                 border.width: folderList.selected === index ? 2 : 1
-                height: 40
+                height: 90
                 width: folderlistContainer.width
 
                 Text {
@@ -79,7 +63,7 @@ Rectangle {
                     }
                 }
                 Component.onCompleted: {
-                    console.log(name)
+                    console.log("Created for: " + name)
                 }
             }
         }
@@ -87,7 +71,7 @@ Rectangle {
 
     Rectangle {
         id: filelistContainer
-        width: parent.width / 4
+        width: parent.width / 2
         border.width: 0
         anchors {
             top: folderlistContainer.top
@@ -105,7 +89,7 @@ Rectangle {
             model: []
             delegate: Rectangle {
                 border.width: 1
-                height: 40
+                height: 90
                 width: folderlistContainer.width
 
                 Text {
@@ -115,8 +99,15 @@ Rectangle {
                         leftMargin: 5
                     }
 
-                    text: modelData
+                    text: name
                     verticalAlignment: Text.AlignVCenter
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        archiveView.openBook(name, files)
+                    }
                 }
             }
         }
