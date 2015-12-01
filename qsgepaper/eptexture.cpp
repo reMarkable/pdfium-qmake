@@ -54,7 +54,7 @@ void EPTexture::bind()
 //Creating a texture directly is not possible as there is rarely an OpenGL context available in the thread that is responsible for loading the image data.
 EPTextureFactory::EPTextureFactory(const QImage &image)
 {
-    m_image = image.convertToFormat(QImage::Format_Indexed8);
+    m_image = image;//.convertToFormat(QImage::Format_Indexed8);
 }
 
 //This function is called on the scene graph rendering thread to create a QSGTexture instance from the factory. window provides the context which this texture is created in.
