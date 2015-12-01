@@ -22,7 +22,7 @@ Rectangle {
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
                 color: "black"
-                text: "XO"
+                text: "HOME"
                 font.family: "Helvetica"
             }
             Rectangle {
