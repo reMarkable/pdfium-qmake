@@ -108,10 +108,35 @@ Window {
             }
 
             onNewNoteClicked: {
+                var index = tabBar.tabModel.indexOf("NOTE")
+
+                if (index === -1) {
+                    var newIndex = tabBar.tabModel.length + 1
+                    var createdObject = noteComponent.createObject(rootItem, {"tabIndex": newIndex})
+                    var tabModel = tabBar.tabModel
+                    tabModel.push("NOTE")
+                    tabBar.tabModel = tabModel
+                    tabBar.currentTab = newIndex
+                    tabBar.objectList.push(createdObject)
+                } else {
+                    tabBar.currentTab = index + 1
+                }
             }
 
             onNewSketchClicked: {
-                window.index = 3
+                var index = tabBar.tabModel.indexOf("SKETCH")
+
+                if (index === -1) {
+                    var newIndex = tabBar.tabModel.length + 1
+                    var createdObject = sketchComponent.createObject(rootItem, {"tabIndex": newIndex})
+                    var tabModel = tabBar.tabModel
+                    tabModel.push("SKETCH")
+                    tabBar.tabModel = tabModel
+                    tabBar.currentTab = newIndex
+                    tabBar.objectList.push(createdObject)
+                } else {
+                    tabBar.currentTab = index + 1
+                }
             }
 
             onArchiveClicked: {

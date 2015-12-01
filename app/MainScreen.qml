@@ -24,10 +24,10 @@ Item {
                 width: height
                 anchors.centerIn: parent
                 border.width: 2
-                Text {
-                    anchors.centerIn: parent
-                    text: "NEW NOTE"
-                    color: window.fontColor
+                Image {
+                    source: "qrc:/icons/new-note.png"
+                    anchors.fill: parent
+                    anchors.margins: 25
                 }
 
                 MouseArea {
@@ -45,10 +45,10 @@ Item {
                 width: height
                 anchors.centerIn: parent
                 border.width: 2
-                Text {
-                    anchors.centerIn: parent
-                    text: "NEW SKETCH"
-                    color: window.fontColor
+                Image {
+                    source: "qrc:/icons/new-sketch.png"
+                    anchors.fill: parent
+                    anchors.margins: 25
                 }
 
                 MouseArea {

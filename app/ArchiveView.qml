@@ -112,7 +112,7 @@ Rectangle {
                         verticalCenter: parent.verticalCenter
                         leftMargin: 5
                     }
-                    height: parent.height
+                    height: parent.height - 5
                     width: height
                 }
 

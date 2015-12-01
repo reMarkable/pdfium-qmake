@@ -15,5 +15,7 @@
         <file>TabBar.qml</file>
         <file>icons/folder.png</file>
         <file>icons/book.png</file>
+        <file>icons/new-note.png</file>
+        <file>icons/new-sketch.png</file>
     </qresource>
 </RCC>
