@@ -1,4 +1,5 @@
 #include "epimagenode.h"
+#include <QElapsedTimer>
 
 #include "../eptexture.h"
 
@@ -17,6 +18,17 @@ void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
     painter->restore();
 }
 
+void EPImageNode::EPImageNodeContent::updateCached()
+{
+    if (!rect.isValid() || m_sourceImage.isNull()) {
+        return;
+    }
+    QElapsedTimer timer;
+    timer.start();
+    m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, m_transformationMode);
+    qDebug() << Q_FUNC_INFO << "scaled image in" << timer.elapsed() << "ms";
+}
+
 
 
 void EPImageNode::setTargetRect(const QRectF &targetRect)
@@ -26,7 +38,7 @@ void EPImageNode::setTargetRect(const QRectF &targetRect)
         return;
     }
     p->rect = targetRect.toRect();
-    p->m_scaledImage = p->m_sourceImage.scaled(p->rect.size(), Qt::IgnoreAspectRatio, p->m_transformationMode);
+    p->updateCached();
 }
 
 void EPImageNode::setInnerTargetRect(const QRectF &rect)
@@ -50,6 +62,7 @@ void EPImageNode::setTexture(QSGTexture *t)
         p->rect = p->m_sourceImage.rect();
     }
     p->dirty = true;
+    p->updateCached();
 }
 
 void EPImageNode::setMirror(bool mirror)

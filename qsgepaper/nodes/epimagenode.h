@@ -27,6 +27,7 @@ public:
 
     struct EPImageNodeContent : public Content {
         void draw(QPainter *painter) const override;
+        void updateCached();
 
         QImage m_scaledImage;
         QImage m_sourceImage;
