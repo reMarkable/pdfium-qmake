@@ -9,7 +9,6 @@
 struct EPNode
 {
     virtual ~EPNode() {
-        qDebug() << "epaper node dying";
     }
 
     struct Content {
