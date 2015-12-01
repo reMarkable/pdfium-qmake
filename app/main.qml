@@ -187,7 +187,7 @@ Window {
                             ]
                         },
                         ListElement {
-                            name: "PHOTOS"
+                            name: "IMAGES"
                             files: [
                                 ListElement { path: "file:///data/test.png" },
                                 ListElement { path: "file:///data/typoskjerm.png" }
