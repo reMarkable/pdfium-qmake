@@ -12,8 +12,21 @@ void EPGlyphNode::EPGlyphNodeContent::draw(QPainter *painter) const
 {
     painter->save();
     painter->setTransform(transform);
-    painter->setPen(m_color);
-    painter->drawGlyphRun(m_baseline, m_glyphs);
+
+    //painter->setRenderHint(QPainter::Antialiasing);
+
+    const QVector<quint32> indices = m_glyphs.glyphIndexes();
+    const QVector<QPointF> positions = m_glyphs.positions();
+    painter->translate(m_baseline);
+    for (int i=0; i<indices.size(); i++) {
+        QPainterPath path = m_glyphs.rawFont().pathForGlyph(indices[i]);
+        painter->translate(positions[i].x(), 0);
+        painter->fillPath(path, m_color);;
+        painter->translate(-positions[i].x(), 0);
+    }
+
+    //painter->drawGlyphRun(m_baseline, m_glyphs);
+
     painter->restore();
 }
 
@@ -25,7 +38,6 @@ void EPGlyphNode::setGlyphs(const QPointF &position, const QGlyphRun &glyphs)
     p->rect = r.toRect();
     p->m_glyphs = glyphs;
     p->m_baseline = position;
-    p->m_baseline.setY(p->m_baseline.y() + r.height() / 4);
     markDirty(QSGNode::DirtyForceUpdate);
     p->dirty = true;
 }
