@@ -50,7 +50,9 @@ signals:
 
 private:
     void redrawBackbuffer();
+#ifdef Q_PROCESSOR_ARM
     void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform);
+#endif
 
     bool m_invert;
     Brush m_currentBrush;

@@ -31,9 +31,11 @@ void DrawingArea::clear()
 {
     // If the user just reclicks without drawing more, we assume he wants to clear out some ghosting
     if (!m_hasEdited) {
+#ifdef Q_PROCESSOR_ARM
         EPFrameBuffer::instance()->sendUpdate(EPFrameBuffer::instance()->framebuffer()->rect(),
                                               EPFrameBuffer::Grayscale,
                                               EPFrameBuffer::FullUpdate);
+#endif
     } else {
         m_contents.fill(Qt::transparent);
         update();
@@ -352,7 +354,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 distanceY = qMin(distanceY, abs(oldLine.y1() - line.y2()));
                 distanceY = qMin(distanceY, abs(oldLine.y2() - line.y2()));
 
-                if (hypot(distanceX, distanceY) < 1000 * hypot(xPredictor.trendDelta, yPredictor.trendDelta) ||
+                //qDebug() << hypot(distanceX, distanceY) << hypot(xPredictor.trendDelta * 1600, yPredictor.trendDelta * 1200);
+                if (hypot(distanceX, distanceY) < 80 * hypot(xPredictor.trendDelta * 1600, yPredictor.trendDelta * 1200) ||
                         testRect.contains(line.p1()) ||
                         testRect.contains(line.p2())) {
                     continue;
@@ -471,7 +474,7 @@ void DrawingArea::redrawBackbuffer()
         }
     }
 }
-
+#ifdef Q_PROCESSOR_ARM
 void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform)
 {
     rect.setWidth(rect.width() + 24 * m_zoomFactor);
@@ -480,3 +483,4 @@ void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform)
     rect.setY(rect.y() - 16 * m_zoomFactor);
     EPFrameBuffer::instance()->sendUpdate(rect, waveform, EPFrameBuffer::PartialUpdate);
 }
+#endif
