@@ -105,6 +105,9 @@ Window {
                 right: parent.right
                 left: parent.left
                 bottom: parent.bottom
+                leftMargin: 10
+                rightMargin: 10
+                bottomMargin: 10
             }
 
             onNewNoteClicked: {
