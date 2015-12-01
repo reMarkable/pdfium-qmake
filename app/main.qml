@@ -19,7 +19,7 @@ Window {
         anchors.centerIn: parent
         width: parent.height
         height: parent.width
-        rotation: 90
+        rotation: 270
 
         Keys.onPressed: {
             if (event.key === Qt.Key_Home) {
