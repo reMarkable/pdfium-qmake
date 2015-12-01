@@ -45,9 +45,19 @@ Rectangle {
                 height: 90
                 width: folderlistContainer.width
 
-                Text {
+                Image {
+                    id: folderIcon
+                    source: "qrc:/icons/folder.png"
                     anchors {
                         left: parent.left
+                        verticalCenter: parent.verticalCenter
+                        leftMargin: 5
+                    }
+                }
+
+                Text {
+                    anchors {
+                        left: folderIcon.right
                         verticalCenter: parent.verticalCenter
                         leftMargin: 5
                     }
@@ -94,9 +104,21 @@ Rectangle {
                 height: 90
                 width: folderlistContainer.width
 
-                Text {
+                Image {
+                    id: bookIcon
+                    source: "qrc:/icons/book.png"
                     anchors {
                         left: parent.left
+                        verticalCenter: parent.verticalCenter
+                        leftMargin: 5
+                    }
+                    height: parent.height
+                    width: height
+                }
+
+                Text {
+                    anchors {
+                        left: bookIcon.right
                         verticalCenter: parent.verticalCenter
                         leftMargin: 5
                     }

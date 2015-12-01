@@ -65,6 +65,38 @@ Window {
             }
         }
 
+        Component {
+            id: noteComponent
+
+            NoteTab {
+                visible: tabBar.currentTab === tabIndex
+                anchors {
+                    top: tabBar.bottom
+                    right: parent.right
+                    left: parent.left
+                    bottom: parent.bottom
+                }
+
+                property int tabIndex
+            }
+        }
+
+        Component {
+            id: sketchComponent
+
+            SketchTab {
+                visible: tabBar.currentTab === tabIndex
+                anchors {
+                    top: tabBar.bottom
+                    right: parent.right
+                    left: parent.left
+                    bottom: parent.bottom
+                }
+
+                property int tabIndex
+            }
+        }
+
         MainScreen {
             id: mainScreen
             visible: (tabBar.currentTab === 0)

@@ -13,5 +13,7 @@
         <file>icons/zoom-out.png</file>
         <file>icons/eraser.png</file>
         <file>TabBar.qml</file>
+        <file>icons/folder.png</file>
+        <file>icons/book.png</file>
     </qresource>
 </RCC>
