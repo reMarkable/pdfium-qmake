@@ -21,11 +21,7 @@ Window {
 
         Keys.onPressed: {
             if (event.key === Qt.Key_Home) {
-                if (window.index === 0) {
-                    window.index = 2
-                } else {
-                    window.index = 0
-                }
+                tabBar.currentTab = 0
                 event.accepted = true
                 return
             } else if (event.key === Qt.Key_PowerOff) {
