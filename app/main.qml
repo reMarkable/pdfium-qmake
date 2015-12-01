@@ -105,11 +105,12 @@ Window {
 
                 if (index === -1) {
                     var newIndex = tabBar.tabModel.length + 1
-                    documentComponent.createObject(rootItem, {"tabIndex": newIndex, "pageModel": files})
+                    var createdObject = documentComponent.createObject(rootItem, {"tabIndex": newIndex, "pageModel": files})
                     var tabModel = tabBar.tabModel
                     tabModel.push(name)
                     tabBar.tabModel = tabModel
                     tabBar.currentTab = newIndex
+                    tabBar.objectList.push(createdObject)
                 } else {
                     tabBar.currentTab = index
                 }

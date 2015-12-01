@@ -36,6 +36,7 @@ Rectangle {
 
             spacing: 5
             model: archiveView.folderModel
+            interactive: false
 
             property int selected: -1
 
@@ -83,6 +84,7 @@ Rectangle {
         ListView {
             anchors.fill: parent
             id: fileList
+            interactive: false
 
             spacing: 5
 

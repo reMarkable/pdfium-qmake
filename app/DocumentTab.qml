@@ -36,6 +36,7 @@ Item {
             anchors.fill: document
             visible: document.page === index
             source: modelData
+            smooth: false
 
             DrawingArea {
                 id: drawingArea
