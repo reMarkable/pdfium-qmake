@@ -108,8 +108,7 @@ void EPRenderer::drawRects()
     locker.unlock();
     painter.end();
 
-    qDebug() << "Damaged:" << totalDamaged;
-    qDebug() << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "percent damaged";
+    qDebug() << "Damaged:" << totalDamaged << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "%";
 
 #if 0
     // FIXME: do something more clever here plz
