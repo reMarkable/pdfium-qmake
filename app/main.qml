@@ -112,7 +112,7 @@ Window {
                     tabBar.currentTab = newIndex
                     tabBar.objectList.push(createdObject)
                 } else {
-                    tabBar.currentTab = index
+                    tabBar.currentTab = index + 1
                 }
             }
 
