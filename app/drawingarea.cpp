@@ -24,7 +24,7 @@ void DrawingArea::paint(QPainter *painter)
 {
     QElapsedTimer timer;
     timer.start();
-    painter->drawImage(QRect(0, 0, 1560, 1200), m_contents, QRect(0, 0, 1560, 1200));
+    painter->drawImage(QRect(1600 - height(), 0, height(), width()), m_contents, QRect(1600 - height(), 0, height(), width()));
     qDebug() << Q_FUNC_INFO << "drawing done in" << timer.elapsed();
 }
 
@@ -493,7 +493,7 @@ void DrawingArea::doZoom()
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPen pen;
-    pen.setWidth(3);
+    pen.setWidth(5);
     pen.setCapStyle(Qt::RoundCap);
     pen.setBrush(Qt::Dense4Pattern);
     painter.setPen(pen);
