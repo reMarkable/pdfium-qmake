@@ -19,23 +19,30 @@ Window {
         height: parent.width
         rotation: 270
 
+        property bool focusMode: false
+
         Keys.onPressed: {
             if (event.key === Qt.Key_Home) {
-                tabBar.currentTab = 0
-                event.accepted = true
+                if (rootItem.focusMode) {
+                    rootItem.focusMode = false
+                } else {
+                    tabBar.currentTab = 0
+                    event.accepted = true
+                }
                 return
             } else if (event.key === Qt.Key_PowerOff) {
                 console.log("Poweroff requested")
                 event.accepted = true
                 return
             }
-
             console.log("Key pressed: " + event.key)
         }
 
+        Component.onCompleted: forceActiveFocus()
+
         TabBar {
             id: tabBar
-            height: 60
+            height: rootItem.focusMode ? 0 : 60
             anchors {
                 top: parent.top
                 left: parent.left

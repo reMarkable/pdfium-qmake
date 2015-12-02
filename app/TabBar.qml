@@ -15,7 +15,8 @@ Rectangle {
         Rectangle {
             id: homebutton
             width: 100
-            height: parent.height
+            height: tabBar.height
+            visible: tabBar.height > 0
             color: "white"
             Text {
                 anchors.fill: parent
@@ -48,6 +49,7 @@ Rectangle {
             model: tabBar.tabModel
             Rectangle {
                 width: 200
+                visible: tabBar.height > 0
                 height: tabBar.height
                 Text {
                     id: text
