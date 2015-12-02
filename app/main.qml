@@ -21,6 +21,22 @@ Window {
 
         property bool focusMode: false
 
+        function openDocument(name, files) {
+            var index = tabBar.tabModel.indexOf(name)
+
+            if (index === -1) {
+                var newIndex = tabBar.tabModel.length + 1
+                var createdObject = documentComponent.createObject(rootItem, {"tabIndex": newIndex, "pageModel": files})
+                var tabModel = tabBar.tabModel
+                tabModel.push(name)
+                tabBar.tabModel = tabModel
+                tabBar.currentTab = newIndex
+                tabBar.objectList.push(createdObject)
+            } else {
+                tabBar.currentTab = index + 1
+            }
+        }
+
         Keys.onPressed: {
             if (event.key === Qt.Key_Home) {
                 if (rootItem.focusMode) {
@@ -102,6 +118,7 @@ Window {
 
         MainScreen {
             id: mainScreen
+            archiveModel: archiveView.folderModel.get(0).files
             visible: (tabBar.currentTab === 0)
             anchors {
                 top: tabBar.bottom
@@ -146,10 +163,11 @@ Window {
             }
 
             onArchiveClicked: {
-                if (archiveIndex === -1) {
-                    tabBar.currentTab = 1
-                    return
-                }
+                tabBar.currentTab = 1
+            }
+
+            onOpenBook: {
+                rootItem.openDocument(name, files)
             }
         }
 
@@ -164,19 +182,7 @@ Window {
             }
 
             onOpenBook: {
-                var index = tabBar.tabModel.indexOf(name)
-
-                if (index === -1) {
-                    var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = documentComponent.createObject(rootItem, {"tabIndex": newIndex, "pageModel": files})
-                    var tabModel = tabBar.tabModel
-                    tabModel.push(name)
-                    tabBar.tabModel = tabModel
-                    tabBar.currentTab = newIndex
-                    tabBar.objectList.push(createdObject)
-                } else {
-                    tabBar.currentTab = index + 1
-                }
+                rootItem.openDocument(name, files)
             }
 
             folderModel: ListModel {

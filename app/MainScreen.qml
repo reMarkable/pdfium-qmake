@@ -4,7 +4,10 @@ Item {
     id: mainScreen
     signal newNoteClicked
     signal newSketchClicked
-    signal archiveClicked(var archiveIndex)
+    signal archiveClicked
+    signal openBook(var name, var files)
+
+    property var archiveModel
 
     Row {
         width: parent.width
@@ -97,7 +100,7 @@ Item {
         columnSpacing: 0
 
         Repeater {
-            model: 7
+            model: archiveModel
             Item {
                 width: archiveGrid.width / archiveGrid.columns
                 height: width
@@ -112,14 +115,14 @@ Item {
                         anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        text: "DOCUMENT " + modelData
+                        text: model.name
                         color: window.fontColor
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            mainScreen.archiveClicked(index)
+                            mainScreen.openBook(model.name, model.files)
                         }
                     }
                 }
@@ -177,7 +180,7 @@ Item {
         }
 
         Repeater {
-            model: ["PREFERENCES", "MY XO", "NOTIFICATIONS", "IN OUT"]
+            model: ["PREFERENCES", "MY XO", "NOTIFICATIONS", "IN/OUT"]
 
             Item {
                 width: parent.width / 4
