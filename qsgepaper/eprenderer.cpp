@@ -33,10 +33,15 @@ void EPRenderer::render()
 
     m_transform.setToIdentity();;
     m_depth = 0;
+    m_order = 0;
     visitChildren(rootNode());
 
     std::sort(currentRects.begin(), currentRects.end(), [](const std::shared_ptr<EPNode::Content> &a, const std::shared_ptr<EPNode::Content> &b){
-        return a->z < b->z;
+        if (a->z == b->z) {
+            return a->order < b->order;
+        } else {
+            return a->z < b->z;
+        }
     });
 
     rectanglesMutex.unlock();
@@ -165,6 +170,7 @@ void EPRenderer::handleEpaperNode(EPNode *node)
     node->content->transform = m_transform.toTransform();
     node->content->transformedRect = node->content->transform.mapRect(node->content->rect);
     node->content->z = m_depth;
+    node->content->order = m_order++;
     node->content->visible = true;
 }
 

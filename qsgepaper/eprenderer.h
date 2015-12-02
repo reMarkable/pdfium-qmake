@@ -59,6 +59,7 @@ private:
     EPRenderContext *m_context;
     QMatrix4x4 m_transform;
     int m_depth;
+    int m_order;
     QTimer m_redrawTimer;
 };
 

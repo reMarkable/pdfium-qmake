@@ -21,6 +21,7 @@ struct EPNode
         bool visible;
 
         int z;
+        int order;
 
         QTransform transform;
     };
