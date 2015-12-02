@@ -110,6 +110,12 @@ Item {
                     width: height
                     border.width: 2
 
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 2
+                        source: model.files.get(0).path
+                        fillMode: Image.PreserveAspectCrop
+                    }
 
                     Text {
                         anchors.fill: parent
