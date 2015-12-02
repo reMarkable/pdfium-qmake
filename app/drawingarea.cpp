@@ -492,9 +492,10 @@ void DrawingArea::doZoom()
     QPointF prevPoint(prevPenPoint.x * 1600, prevPenPoint.y * 1200);
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
-    QPen pen(Qt::DashLine);
+    QPen pen;
     pen.setWidth(3);
     pen.setCapStyle(Qt::RoundCap);
+    pen.setBrush(Qt::Dense4Pattern);
     painter.setPen(pen);
 
     QPolygonF drawnLine;
