@@ -115,6 +115,10 @@ Item {
                         anchors.margins: 2
                         source: model.files.get(0).path
                         fillMode: Image.PreserveAspectCrop
+                        Rectangle {
+                            anchors.fill: parent
+                            color: "#8fffffff"
+                        }
                     }
 
                     Text {
