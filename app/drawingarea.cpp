@@ -442,9 +442,12 @@ void DrawingArea::redrawBackbuffer()
     QPen pen(Qt::black);
     pen.setCapStyle(Qt::RoundCap);
     for (const DrawnLine &drawnLine : m_lines) {
+        painter.save();
         if (drawnLine.brush == InvalidBrush) { // FIXME: hack for detecting clears
             m_contents.fill(Qt::transparent);
             continue;
+        } else if (drawnLine.brush == Eraser) {
+            painter.setCompositionMode(QPainter::CompositionMode_Clear);
         }
         for (int i=1; i<drawnLine.points.size(); i++) {
             QLine line((drawnLine.points[i-1].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
@@ -481,6 +484,7 @@ void DrawingArea::redrawBackbuffer()
                 break;
             }
         }
+        painter.restore();
     }
 }
 
