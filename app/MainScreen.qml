@@ -112,7 +112,7 @@ Item {
 
                     Image {
                         anchors.fill: parent
-                        anchors.margins: 2
+                        anchors.margins: 4
                         source: model.files.get(0).path
                         fillMode: Image.PreserveAspectCrop
                         Rectangle {
@@ -151,7 +151,7 @@ Item {
                 border.width: 1
                 Text {
                     anchors.centerIn: parent
-                    text: "GO TO ARCHIVE"
+                    text: "GO TO ARCHIVE ->"
                     color: window.fontColor
                     horizontalAlignment: Text.AlignHCenter
                 }

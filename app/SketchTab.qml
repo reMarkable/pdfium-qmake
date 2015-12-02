@@ -6,6 +6,7 @@ Rectangle {
         id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Paintbrush
+        onZoomFactorChanged: console.log(zoomFactor)
     }
 
     Column {
@@ -165,90 +166,26 @@ Rectangle {
             }
         }
 
-
         Rectangle {
-            id: zoomTool
+            id: zoomSelect
             width: parent.width
             height: width
-            border.width: 1
-
-            property int zoomQuadrant: -1
-
-            function zoomIn(quadrant) {
-                if (quadrant === zoomQuadrant) {
-                    drawingArea.setZoom(0, 0, 1, 1)
-                    zoomQuadrant = -1
-                } else if (quadrant === 0) {
-                    drawingArea.setZoom(0, 0, 0.5, 0.5)
-                    zoomQuadrant = 0
-                } else if (quadrant === 1) {
-                    drawingArea.setZoom(0.5, 0, 0.5, 0.5)
-                    zoomQuadrant = 1
-                } else if (quadrant === 2) {
-                    drawingArea.setZoom(0, 0.5, 0.5, 0.5)
-                    zoomQuadrant = 2
-                } else if (quadrant === 3) {
-                    drawingArea.setZoom(0.5, 0.5, 0.5, 0.5)
-                    zoomQuadrant = 3
-                }
-            }
+            border.width: drawingArea.zoomtoolSelected ? 3 : 1
 
             Image {
-                width: parent.width / 2
-                height: width
-                anchors.left: parent.left
-                anchors.top: parent.top
-                source: zoomTool.zoomQuadrant === 1 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        zoomTool.zoomIn(1)
-                    }
-                }
+                anchors.fill: parent
+                anchors.margins: 5
+                source: drawingArea.zoomFactor > 1 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
             }
-            Image {
-                width: parent.width / 2
-                height: width
-                anchors.right: parent.right
-                anchors.top: parent.top
-                property bool zoomedIn: false
-                source: zoomTool.zoomQuadrant === 3 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        zoomTool.zoomIn(3)
-                    }
-                }
-            }
-            Image {
-                width: parent.width / 2
-                height: width
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-                property bool zoomedIn: false
-                source: zoomTool.zoomQuadrant === 0 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        zoomTool.zoomIn(0)
-                    }
-                }
-            }
-            Image {
-                width: parent.width / 2
-                height: width
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                property bool zoomedIn: false
-                source: zoomTool.zoomQuadrant === 2 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        zoomTool.zoomIn(2)
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (drawingArea.zoomFactor > 1 ) {
+                        drawingArea.setZoom(0, 0, 1, 1)
+                    } else {
+                        drawingArea.zoomtoolSelected = true
                     }
                 }
             }

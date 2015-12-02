@@ -4,6 +4,7 @@
 #include <QElapsedTimer>
 #include <QThread>
 #include <QTimer>
+#include <QPolygonF>
 
 #include "predictor.h"
 
@@ -84,6 +85,7 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
 
     m_zoomRect = QRectF(x, y, width, height);
     m_zoomFactor = qMax(1.0/width, 1.0/height);
+    emit zoomFactorChanged();
     redrawBackbuffer();
     update();
 }
@@ -213,6 +215,12 @@ static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
 
 void DrawingArea::mousePressEvent(QMouseEvent *event)
 {
+    if (m_zoomSelected) {
+        doZoom();
+        m_zoomSelected = false;
+        emit zoomtoolSelectedChanged();
+        return;
+    }
     m_hasEdited = true;
 
 #ifdef Q_PROCESSOR_ARM
@@ -474,6 +482,41 @@ void DrawingArea::redrawBackbuffer()
         }
     }
 }
+
+void DrawingArea::doZoom()
+{
+    Digitizer *digitizer = Digitizer::instance();
+
+    PenPoint penPoint, prevPenPoint = digitizer->acquireLock();
+    QPointF prevPoint(prevPenPoint.x * 1600, prevPenPoint.y * 1200);
+
+    QPainter painter(EPFrameBuffer::instance()->framebuffer());
+    QPen pen(Qt::DashLine);
+    pen.setWidth(3);
+    pen.setCapStyle(Qt::RoundCap);
+    painter.setPen(pen);
+
+    QPolygonF drawnLine;
+
+    Predictor xPredictor;
+    Predictor yPredictor;
+    while (digitizer->getPoint(&penPoint)) {
+        penPoint.x = xPredictor.getPrediction(penPoint.x);
+        penPoint.y = yPredictor.getPrediction(penPoint.y);
+
+        QPointF point(penPoint.x * 1600, penPoint.y * 1200);
+        drawnLine << point;
+
+        painter.drawLine(prevPoint, point);
+        sendUpdate(QRect(prevPoint.toPoint(), point.toPoint()), EPFrameBuffer::Mono);
+        prevPoint = point;
+    }
+    digitizer->releaseLock();
+
+    QRectF boundingRect = drawnLine.boundingRect();
+    setZoom(boundingRect.x() / 1600, boundingRect.y() / 1200, boundingRect.width() / 1600, boundingRect.height() / 1200);
+}
+
 #ifdef Q_PROCESSOR_ARM
 void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform)
 {
