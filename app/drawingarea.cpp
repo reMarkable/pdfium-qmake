@@ -13,7 +13,8 @@ DrawingArea::DrawingArea() :
     m_currentBrush(Paintbrush),
     m_hasEdited(false),
     m_zoomFactor(1.0),
-    m_zoomRect(0, 0, 1.0, 1.0)
+    m_zoomRect(0, 0, 1.0, 1.0),
+    m_zoomSelected(false)
 {
     m_contents = QImage(1600, 1200, QImage::Format_ARGB32_Premultiplied);
     m_contents.fill(Qt::transparent);
