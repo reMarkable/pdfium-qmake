@@ -176,13 +176,12 @@ Item {
 
     GridView {
         id: thumbnailGrid
-        anchors.centerIn: parent
-        width: 650
-        height: 1200
+        anchors.fill: parent
+        anchors.margins: 100
         visible: false
         model: document.pageModel
-        cellWidth: 300
-        cellHeight: 400
+        cellWidth: 350
+        cellHeight: 450
         interactive: false
         delegate: Rectangle {
             width: 300
