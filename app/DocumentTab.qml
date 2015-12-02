@@ -187,12 +187,13 @@ Item {
         delegate: Rectangle {
             width: 300
             height: 400
-            border.width: document.page === index ? 2 : 1
+            border.width: document.page === index ? 5 : 1
             color: "white"
+
             Image {
                 anchors.centerIn: parent
-                height: parent.height - 5
-                width: parent.width - 5
+                height: parent.height - 20
+                width: parent.width - 20
                 source: modelData
                 smooth: false
             }
