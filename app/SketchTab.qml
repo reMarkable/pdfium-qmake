@@ -6,7 +6,6 @@ Rectangle {
         id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Paintbrush
-        onZoomFactorChanged: console.log(zoomFactor)
     }
 
     Column {
