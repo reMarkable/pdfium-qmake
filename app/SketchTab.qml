@@ -83,6 +83,31 @@ Rectangle {
         }
 
         Rectangle {
+            id: zoomSelect
+            width: parent.width
+            height: width
+            border.width: drawingArea.zoomtoolSelected ? 3 : 1
+
+            Image {
+                anchors.fill: parent
+                anchors.margins: 5
+                source: drawingArea.zoomFactor > 1 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
+            }
+
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    if (drawingArea.zoomFactor > 1 ) {
+                        drawingArea.setZoom(0, 0, 1, 1)
+                    } else {
+                        drawingArea.zoomtoolSelected = true
+                    }
+                }
+            }
+        }
+
+        Rectangle {
             width: parent.width
             height: width
             color: "white"
@@ -161,31 +186,6 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         rootItem.focusMode = true
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            id: zoomSelect
-            width: parent.width
-            height: width
-            border.width: drawingArea.zoomtoolSelected ? 3 : 1
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: 5
-                source: drawingArea.zoomFactor > 1 ? "qrc:/icons/zoom-out.png" : "qrc:/icons/zoom-in.png"
-            }
-
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (drawingArea.zoomFactor > 1 ) {
-                        drawingArea.setZoom(0, 0, 1, 1)
-                    } else {
-                        drawingArea.zoomtoolSelected = true
                     }
                 }
             }
