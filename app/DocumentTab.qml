@@ -162,6 +162,18 @@ Item {
         }
     }
 
+    Rectangle {
+        anchors.fill: parent
+        visible: thumbnailGrid.visible
+        color: "#7f7f7f7f"
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: thumbnailGrid.visible
+            onClicked: thumbnailGrid.visible = false
+        }
+    }
+
     GridView {
         id: thumbnailGrid
         anchors.centerIn: parent
