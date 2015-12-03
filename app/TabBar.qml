@@ -1,4 +1,5 @@
 import QtQuick 2.0
+import com.magmacompany 1.0
 
 Rectangle {
     id: tabBar
@@ -106,6 +107,41 @@ Rectangle {
                     }
                 }
             }
+        }
+    }
+
+    Item {
+        width: 90
+        visible: width > 0
+        anchors {
+            right: parent.right
+            top: parent.top
+            bottom: parent.bottom
+        }
+
+        Rectangle {
+            width: 80
+            height: 30
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            color: "white"
+
+            Rectangle {
+                height: parent.height - 10
+                width: (parent.width - 10) * BatteryMonitor.batteryLeft
+                anchors.left: parent.left
+                anchors.leftMargin: 5
+                anchors.verticalCenter: parent.verticalCenter
+                color: "black"
+            }
+        }
+        Rectangle {
+            width: 10
+            height: 10
+            anchors.right: parent.right
+            anchors.rightMargin: 5
+            anchors.verticalCenter: parent.verticalCenter
+            color: "white"
         }
     }
 }

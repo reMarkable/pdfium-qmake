@@ -6,7 +6,8 @@ CONFIG += c++11
 TARGET = xochitl
 
 SOURCES += main.cpp \
-    drawingarea.cpp
+    drawingarea.cpp \
+    batterymonitor.cpp
 
 RESOURCES += qml.qrc
 
@@ -15,7 +16,8 @@ include(deployment.pri)
 
 HEADERS += \
     drawingarea.h \
-    predictor.h
+    predictor.h \
+    batterymonitor.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app

@@ -4,6 +4,7 @@
 #include <QScreen>
 
 #include "drawingarea.h"
+#include "batterymonitor.h"
 
 #ifdef Q_PROCESSOR_ARM
 #include "digitizer.h"
@@ -35,6 +36,10 @@ int main(int argc, char *argv[])
 #endif
 
     qmlRegisterType<DrawingArea>("com.magmacompany", 1, 0, "DrawingArea");
+    qmlRegisterSingletonType<BatteryMonitor>("com.magmacompany", 1, 0, "BatteryMonitor", [](QQmlEngine *, QJSEngine*) -> QObject* {
+        return new BatteryMonitor;
+    });
+
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
