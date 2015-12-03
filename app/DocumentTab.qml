@@ -37,6 +37,7 @@ Item {
             visible: document.page === index
             source: modelData
             smooth: false
+            asynchronous: true
 
             DrawingArea {
                 id: drawingArea
