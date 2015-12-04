@@ -26,8 +26,6 @@ void BatteryMonitor::doPoll()
     }
 
     QByteArray fileContent = file.readAll().trimmed();
-    qDebug() << "battery content:" << fileContent << fileContent.toInt();
-
     qreal batteryPercentage = fileContent.toDouble() / 100.0;
 
     if (batteryPercentage == m_batteryLeft) {
