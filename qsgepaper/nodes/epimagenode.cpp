@@ -14,7 +14,7 @@ void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
 {
     painter->save();
     painter->setTransform(transform);
-    painter->drawImage(rect, m_scaledImage);
+    painter->drawImage(rect.topLeft(), m_scaledImage);
     painter->restore();
 }
 
