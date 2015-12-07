@@ -57,6 +57,7 @@ Item {
                     id: toolBox
                     width: 75
                     height: 100
+                    visible: !rootItem.focusMode
                     anchors {
                         left: parent.left
                         top: parent.top
@@ -120,10 +121,28 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 onClicked: {
-                                    console.log("thumbnails visible?: " + thumbnailGrid.visible)
                                     thumbnailGrid.visible  = true
-                                    console.log("thumbnails visible?: " + thumbnailGrid.visible)
-                                    //thumbnailGrid.visible = !thumbnailGrid.visible
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        width: parent.width
+                        height: width
+                        color: "white"
+                        border.width: 1
+
+                        Text {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            text: "FOCUS"
+                            font.pointSize: 7
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    rootItem.focusMode = true
                                 }
                             }
                         }
