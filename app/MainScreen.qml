@@ -92,7 +92,7 @@ Item {
         anchors {
             left: parent.left
             right: parent.right
-            bottom: settingsHeader.top
+            bottom: parent.bottom
             bottomMargin: 20
         }
 
@@ -165,7 +165,7 @@ Item {
         }
     }
 
-    Text {
+    /*Text {
         id: settingsHeader
         color: window.fontColor
         text: "SETTINGS"
@@ -210,6 +210,6 @@ Item {
             }
         }
 
-    }
+    }*/
 }
 
