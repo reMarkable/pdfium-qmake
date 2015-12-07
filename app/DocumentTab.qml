@@ -32,56 +32,100 @@ Item {
     Repeater {
         id: pageRepeater
         model: document.pageModel
-        delegate: Image {
-            anchors.fill: document
+        anchors.fill: parent
+
+        delegate: Item {
+            anchors.fill: pageRepeater
             visible: document.page === index
-            source: modelData
-            smooth: false
-            asynchronous: true
+            Image {
+                anchors {
+                    top: parent.top
+                    horizontalCenter: parent.horizontalCenter
+                }
+
+                source: modelData
+                smooth: false
+                asynchronous: true
+            }
 
             DrawingArea {
                 id: drawingArea
                 currentBrush: DrawingArea.Pen
                 anchors.fill: parent
 
-                Rectangle {
-                    width: 100
-                    height: width
-                    border.width: 1
+                Column {
+                    id: toolBox
+                    width: 75
+                    height: 100
                     anchors {
                         left: parent.left
                         top: parent.top
+                        leftMargin: 5
+                        topMargin: 100
                     }
-                    Text {
-                        anchors.centerIn: parent
-                        text: "CLEAN"
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            drawingArea.clear()
+                    Rectangle {
+                        width: parent.width
+                        height: width
+                        color: "white"
+                        border.width: 1
+
+                        Text {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            text: "CLEAR"
+                            font.pointSize: 7
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    drawingArea.clear()
+                                }
+                            }
                         }
                     }
-                }
 
-                Rectangle {
-                    width: 100
-                    height: width
-                    border.width: 1
-                    anchors {
-                        right: parent.right
-                        top: parent.top
+                    Rectangle {
+                        width: parent.width
+                        height: width
+                        color: "white"
+                        border.width: 1
+
+                        Text {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            text: "UNDO"
+                            font.pointSize: 7
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    drawingArea.undo()
+                                }
+                            }
+                        }
                     }
-                    Text {
-                        anchors.centerIn: parent
-                        text: "UNDO"
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            drawingArea.undo()
+
+                    Rectangle {
+                        width: parent.width
+                        height: width
+                        color: "white"
+                        border.width: 1
+
+                        Text {
+                            anchors.fill: parent
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            text: "INDEX"
+                            font.pointSize: 7
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    console.log("thumbnails visible?: " + thumbnailGrid.visible)
+                                    thumbnailGrid.visible  = true
+                                    console.log("thumbnails visible?: " + thumbnailGrid.visible)
+                                    //thumbnailGrid.visible = !thumbnailGrid.visible
+                                }
+                            }
                         }
                     }
                 }
@@ -93,116 +137,51 @@ Item {
         console.log(pageModel)
     }
 
-    Rectangle {
-        id: nextPageButton
-        width: 100
-        height: width
-        visible: document.page < document.pageModel.count - 1
-        border.width: 1
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-        }
-        Text {
-            anchors.centerIn: parent
-            text: "NEXT\nPAGE"
-            horizontalAlignment: Text.AlignHCenter
-        }
-        MouseArea {
-            enabled: nextPageButton.visible
-            anchors.fill: parent
-            onClicked: {
-                document.page++
-            }
-        }
-    }
-
-    Rectangle {
-        id: indexButton
-        width: 100
-        height: width
-        border.width: 1
-        anchors {
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-        }
-        Text {
-            anchors.centerIn: parent
-            text: "INDEX"
-            horizontalAlignment: Text.AlignHCenter
-        }
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                thumbnailGrid.visible = !thumbnailGrid.visible
-            }
-        }
-    }
-
-    Rectangle {
-        id: prevPageButton
-        width: 100
-        height: width
-        visible: document.page > 0
-        border.width: 1
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-        }
-        Text {
-            anchors.centerIn: parent
-            text: "PREVIOUS\nPAGE"
-            horizontalAlignment: Text.AlignHCenter
-        }
-        MouseArea {
-            enabled: prevPageButton.visible
-            anchors.fill: parent
-            onClicked: {
-                document.page--
-            }
-        }
-    }
-
-    Rectangle {
+    Item {
         anchors.fill: parent
-        visible: thumbnailGrid.visible
-        color: "#7f7f7f7f"
-
-        MouseArea {
+        Rectangle {
+            id: thumbnailGrid
             anchors.fill: parent
-            enabled: thumbnailGrid.visible
-            onClicked: thumbnailGrid.visible = false
-        }
-    }
-
-    GridView {
-        id: thumbnailGrid
-        anchors.fill: parent
-        anchors.margins: 100
-        visible: false
-        model: document.pageModel
-        cellWidth: 350
-        cellHeight: 450
-        interactive: false
-        delegate: Rectangle {
-            width: 300
-            height: 400
-            border.width: document.page === index ? 5 : 1
-            color: "white"
-
-            Image {
-                anchors.centerIn: parent
-                height: parent.height - 20
-                width: parent.width - 20
-                source: modelData
-                smooth: false
-            }
+            visible: false
+            color: "#7f7f7f7f"
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: {
-                    document.page = index
-                    thumbnailGrid.visible = false
+                enabled: thumbnailGrid.visible
+                onClicked: thumbnailGrid.visible = false
+            }
+
+            GridView {
+                anchors.fill: parent
+                anchors.margins: 100
+                model: document.pageModel
+                cellWidth: 350
+                cellHeight: 450
+                interactive: false
+
+
+                delegate: Rectangle {
+                    width: 300
+                    height: 400
+                    border.width: document.page === index ? 5 : 1
+                    color: "white"
+
+                    Image {
+                        anchors.centerIn: parent
+                        height: parent.height - 20
+                        width: parent.width - 20
+                        source: modelData
+                        smooth: false
+                        asynchronous: true
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            document.page = index
+                            thumbnailGrid.visible = false
+                        }
+                    }
                 }
             }
         }
