@@ -80,7 +80,6 @@ Rectangle {
                     height: 30
                     width: 30
                     color: "black"
-                    visible: index > 0
                     anchors {
                         right: parent.right
                         verticalCenter: parent.verticalCenter
@@ -97,8 +96,8 @@ Rectangle {
                         onClicked: {
                             tabBar.currentTab = 0
 
-                            tabBar.objectList[index-1].destroy()
-                            tabBar.objectList.splice(index-1, 1)
+                            tabBar.objectList[index].destroy()
+                            tabBar.objectList.splice(index, 1)
 
                             var tabModel = tabBar.tabModel
                             tabModel.splice(index, 1)

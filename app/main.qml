@@ -81,7 +81,7 @@ Window {
                 right: parent.right
             }
 
-            tabModel: ["ARCHIVE"]
+            tabModel: []
         }
 
         Component {
@@ -117,6 +117,26 @@ Window {
         }
 
         Component {
+            id: archiveComponent
+
+            ArchiveView {
+                id: archiveView
+                visible: (tabBar.currentTab === tabIndex)
+                anchors {
+                    top: tabBar.bottom
+                    right: parent.right
+                    left: parent.left
+                    bottom: parent.bottom
+                }
+                property int tabIndex
+
+                onOpenBook: {
+                    rootItem.openDocument(name, files)
+                }
+            }
+        }
+
+        Component {
             id: sketchComponent
 
             SketchTab {
@@ -134,7 +154,7 @@ Window {
 
         MainScreen {
             id: mainScreen
-            archiveModel: archiveView.folderModel.get(0).files
+            archiveModel: exampleDocumentModel.get(0).files
             visible: (tabBar.currentTab === 0)
             anchors {
                 top: tabBar.bottom
@@ -179,7 +199,19 @@ Window {
             }
 
             onArchiveClicked: {
-                tabBar.currentTab = 1
+                var index = tabBar.tabModel.indexOf("ARCHIVE")
+
+                if (index === -1) {
+                    var newIndex = tabBar.tabModel.length + 1
+                    var createdObject = archiveComponent.createObject(rootItem, {"tabIndex": newIndex, "folderModel": exampleDocumentModel })
+                    var tabModel = tabBar.tabModel
+                    tabModel.push("ARCHIVE")
+                    tabBar.tabModel = tabModel
+                    tabBar.currentTab = newIndex
+                    tabBar.objectList.push(createdObject)
+                } else {
+                    tabBar.currentTab = index + 1
+                }
             }
 
             onOpenBook: {
@@ -187,80 +219,66 @@ Window {
             }
         }
 
-        ArchiveView {
-            id: archiveView
-            visible: (tabBar.currentTab === 1)
-            anchors {
-                top: tabBar.bottom
-                right: parent.right
-                left: parent.left
-                bottom: parent.bottom
-            }
-
-            onOpenBook: {
-                rootItem.openDocument(name, files)
-            }
-
-            folderModel: ListModel {
-                ListElement {
-                    name: "DROPBOX"
-                    files: [
-                        ListElement {
-                            name: "DESTIN"
-                            files: [
-                                ListElement { path: "file:///data/pdf/1.png" },
-                                ListElement { path: "file:///data/pdf/2.png" },
-                                ListElement { path: "file:///data/pdf/3.png" },
-                                ListElement { path: "file:///data/pdf/4.png" },
-                                ListElement { path: "file:///data/pdf/5.png" }
-                            ]
-                        },
-                        ListElement {
-                            name: "DIJKSTRA"
-                            files: [
-                                ListElement { path: "file:///data/dijkstra-01.png" },
-                                ListElement { path: "file:///data/dijkstra-02.png" },
-                                ListElement { path: "file:///data/dijkstra-03.png" },
-                                ListElement { path: "file:///data/dijkstra-04.png" },
-                                ListElement { path: "file:///data/dijkstra-05.png" },
-                                ListElement { path: "file:///data/dijkstra-06.png" },
-                                ListElement { path: "file:///data/dijkstra-07.png" },
-                                ListElement { path: "file:///data/dijkstra-08.png" },
-                                ListElement { path: "file:///data/dijkstra-09.png" },
-                                ListElement { path: "file:///data/dijkstra-10.png" },
-                                ListElement { path: "file:///data/dijkstra-11.png" },
-                                ListElement { path: "file:///data/dijkstra-12.png" },
-                                ListElement { path: "file:///data/dijkstra-13.png" },
-                                ListElement { path: "file:///data/dijkstra-14.png" },
-                                ListElement { path: "file:///data/dijkstra-15.png" },
-                                ListElement { path: "file:///data/dijkstra-16.png" },
-                                ListElement { path: "file:///data/dijkstra-17.png" },
-                                ListElement { path: "file:///data/dijkstra-18.png" },
-                                ListElement { path: "file:///data/dijkstra-19.png" },
-                                ListElement { path: "file:///data/dijkstra-20.png" },
-                                ListElement { path: "file:///data/dijkstra-21.png" },
-                                ListElement { path: "file:///data/dijkstra-22.png" },
-                                ListElement { path: "file:///data/dijkstra-23.png" },
-                                ListElement { path: "file:///data/dijkstra-24.png" },
-                                ListElement { path: "file:///data/dijkstra-25.png" },
-                                ListElement { path: "file:///data/dijkstra-26.png" },
-                                ListElement { path: "file:///data/dijkstra-27.png" },
-                                ListElement { path: "file:///data/dijkstra-28.png" },
-                                ListElement { path: "file:///data/dijkstra-29.png" },
-                                ListElement { path: "file:///data/dijkstra-30.png" }
-                            ]
-                        },
-                        ListElement {
-                            name: "IMAGES"
-                            files: [
-                                ListElement { path: "file:///data/diamondsutra.png" },
-                                ListElement { path: "file:///data/gutenbergbible-tl.png" },
-                                ListElement { path: "file:///data/test.png" },
-                                ListElement { path: "file:///data/typoskjerm.png" }
-                            ]
-                        }
-                    ]
-                }
+        ListModel {
+            id: exampleDocumentModel
+            ListElement {
+                name: "DROPBOX"
+                files: [
+                    ListElement {
+                        name: "DESTIN"
+                        files: [
+                            ListElement { path: "file:///data/pdf/1.png" },
+                            ListElement { path: "file:///data/pdf/2.png" },
+                            ListElement { path: "file:///data/pdf/3.png" },
+                            ListElement { path: "file:///data/pdf/4.png" },
+                            ListElement { path: "file:///data/pdf/5.png" }
+                        ]
+                    },
+                    ListElement {
+                        name: "DIJKSTRA"
+                        files: [
+                            ListElement { path: "file:///data/dijkstra-01.png" },
+                            ListElement { path: "file:///data/dijkstra-02.png" },
+                            ListElement { path: "file:///data/dijkstra-03.png" },
+                            ListElement { path: "file:///data/dijkstra-04.png" },
+                            ListElement { path: "file:///data/dijkstra-05.png" },
+                            ListElement { path: "file:///data/dijkstra-06.png" },
+                            ListElement { path: "file:///data/dijkstra-07.png" },
+                            ListElement { path: "file:///data/dijkstra-08.png" },
+                            ListElement { path: "file:///data/dijkstra-09.png" },
+                            ListElement { path: "file:///data/dijkstra-10.png" },
+                            ListElement { path: "file:///data/dijkstra-11.png" },
+                            ListElement { path: "file:///data/dijkstra-12.png" },
+                            ListElement { path: "file:///data/dijkstra-13.png" },
+                            ListElement { path: "file:///data/dijkstra-14.png" },
+                            ListElement { path: "file:///data/dijkstra-15.png" },
+                            ListElement { path: "file:///data/dijkstra-16.png" },
+                            ListElement { path: "file:///data/dijkstra-17.png" },
+                            ListElement { path: "file:///data/dijkstra-18.png" },
+                            ListElement { path: "file:///data/dijkstra-19.png" },
+                            ListElement { path: "file:///data/dijkstra-20.png" },
+                            ListElement { path: "file:///data/dijkstra-21.png" },
+                            ListElement { path: "file:///data/dijkstra-22.png" },
+                            ListElement { path: "file:///data/dijkstra-23.png" },
+                            ListElement { path: "file:///data/dijkstra-24.png" },
+                            ListElement { path: "file:///data/dijkstra-25.png" },
+                            ListElement { path: "file:///data/dijkstra-26.png" },
+                            ListElement { path: "file:///data/dijkstra-27.png" },
+                            ListElement { path: "file:///data/dijkstra-28.png" },
+                            ListElement { path: "file:///data/dijkstra-29.png" },
+                            ListElement { path: "file:///data/dijkstra-30.png" }
+                        ]
+                    },
+                    ListElement {
+                        name: "IMAGES"
+                        files: [
+                            ListElement { path: "file:///data/diamondsutra.png" },
+                            ListElement { path: "file:///data/gutenbergbible-tl.png" },
+                            ListElement { path: "file:///data/test.png" },
+                            ListElement { path: "file:///data/typoskjerm.png" }
+                        ]
+                    }
+                ]
             }
         }
     }
