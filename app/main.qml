@@ -37,14 +37,30 @@ Window {
             }
         }
 
+        property bool homeRecentlyClicked: false
+        Timer {
+            id: homeButtonTimer
+            onTriggered: {
+                tabBar.currentTab = 0
+                rootItem.homeRecentlyClicked = false
+            }
+            interval: 200
+        }
+
         Keys.onPressed: {
             if (event.key === Qt.Key_Home) {
                 if (rootItem.focusMode) {
                     rootItem.focusMode = false
+
+                } else if(homeRecentlyClicked) {
+                    homeButtonTimer.stop()
+                    mainScreen.newNoteClicked()
+                    homeRecentlyClicked = false
                 } else {
-                    tabBar.currentTab = 0
-                    event.accepted = true
+                    homeRecentlyClicked = true
+                    homeButtonTimer.restart()
                 }
+                event.accepted = true
                 return
             } else if (event.key === Qt.Key_PowerOff) {
                 console.log("Poweroff requested")
