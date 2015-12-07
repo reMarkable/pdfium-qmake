@@ -253,6 +253,8 @@ Window {
                         ListElement {
                             name: "IMAGES"
                             files: [
+                                ListElement { path: "file:///data/diamondsutra.png" },
+                                ListElement { path: "file:///data/gutenbergbible-tl.png" },
                                 ListElement { path: "file:///data/test.png" },
                                 ListElement { path: "file:///data/typoskjerm.png" }
                             ]
