@@ -30,7 +30,16 @@ Item {
                 Image {
                     source: "qrc:/icons/new-note.png"
                     anchors.fill: parent
-                    anchors.margins: 25
+                    anchors.margins: 40
+                }
+
+                Text {
+                    anchors {
+                        bottom: parent.bottom
+                        bottomMargin: 10
+                        horizontalCenter: parent.horizontalCenter
+                    }
+                    text: "NEW NOTE"
                 }
 
                 MouseArea {
@@ -51,7 +60,15 @@ Item {
                 Image {
                     source: "qrc:/icons/new-sketch.png"
                     anchors.fill: parent
-                    anchors.margins: 25
+                    anchors.margins: 40
+                }
+                Text {
+                    anchors {
+                        bottom: parent.bottom
+                        bottomMargin: 10
+                        horizontalCenter: parent.horizontalCenter
+                    }
+                    text: "NEW SKETCH"
                 }
 
                 MouseArea {
