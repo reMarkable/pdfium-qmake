@@ -108,12 +108,14 @@ void EPRenderer::drawRects()
             }
         }
     }
-    qDebug() << Q_FUNC_INFO << timer.restart() << "drawed";
+    if (timer.elapsed() > 50) {
+        qDebug() << Q_FUNC_INFO << "Drawing took:" << timer.restart() << "ms";
+        qDebug() << Q_FUNC_INFO << "Damaged rect:" << totalDamaged;
+        qDebug() << Q_FUNC_INFO << "Damaged area:" << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "%";
+    }
 
     locker.unlock();
     painter.end();
-
-    qDebug() << "Damaged:" << totalDamaged << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "%";
 
 #if 0
     // FIXME: do something more clever here plz
