@@ -34,7 +34,7 @@ Item {
         model: document.pageModel
         anchors.fill: parent
 
-        delegate: Item {
+        delegate: Rectangle {
             anchors.fill: pageRepeater
             visible: document.page === index
             Image {
