@@ -55,8 +55,9 @@ Rectangle {
                 Text {
                     id: text
                     anchors.fill: parent
+                    anchors.leftMargin: 10
                     verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: Text.AlignLeft
                     color: "black"
                     text: modelData
                 }
