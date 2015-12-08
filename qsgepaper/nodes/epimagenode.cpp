@@ -1,5 +1,4 @@
 #include "epimagenode.h"
-#include <QElapsedTimer>
 
 #include "../eptexture.h"
 
@@ -23,10 +22,8 @@ void EPImageNode::EPImageNodeContent::updateCached()
     if (!rect.isValid() || m_sourceImage.isNull()) {
         return;
     }
-    QElapsedTimer timer;
-    timer.start();
+
     m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, m_transformationMode);
-    qDebug() << Q_FUNC_INFO << "scaled image in" << timer.elapsed() << "ms";
 }
 
 
