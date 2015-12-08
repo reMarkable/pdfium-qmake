@@ -20,7 +20,7 @@ Rectangle {
 
     Rectangle {
         id: folderlistContainer
-        width: parent.width / 2
+        width: parent.width / 2 - 40
         anchors {
             top: header.bottom
             left: parent.left
@@ -82,13 +82,14 @@ Rectangle {
 
     Rectangle {
         id: filelistContainer
-        width: parent.width / 2
+        width: parent.width / 2 - 40
         border.width: 0
         anchors {
-            top: folderlistContainer.top
-            left: folderlistContainer.right
-            bottom: folderlistContainer.bottom
-            leftMargin: 5
+            top: header.bottom
+            right: parent.right
+            bottom: parent.bottom
+            topMargin: 20
+            rightMargin: 20
         }
 
         ListView {
