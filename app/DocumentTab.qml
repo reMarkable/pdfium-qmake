@@ -172,16 +172,16 @@ Item {
 
             GridView {
                 anchors.fill: parent
-                anchors.margins: 100
+                anchors.margins: 10
                 model: document.pageModel
-                cellWidth: 350
-                cellHeight: 450
+                cellWidth: 290
+                cellHeight: 390
                 interactive: false
 
 
                 delegate: Rectangle {
-                    width: 300
-                    height: 400
+                    width: 290
+                    height: 390
                     border.width: document.page === index ? 5 : 1
                     color: "white"
 
