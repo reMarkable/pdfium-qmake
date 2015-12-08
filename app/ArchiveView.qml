@@ -124,9 +124,9 @@ Rectangle {
                         leftMargin: 5
                     }
 
-                    text: name
-                    verticalAlignment: Text.AlignVCenter
+                    text: name + "\n" + description
                 }
+
 
                 MouseArea {
                     anchors.fill: parent
