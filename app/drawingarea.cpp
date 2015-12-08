@@ -253,6 +253,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         selfPainter.setPen(pen);
     }
 
+    if (m_currentBrush == Pen && (prevPoint.x * 1600 != event->globalX() || prevPoint.y * 1200 != event->globalY())) {
+        QLine line(prevPoint.x * 1600, prevPoint.y * 1200, event->globalX(), event->globalY());
+        QRect updateRect(line.p1(), line.p2());
+        drawAALine(&m_contents, line, false, m_invert);
+        drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
+        sendUpdate(updateRect, EPFrameBuffer::Mono);
+    }
+
     DrawnLine drawnLine;
     drawnLine.brush = m_currentBrush;
     drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() + m_zoomRect.x(),
