@@ -52,98 +52,98 @@ Item {
                 id: drawingArea
                 currentBrush: DrawingArea.Pen
                 anchors.fill: parent
+            }
 
-                Column {
-                    id: toolBox
-                    width: 75
-                    height: 100
-                    visible: !rootItem.focusMode
-                    anchors {
-                        left: parent.left
-                        top: parent.top
-                        leftMargin: 5
-                        topMargin: 100
-                    }
-                    Rectangle {
-                        width: parent.width
-                        height: width
-                        color: "white"
-                        border.width: 1
+            Column {
+                id: toolBox
+                width: 75
+                height: 100
+                visible: !rootItem.focusMode && !thumbnailGrid.visible
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    leftMargin: 5
+                    topMargin: 100
+                }
+                Rectangle {
+                    width: parent.width
+                    height: width
+                    color: "white"
+                    border.width: 1
 
-                        Text {
+                    Text {
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "CLEAR"
+                        font.pointSize: 7
+                        MouseArea {
                             anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "CLEAR"
-                            font.pointSize: 7
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    drawingArea.clear()
-                                }
+                            onClicked: {
+                                drawingArea.clear()
                             }
                         }
                     }
+                }
 
-                    Rectangle {
-                        width: parent.width
-                        height: width
-                        color: "white"
-                        border.width: 1
+                Rectangle {
+                    width: parent.width
+                    height: width
+                    color: "white"
+                    border.width: 1
 
-                        Text {
+                    Text {
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "UNDO"
+                        font.pointSize: 7
+                        MouseArea {
                             anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "UNDO"
-                            font.pointSize: 7
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    drawingArea.undo()
-                                }
+                            onClicked: {
+                                drawingArea.undo()
                             }
                         }
                     }
+                }
 
-                    Rectangle {
-                        width: parent.width
-                        height: width
-                        color: "white"
-                        border.width: 1
+                Rectangle {
+                    width: parent.width
+                    height: width
+                    color: "white"
+                    border.width: 1
 
-                        Text {
+                    Text {
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "INDEX"
+                        font.pointSize: 7
+                        MouseArea {
                             anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "INDEX"
-                            font.pointSize: 7
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    thumbnailGrid.visible  = true
-                                }
+                            onClicked: {
+                                thumbnailGrid.visible  = true
                             }
                         }
                     }
+                }
 
-                    Rectangle {
-                        width: parent.width
-                        height: width
-                        color: "white"
-                        border.width: 1
+                Rectangle {
+                    width: parent.width
+                    height: width
+                    color: "white"
+                    border.width: 1
 
-                        Text {
+                    Text {
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "FOCUS"
+                        font.pointSize: 7
+                        MouseArea {
                             anchors.fill: parent
-                            verticalAlignment: Text.AlignVCenter
-                            horizontalAlignment: Text.AlignHCenter
-                            text: "FOCUS"
-                            font.pointSize: 7
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    rootItem.focusMode = true
-                                }
+                            onClicked: {
+                                rootItem.focusMode = true
                             }
                         }
                     }
