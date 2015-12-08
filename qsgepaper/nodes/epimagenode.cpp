@@ -23,7 +23,8 @@ void EPImageNode::EPImageNodeContent::updateCached()
         return;
     }
 
-    m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, m_transformationMode);
+    //m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, m_transformationMode);
+    m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, Qt::FastTransformation);
 }
 
 
