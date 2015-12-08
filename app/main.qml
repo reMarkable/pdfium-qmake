@@ -225,7 +225,8 @@ Window {
                 name: "DROPBOX"
                 files: [
                     ListElement {
-                        name: "DESTIN"
+                        name: "DESTIN.PDF"
+                        description: "Academic paper about machine learning"
                         files: [
                             ListElement { path: "file:///data/pdf/1.png" },
                             ListElement { path: "file:///data/pdf/2.png" },
@@ -235,42 +236,25 @@ Window {
                         ]
                     },
                     ListElement {
-                        name: "DIJKSTRA"
+                        name: "JANTU.DOC"
+                        description: "Martin's master thesis"
                         files: [
-                            ListElement { path: "file:///data/dijkstra-01.png" },
-                            ListElement { path: "file:///data/dijkstra-02.png" },
-                            ListElement { path: "file:///data/dijkstra-03.png" },
-                            ListElement { path: "file:///data/dijkstra-04.png" },
-                            ListElement { path: "file:///data/dijkstra-05.png" },
-                            ListElement { path: "file:///data/dijkstra-06.png" },
-                            ListElement { path: "file:///data/dijkstra-07.png" },
-                            ListElement { path: "file:///data/dijkstra-08.png" },
-                            ListElement { path: "file:///data/dijkstra-09.png" },
-                            ListElement { path: "file:///data/dijkstra-10.png" },
-                            ListElement { path: "file:///data/dijkstra-11.png" },
-                            ListElement { path: "file:///data/dijkstra-12.png" },
-                            ListElement { path: "file:///data/dijkstra-13.png" },
-                            ListElement { path: "file:///data/dijkstra-14.png" },
-                            ListElement { path: "file:///data/dijkstra-15.png" },
-                            ListElement { path: "file:///data/dijkstra-16.png" },
-                            ListElement { path: "file:///data/dijkstra-17.png" },
-                            ListElement { path: "file:///data/dijkstra-18.png" },
-                            ListElement { path: "file:///data/dijkstra-19.png" },
-                            ListElement { path: "file:///data/dijkstra-20.png" },
-                            ListElement { path: "file:///data/dijkstra-21.png" },
-                            ListElement { path: "file:///data/dijkstra-22.png" },
-                            ListElement { path: "file:///data/dijkstra-23.png" },
-                            ListElement { path: "file:///data/dijkstra-24.png" },
-                            ListElement { path: "file:///data/dijkstra-25.png" },
-                            ListElement { path: "file:///data/dijkstra-26.png" },
-                            ListElement { path: "file:///data/dijkstra-27.png" },
-                            ListElement { path: "file:///data/dijkstra-28.png" },
-                            ListElement { path: "file:///data/dijkstra-29.png" },
-                            ListElement { path: "file:///data/dijkstra-30.png" }
+                            ListElement { path: "file:///data/master-17.png" },
+                            ListElement { path: "file:///data/master-18.png" },
+                            ListElement { path: "file:///data/master-19.png" },
+                            ListElement { path: "file:///data/master-20.png" },
+                            ListElement { path: "file:///data/master-21.png" },
+                            ListElement { path: "file:///data/master-22.png" },
+                            ListElement { path: "file:///data/master-23.png" },
+                            ListElement { path: "file:///data/master-24.png" },
+                            ListElement { path: "file:///data/master-25.png" },
+                            ListElement { path: "file:///data/master-26.png" },
+                            ListElement { path: "file:///data/master-27.png" }
                         ]
                     },
                     ListElement {
-                        name: "IMAGES"
+                        name: "IMAGES.ZIP"
+                        description: "Some sample images"
                         files: [
                             ListElement { path: "file:///data/diamondsutra.png" },
                             ListElement { path: "file:///data/gutenbergbible-tl.png" },
