@@ -121,7 +121,7 @@ Rectangle {
 
         Rectangle {
             width: 80
-            height: 30
+            height: parent.height / 2
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             color: "white"
@@ -137,7 +137,7 @@ Rectangle {
         }
         Rectangle {
             width: 10
-            height: 10
+            height: parent.height / 4
             anchors.right: parent.right
             anchors.rightMargin: 5
             anchors.verticalCenter: parent.verticalCenter
