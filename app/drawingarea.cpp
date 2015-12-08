@@ -26,7 +26,9 @@ void DrawingArea::paint(QPainter *painter)
     QElapsedTimer timer;
     timer.start();
     painter->drawImage(QRect(1600 - height(), 0, height(), width()), m_contents, QRect(1600 - height(), 0, height(), width()));
-    qDebug() << Q_FUNC_INFO << "drawing done in" << timer.elapsed();
+    if (timer.elapsed() > 75) {
+        qDebug() << Q_FUNC_INFO << "drawing done in" << timer.elapsed() << "ms";
+    }
 }
 
 void DrawingArea::clear()
