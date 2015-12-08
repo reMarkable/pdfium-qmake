@@ -226,7 +226,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
 #ifdef Q_PROCESSOR_ARM
     QThread::currentThread()->setPriority(QThread::HighestPriority);
-    qDebug() << "Mouse event!:" << event->globalPos();
 
     Digitizer *digitizer = Digitizer::instance();
 
@@ -246,7 +245,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     int freeLuts = 1;
 
     if (m_currentBrush == Eraser) {
-        qDebug() << "setting to SOURCE";
         pen.setWidthF(10 * m_zoomFactor);
         pen.setColor(Qt::white);
         painter.setPen(pen);
@@ -430,8 +428,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         updateRect = updateRect.united(QRect(line.p1(), line.p2()));
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);
-
-    qDebug() << "unlocked digitizer";
 #endif
 }
 
