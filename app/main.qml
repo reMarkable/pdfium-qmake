@@ -21,6 +21,18 @@ Window {
 
         property bool focusMode: false
 
+        function rotateScreen() {
+            if (rotation === 270) {
+                rotation = 0
+                width = parent.width
+                height = parent.height
+            } else {
+                rotation = 270
+                width = parent.height
+                height = parent.width
+            }
+        }
+
         function openDocument(name, files) {
             var index = tabBar.tabModel.indexOf(name)
 
@@ -161,9 +173,6 @@ Window {
                 right: parent.right
                 left: parent.left
                 bottom: parent.bottom
-                leftMargin: 10
-                rightMargin: 10
-                bottomMargin: 10
             }
 
             onNewNoteClicked: {

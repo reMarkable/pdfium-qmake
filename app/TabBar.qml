@@ -111,6 +111,8 @@ Rectangle {
     }
 
     Item {
+        id: batteryIcon
+
         width: 90
         visible: width > 0
         anchors {
@@ -142,6 +144,11 @@ Rectangle {
             anchors.rightMargin: 5
             anchors.verticalCenter: parent.verticalCenter
             color: "white"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: rootItem.rotateScreen()
         }
     }
 }

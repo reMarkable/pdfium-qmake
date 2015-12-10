@@ -1,6 +1,6 @@
 import QtQuick 2.0
 
-Item {
+Rectangle {
     id: mainScreen
     signal newNoteClicked
     signal newSketchClicked
@@ -85,7 +85,7 @@ Item {
             left: parent.left
             right: parent.right
             bottom: archiveGrid.top
-            leftMargin: 10
+            leftMargin: 20
         }
 
         Text {
@@ -104,11 +104,12 @@ Item {
 
     Grid {
         id: archiveGrid
-        width: parent.width
-        height: width / 2
+        height: archiveGrid.width / archiveGrid.columns
         anchors {
             left: parent.left
+            leftMargin: 10
             right: parent.right
+            rightMargin: 10
             bottom: parent.bottom
             bottomMargin: 20
         }
