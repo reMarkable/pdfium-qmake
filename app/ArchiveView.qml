@@ -73,9 +73,6 @@ Rectangle {
                         fileList.model = files
                     }
                 }
-                Component.onCompleted: {
-                    console.log("Created for: " + name)
-                }
             }
         }
     }
