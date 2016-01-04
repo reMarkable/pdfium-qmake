@@ -15,6 +15,7 @@ void EPPainterNode::EPPainterNodeContent::draw(QPainter *painter) const
 {
     Q_ASSERT(m_item);
     painter->save();
+    painter->setTransform(transform);
     m_item->paint(painter);
     painter->restore();
 }
