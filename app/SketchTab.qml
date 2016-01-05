@@ -42,6 +42,66 @@ Rectangle {
         }
 
         Rectangle {
+            width: parent.width
+            height: width
+            border.width: drawingArea.currentColor === DrawingArea.Black ? 3 : 1
+            visible: drawingArea.currentBrush === DrawingArea.Paintbrush
+
+            Text {
+                anchors.centerIn: parent
+                text: "black"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentColor = DrawingArea.Black
+                }
+            }
+        }
+
+
+        Rectangle {
+            width: parent.width
+            height: width
+            border.width: drawingArea.currentColor === DrawingArea.Gray ? 3 : 1
+            visible: drawingArea.currentBrush === DrawingArea.Paintbrush
+
+            Text {
+                anchors.centerIn: parent
+                text: "gray"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentColor = DrawingArea.Gray
+                }
+            }
+        }
+
+
+        Rectangle {
+            width: parent.width
+            height: width
+            border.width: drawingArea.currentColor === DrawingArea.White ? 3 : 1
+            visible: drawingArea.currentBrush === DrawingArea.Paintbrush
+
+            Text {
+                anchors.centerIn: parent
+                text: "white"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentColor = DrawingArea.White
+                }
+            }
+        }
+
+
+        Rectangle {
             id: thinBrushSelect
             width: parent.width
             height: width
@@ -57,26 +117,6 @@ Rectangle {
                 anchors.fill: parent
                 onClicked: {
                     drawingArea.currentBrush = DrawingArea.Pencil
-                }
-            }
-        }
-
-        Rectangle {
-            id: eraserSelect
-            width: parent.width
-            height: width
-            border.width: drawingArea.currentBrush === DrawingArea.Eraser ? 3 : 1
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: 5
-                source: "qrc:/icons/eraser.png"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.currentBrush = DrawingArea.Eraser
                 }
             }
         }

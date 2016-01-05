@@ -18,6 +18,7 @@ class DrawingArea : public QQuickPaintedItem
     Q_PROPERTY(Page::Brush currentBrush MEMBER m_currentBrush NOTIFY currentBrushChanged)
     Q_PROPERTY(bool zoomtoolSelected MEMBER m_zoomSelected NOTIFY zoomtoolSelectedChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor NOTIFY zoomFactorChanged)
+    Q_PROPERTY(Page::Color currentColor MEMBER m_currentColor NOTIFY currentColorChanged)
     Q_PROPERTY(Page* page MEMBER m_page WRITE setPage)
 
 public:
@@ -42,6 +43,7 @@ signals:
     void currentBrushChanged();
     void zoomtoolSelectedChanged();
     void zoomFactorChanged();
+    void currentColorChanged();
 
 private slots:
     void redrawBackbuffer();
@@ -61,6 +63,7 @@ private:
     double m_zoomFactor;
     QRectF m_zoomRect;
     bool m_zoomSelected;
+    Page::Color m_currentColor;
     QPointer<Page> m_page;
 };
 

@@ -15,7 +15,8 @@ DrawingArea::DrawingArea() :
     m_hasEdited(false),
     m_zoomFactor(1.0),
     m_zoomRect(0, 0, 1.0, 1.0),
-    m_zoomSelected(false)
+    m_zoomSelected(false),
+    m_currentColor(Page::Black)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
 }
@@ -278,7 +279,16 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         sendUpdate(updateRect, EPFrameBuffer::Mono);
     }
 
+    if (m_currentBrush == Page::Paintbrush) {
+        if (m_currentColor == Page::White) {
+            pen.setColor(Qt::white);
+        } else if (m_currentColor == Page::Gray) {
+            pen.setBrush(Qt::Dense4Pattern);
+        }
+    }
+
     Page::Line drawnLine;
+    drawnLine.color = m_currentColor;
     drawnLine.brush = m_currentBrush;
     drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() + m_zoomRect.x(),
                                      prevPoint.y * m_zoomRect.height() + m_zoomRect.y(),
@@ -537,6 +547,21 @@ void DrawingArea::redrawBackbuffer()
             continue;
         } else if (drawnLine.brush == Page::Eraser) {
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
+        } else if (drawnLine.brush == Page::Paintbrush) {
+            switch(drawnLine.color) {
+            case Page::White:
+                pen.setBrush(Qt::SolidPattern);
+                pen.setColor(Qt::white);
+                break;
+            case Page::Black:
+                pen.setBrush(Qt::SolidPattern);
+                pen.setColor(Qt::black);
+                break;
+            case Page::Gray:
+                pen.setBrush(Qt::Dense4Pattern);
+                pen.setColor(Qt::black);
+                break;
+            }
         }
 
         for (int i=1; i<drawnLine.points.size(); i++) {
