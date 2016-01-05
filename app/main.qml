@@ -1,5 +1,6 @@
 import QtQuick 2.3
 import QtQuick.Window 2.2
+import com.magmacompany 1.0
 
 Window {
     id: window
@@ -33,17 +34,19 @@ Window {
             }
         }
 
-        function openDocument(name, files) {
+        function openDocument(path) {
+            var name = Collection.title(path)
             var index = tabBar.tabModel.indexOf(name)
 
             if (index === -1) {
                 var newIndex = tabBar.tabModel.length + 1
-                var createdObject = documentComponent.createObject(rootItem, {"tabIndex": newIndex, "pageModel": files})
+                var createdObject = documentComponent.createObject(rootItem, {"tabIndex": newIndex})
                 var tabModel = tabBar.tabModel
                 tabModel.push(name)
                 tabBar.tabModel = tabModel
                 tabBar.currentTab = newIndex
                 tabBar.objectList.push(createdObject)
+                createdObject.documentPath = path
             } else {
                 tabBar.currentTab = index + 1
             }
@@ -79,7 +82,6 @@ Window {
                 event.accepted = true
                 return
             }
-            console.log("Key pressed: " + event.key)
         }
 
         Component.onCompleted: forceActiveFocus()
@@ -143,7 +145,7 @@ Window {
                 property int tabIndex
 
                 onOpenBook: {
-                    rootItem.openDocument(name, files)
+                    rootItem.openDocument(path)
                 }
             }
         }
@@ -166,7 +168,6 @@ Window {
 
         MainScreen {
             id: mainScreen
-            archiveModel: exampleDocumentModel.get(0).files
             visible: (tabBar.currentTab === 0)
             anchors {
                 top: tabBar.bottom
@@ -212,7 +213,7 @@ Window {
 
                 if (index === -1) {
                     var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = archiveComponent.createObject(rootItem, {"tabIndex": newIndex, "folderModel": exampleDocumentModel })
+                    var createdObject = archiveComponent.createObject(rootItem, {"tabIndex": newIndex })
                     var tabModel = tabBar.tabModel
                     tabModel.push("ARCHIVE")
                     tabBar.tabModel = tabModel
@@ -224,54 +225,7 @@ Window {
             }
 
             onOpenBook: {
-                rootItem.openDocument(name, files)
-            }
-        }
-
-        ListModel {
-            id: exampleDocumentModel
-            ListElement {
-                name: "DROPBOX"
-                files: [
-                    ListElement {
-                        name: "DESTIN.PDF"
-                        description: "Academic paper about machine learning"
-                        files: [
-                            ListElement { path: "file:///data/pdf/1.png" },
-                            ListElement { path: "file:///data/pdf/2.png" },
-                            ListElement { path: "file:///data/pdf/3.png" },
-                            ListElement { path: "file:///data/pdf/4.png" },
-                            ListElement { path: "file:///data/pdf/5.png" }
-                        ]
-                    },
-                    ListElement {
-                        name: "JANTU.DOC"
-                        description: "Martin's master thesis"
-                        files: [
-                            ListElement { path: "file:///data/master-17.png" },
-                            ListElement { path: "file:///data/master-18.png" },
-                            ListElement { path: "file:///data/master-19.png" },
-                            ListElement { path: "file:///data/master-20.png" },
-                            ListElement { path: "file:///data/master-21.png" },
-                            ListElement { path: "file:///data/master-22.png" },
-                            ListElement { path: "file:///data/master-23.png" },
-                            ListElement { path: "file:///data/master-24.png" },
-                            ListElement { path: "file:///data/master-25.png" },
-                            ListElement { path: "file:///data/master-26.png" },
-                            ListElement { path: "file:///data/master-27.png" }
-                        ]
-                    },
-                    ListElement {
-                        name: "IMAGES.ZIP"
-                        description: "Some sample images"
-                        files: [
-                            ListElement { path: "file:///data/diamondsutra.png" },
-                            ListElement { path: "file:///data/gutenbergbible-tl.png" },
-                            ListElement { path: "file:///data/test.png" },
-                            ListElement { path: "file:///data/typoskjerm.png" }
-                        ]
-                    }
-                ]
+                rootItem.openDocument(path)
             }
         }
     }

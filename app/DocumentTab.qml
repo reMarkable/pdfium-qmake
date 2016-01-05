@@ -4,8 +4,16 @@ import com.magmacompany 1.0
 Item {
     id: document
 
+    property string documentPath
+    onDocumentPathChanged: pageModel = Collection.getPages(documentPath)
     property var pageModel: []
     property int page: 0
+
+    Component.onDestruction: {
+        for (var i=0; i<pageModel.length; i++) {
+            pageModel[i].destroy()
+        }
+    }
 
     onVisibleChanged: {
         if (visible) {
@@ -16,7 +24,7 @@ Item {
     }
 
     Keys.onRightPressed: {
-        if (page < pageModel.count - 1) {
+        if (page < pageModel.length - 1) {
             page++
             event.accepted = true
         }
@@ -29,122 +37,106 @@ Item {
         }
     }
 
-    Repeater {
-        id: pageRepeater
-        model: document.pageModel
+    Rectangle {
         anchors.fill: parent
 
-        delegate: Rectangle {
-            anchors.fill: pageRepeater
-            visible: document.page === index
-            Image {
-                anchors {
-                    top: parent.top
-                    horizontalCenter: parent.horizontalCenter
-                }
+        DrawingArea {
+            id: drawingArea
+            currentBrush: DrawingArea.Pen
+            anchors.fill: parent
+            page: document.pageModel.length === 0 ? null : document.pageModel[document.page]
+        }
 
-                source: modelData
-                smooth: false
-                asynchronous: true
+        Column {
+            id: toolBox
+            width: 75
+            height: 100
+            visible: !rootItem.focusMode && !thumbnailGrid.visible
+            anchors {
+                left: parent.left
+                top: parent.top
+                leftMargin: 5
+                topMargin: 100
+            }
+            Rectangle {
+                width: parent.width
+                height: width
+                color: "white"
+                border.width: 1
+
+                Text {
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "CLEAR"
+                    font.pointSize: 7
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            drawingArea.clear()
+                        }
+                    }
+                }
             }
 
-            DrawingArea {
-                id: drawingArea
-                currentBrush: DrawingArea.Pen
-                anchors.fill: parent
+            Rectangle {
+                width: parent.width
+                height: width
+                color: "white"
+                border.width: 1
+
+                Text {
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "UNDO"
+                    font.pointSize: 7
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            drawingArea.undo()
+                        }
+                    }
+                }
             }
 
-            Column {
-                id: toolBox
-                width: 75
-                height: 100
-                visible: !rootItem.focusMode && !thumbnailGrid.visible
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    leftMargin: 5
-                    topMargin: 100
-                }
-                Rectangle {
-                    width: parent.width
-                    height: width
-                    color: "white"
-                    border.width: 1
+            Rectangle {
+                width: parent.width
+                height: width
+                color: "white"
+                border.width: 1
 
-                    Text {
+                Text {
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "INDEX"
+                    font.pointSize: 7
+                    MouseArea {
                         anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        text: "CLEAR"
-                        font.pointSize: 7
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                drawingArea.clear()
-                            }
+                        onClicked: {
+                            thumbnailGrid.visible  = true
                         }
                     }
                 }
+            }
 
-                Rectangle {
-                    width: parent.width
-                    height: width
-                    color: "white"
-                    border.width: 1
+            Rectangle {
+                width: parent.width
+                height: width
+                color: "white"
+                border.width: 1
 
-                    Text {
+                Text {
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "FOCUS"
+                    font.pointSize: 7
+                    MouseArea {
                         anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        text: "UNDO"
-                        font.pointSize: 7
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                drawingArea.undo()
-                            }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: width
-                    color: "white"
-                    border.width: 1
-
-                    Text {
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        text: "INDEX"
-                        font.pointSize: 7
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                thumbnailGrid.visible  = true
-                            }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    width: parent.width
-                    height: width
-                    color: "white"
-                    border.width: 1
-
-                    Text {
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        text: "FOCUS"
-                        font.pointSize: 7
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                rootItem.focusMode = true
-                            }
+                        onClicked: {
+                            rootItem.focusMode = true
                         }
                     }
                 }
@@ -152,9 +144,6 @@ Item {
         }
     }
 
-    onPageModelChanged: {
-        console.log(pageModel)
-    }
 
     Item {
         anchors.fill: parent
@@ -189,7 +178,7 @@ Item {
                         anchors.centerIn: parent
                         height: parent.height - 20
                         width: parent.width - 20
-                        source: modelData
+                        source: "file://" + modelData.backgroundPath()
                         smooth: false
                         asynchronous: true
                     }

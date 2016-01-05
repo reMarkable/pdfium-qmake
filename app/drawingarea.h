@@ -4,6 +4,8 @@
 #include <QQuickPaintedItem>
 #include <QImage>
 #include "digitizer.h"
+#include "page.h"
+#include <QPointer>
 
 #ifdef Q_PROCESSOR_ARM
 #include <epframebuffer.h>
@@ -12,28 +14,14 @@
 class DrawingArea : public QQuickPaintedItem
 {
     Q_OBJECT
-    Q_ENUMS(Brush)
-    Q_PROPERTY(Brush currentBrush MEMBER m_currentBrush NOTIFY currentBrushChanged)
+
+    Q_PROPERTY(Page::Brush currentBrush MEMBER m_currentBrush NOTIFY currentBrushChanged)
     Q_PROPERTY(bool zoomtoolSelected MEMBER m_zoomSelected NOTIFY zoomtoolSelectedChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor NOTIFY zoomFactorChanged)
+    Q_PROPERTY(Page* page MEMBER m_page WRITE setPage)
 
 public:
     DrawingArea();
-
-    enum Brush {
-        Paintbrush,
-        Pencil,
-        Pen,
-        Eraser,
-        ZoomTool,
-        InvalidBrush = -1
-    };
-
-
-    struct DrawnLine {
-        Brush brush = InvalidBrush;
-        QList<PenPoint> points;
-    };
 
     void paint(QPainter *painter) override;
 
@@ -44,30 +32,36 @@ public slots:
     void setZoom(double x, double y, double width, double height);
     qreal zoomFactor() { return m_zoomFactor; }
 
+    void setPage(Page *page);
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
 
 signals:
     void currentBrushChanged();
     void zoomtoolSelectedChanged();
     void zoomFactorChanged();
 
-private:
+private slots:
     void redrawBackbuffer();
+
+private:
     void doZoom();
 #ifdef Q_PROCESSOR_ARM
     void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform);
 #endif
 
     bool m_invert;
-    Brush m_currentBrush;
+    Page::Brush m_currentBrush;
     QImage m_contents;
     bool m_hasEdited;
-    QList<DrawnLine> m_lines;
-    QList<DrawnLine> m_undoneLines;
+    QVector<Page::Line> m_lines;
+    QList<Page::Line> m_undoneLines;
     double m_zoomFactor;
     QRectF m_zoomRect;
     bool m_zoomSelected;
+    QPointer<Page> m_page;
 };
 
 #endif // DRAWINGAREA_H

@@ -1,11 +1,10 @@
 import QtQuick 2.0
+import com.magmacompany 1.0
 
 Rectangle {
     id: archiveView
 
-    signal openBook(var name, var files)
-
-    property var folderModel
+    signal openBook(var path)
 
     Text {
         id: header
@@ -35,7 +34,7 @@ Rectangle {
             anchors.fill: parent
 
             spacing: 5
-            model: archiveView.folderModel
+            model: Collection.folderEntries()
             interactive: false
 
             property int selected: -1
@@ -62,7 +61,7 @@ Rectangle {
                         leftMargin: 5
                     }
 
-                    text: name
+                    text: Collection.title(modelData)
                     verticalAlignment: Text.AlignVCenter
                 }
 
@@ -70,7 +69,7 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         folderList.selected = index
-                        fileList.model = files
+                        filelistContainer.folderPath = modelData
                     }
                 }
             }
@@ -79,6 +78,10 @@ Rectangle {
 
     Rectangle {
         id: filelistContainer
+
+        property string folderPath
+        onFolderPathChanged: fileList.model = Collection.folderEntries(folderPath)
+
         width: parent.width / 2 - 40
         border.width: 0
         anchors {
@@ -90,8 +93,8 @@ Rectangle {
         }
 
         ListView {
-            anchors.fill: parent
             id: fileList
+            anchors.fill: parent
             interactive: false
 
             spacing: 5
@@ -121,14 +124,14 @@ Rectangle {
                         leftMargin: 5
                     }
 
-                    text: name + "\n" + description
+                    text: Collection.title(modelData)
                 }
 
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        archiveView.openBook(name, files)
+                        archiveView.openBook(modelData)
                     }
                 }
             }

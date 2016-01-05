@@ -1,13 +1,12 @@
 import QtQuick 2.0
+import com.magmacompany 1.0
 
 Rectangle {
     id: mainScreen
     signal newNoteClicked
     signal newSketchClicked
     signal archiveClicked
-    signal openBook(var name, var files)
-
-    property var archiveModel
+    signal openBook(var path)
 
     Row {
         width: parent.width
@@ -118,7 +117,7 @@ Rectangle {
         columnSpacing: 0
 
         Repeater {
-            model: archiveModel
+            model: Collection.recentlyUsedPaths()
             Item {
                 width: archiveGrid.width / archiveGrid.columns
                 height: width
@@ -131,7 +130,7 @@ Rectangle {
                     Image {
                         anchors.fill: parent
                         anchors.margins: 4
-                        source: model.files.get(0).path
+                        source: "file://" + Collection.thumbnailPath(modelData)
                         fillMode: Image.PreserveAspectCrop
                         Rectangle {
                             anchors.fill: parent
@@ -143,14 +142,14 @@ Rectangle {
                         anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        text: model.name
+                        text: Collection.title(modelData)
                         color: window.fontColor
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            mainScreen.openBook(model.name, model.files)
+                            mainScreen.openBook(modelData)
                         }
                     }
                 }

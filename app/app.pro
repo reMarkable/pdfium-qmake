@@ -3,11 +3,14 @@ TEMPLATE = app
 QT += qml quick widgets gui_private
 CONFIG += c++11
 
+# QMAKE_CXXFLAGS += -O3
 TARGET = xochitl
 
 SOURCES += main.cpp \
     drawingarea.cpp \
-    batterymonitor.cpp
+    batterymonitor.cpp \
+    page.cpp \
+    collection.cpp
 
 RESOURCES += qml.qrc
 
@@ -17,7 +20,9 @@ include(deployment.pri)
 HEADERS += \
     drawingarea.h \
     predictor.h \
-    batterymonitor.h
+    batterymonitor.h \
+    page.h \
+    collection.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app

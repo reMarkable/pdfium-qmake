@@ -5,6 +5,7 @@
 
 #include "drawingarea.h"
 #include "batterymonitor.h"
+#include "collection.h"
 
 #ifdef Q_PROCESSOR_ARM
 #include "digitizer.h"
@@ -39,7 +40,9 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonType<BatteryMonitor>("com.magmacompany", 1, 0, "BatteryMonitor", [](QQmlEngine *, QJSEngine*) -> QObject* {
         return new BatteryMonitor;
     });
-
+    qmlRegisterSingletonType<Collection>("com.magmacompany", 1, 0, "Collection", [](QQmlEngine *, QJSEngine*) -> QObject* {
+        return new Collection;
+    });
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
