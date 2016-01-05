@@ -113,24 +113,21 @@ void DrawingArea::setPage(Page *page)
 
 static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bool invert)
 {
+#ifdef DEBUG_AA
     if (address >= fb->bits() + fb->byteCount()) {
-//        //printf("overflow in painting by %ld bytes\n", (offset - s_last_byte));
+        qDebug() << "overflow";
         return;
     }
     if (address <= fb->bits()) {
-//        //printf("underflow in painting by %ld bytes\n", (s_first_byte - offset));
+        qDebug() << "underflow" << (fb->constBits() - address) << "bytes" << "bytes per line" << fb->bytesPerLine();
         return;
     }
+#endif
 
-    double normalized = (distance * 2.0/3.0);
-    normalized = pow(normalized, 2);
-    if (invert) {
-        normalized = 1.0 - normalized;
-    }
+    int col = distance * distance * 4.0/9.0 * 256;
 
-    int col = normalized * 16;
-    col *= 16;
     if (invert) {
+        col = 256 - col;
         if (aa) {
             if (col > 128) {
                 return;
@@ -155,24 +152,47 @@ static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bo
             }
             col = 0;
         }
-        if (fb->format() == QImage::Format_ARGB32_Premultiplied) {
-            QRgb *pix = (QRgb*)address;
-            *pix = qRgb(col, col, col);
-        } else {
+//        if (fb->format() == QImage::Format_ARGB32_Premultiplied) {
+//            QRgb *pix = (QRgb*)address;
+//            *pix = qRgb(col, col, col);
+//        } else {
             col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
             *address++ &= (col >> 8) & 0xff;
             *address++ &= col & 0xff;
-        }
+//        }
     }
 }
 
-static void drawAALine(QImage *fb, const QLine &line, bool aa, bool invert)
+static void drawAALine(QImage *fb, QLine line, bool aa, bool invert)
 {
+    Q_ASSERT(fb->format() == QImage::Format_RGB16);
+
     if (!fb->rect().contains(line.p1()) || !fb->rect().contains(line.p2())) {
         return;
     }
 
-    int bytesPerPixel = fb->bytesPerLine() / fb->width();
+    // Clamp edges
+    const int maxX = fb->width() - 2;
+    const int maxY = fb->height() - 2;
+
+    int x1 = line.x1();
+    int x2 = line.x2();
+    if (x1 > maxX) x1 = maxX;
+    if (x2 > maxX) x2 = maxX;
+    if (x1 < 2) x1 = 2;
+    if (x2 < 2) x2 = 2;
+
+    int y1 = line.y1();
+    int y2 = line.y2();
+    if (y1 > maxY) y1 = maxY;
+    if (y2 > maxY) y2 = maxY;
+    if (y1 < 2) y1 = 2;
+    if (y2 < 2) y2 = 2;
+
+    line.setP1(QPoint(x1, y1));
+    line.setP2(QPoint(x2, y2));
+
+    const int bytesPerPixel = fb->bytesPerLine() / fb->width();
 
     uchar *addr = fb->scanLine(line.y1()) + line.x1() * bytesPerPixel;
 
