@@ -335,6 +335,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         // Smooth out the pressure (exponential weighted moving average)
         point.pressure = SMOOTHFACTOR_P * point.pressure + (1.0 - SMOOTHFACTOR_P) * prevPoint.pressure;
 
+        const QLine globalLine(mapFromScene(QPointF(prevPoint.x * 1600, prevPoint.y * 1200)).toPoint(),
+                               mapFromScene(QPointF(point.x * 1600, point.y * 1200)).toPoint());
         const QLine line(prevPoint.x * 1600, prevPoint.y * 1200, point.x * 1600, point.y * 1200);
 
         QRect updateRect = lineBoundingRect(line);
@@ -348,14 +350,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.setPen(pen);
             painter.drawLine(line);
             selfPainter.setPen(pen);
-            selfPainter.drawLine(line);
+            selfPainter.drawLine(globalLine);
             sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
         }
 
         case Page::Eraser:
             painter.drawLine(line);
-            selfPainter.drawLine(line);
+            selfPainter.drawLine(globalLine);
             sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
 
@@ -364,12 +366,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             painter.setPen(pen);
             painter.drawLine(line);
             selfPainter.setPen(pen);
-            selfPainter.drawLine(line);
+            selfPainter.drawLine(globalLine);
             sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
 
         case Page::Pen: {
-            drawAALine(&m_contents, line, false, m_invert);
+            drawAALine(&m_contents, globalLine, false, m_invert);
             drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
 
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
@@ -433,7 +435,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 // Re-draw line with AA pixels
                 it.remove();
                 drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
-                drawAALine(&m_contents, oldLine, true, m_invert);
+                drawAALine(&m_contents, QLine(mapFromScene(oldLine.p1()).toPoint(), mapFromScene(oldLine.p2()).toPoint()), true, m_invert);
                 updateRect = updateRect.united(lineBoundingRect(oldLine));
             }
 
@@ -592,35 +594,36 @@ void DrawingArea::redrawBackbuffer()
         }
 
         for (int i=1; i<drawnLine.points.size(); i++) {
-            QLine line((drawnLine.points[i-1].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                       (drawnLine.points[i-1].y - m_zoomRect.y()) / m_zoomRect.height() * 1200,
-                       (drawnLine.points[i].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
+            QPointF pointA((drawnLine.points[i-1].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
+                    (drawnLine.points[i-1].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
+            QPointF pointB((drawnLine.points[i].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
                        (drawnLine.points[i].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
+            QLine globalLine(mapFromScene(pointA).toPoint(), mapFromScene(pointB).toPoint());
 
             switch(drawnLine.brush){
             case Page::Paintbrush: {
                 qreal pointsize = drawnLine.points[i].pressure * drawnLine.points[i].pressure * 10.0;
-                pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
+                pointsize -= (fabs(globalLine.dx()) + fabs(globalLine.dy())) / (10.0 * m_zoomFactor);
                 if (pointsize < 2) pointsize = 2;
                 pen.setWidthF(pointsize * m_zoomFactor);
                 painter.setPen(pen);
-                painter.drawLine(line);
+                painter.drawLine(globalLine);
                 break;
             }
             case Page::Eraser:
                 pen.setWidthF(10 * m_zoomFactor);
                 pen.setColor(Qt::white);
                 painter.setPen(pen);
-                painter.drawLine(line);
+                painter.drawLine(globalLine);
                 break;
             case Page::Pencil:
                 pen.setWidthF(m_zoomFactor);
                 painter.setPen(pen);
-                painter.drawLine(line);
+                painter.drawLine(globalLine);
                 break;
             case Page::Pen:
-                drawAALine(&m_contents, line, false, m_invert);
-                drawAALine(&m_contents, line, true, m_invert);
+                drawAALine(&m_contents, globalLine, false, m_invert);
+                drawAALine(&m_contents, globalLine, true, m_invert);
                 break;
             default:
                 break;
