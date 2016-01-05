@@ -50,6 +50,7 @@ private slots:
 
 private:
     void doZoom();
+    QRect lineBoundingRect(const QLine &line);
 #ifdef Q_PROCESSOR_ARM
     void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform);
 #endif

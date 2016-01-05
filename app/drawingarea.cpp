@@ -293,7 +293,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     if (m_currentBrush == Page::Pen &&  (prevPoint.x * 1600 != event->globalX() || prevPoint.y * 1200 != event->globalY())) {
         QLine line(prevPoint.x * 1600, prevPoint.y * 1200, event->globalX(), event->globalY());
-        QRect updateRect(line.p1(), line.p2());
+        QRect updateRect = lineBoundingRect(line);
         drawAALine(&m_contents, line, false, m_invert);
         drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
         sendUpdate(updateRect, EPFrameBuffer::Mono);
@@ -330,7 +330,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         }
 
         const QLine line(prevPoint.x * 1600, prevPoint.y * 1200, point.x * 1600, point.y * 1200);
-        QRect updateRect(line.p1(), line.p2());
+
+        QRect updateRect = lineBoundingRect(line);
 
         switch(m_currentBrush) {
         case Page::Paintbrush: {
@@ -399,7 +400,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 QLine oldLine = it.next();
 
                 // Avoid overlapping with the rect we just updated
-                QRect testRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
+                QRect testRect = updateRect.united(lineBoundingRect(oldLine));
                 testRect.setX(testRect.x() - 12);
                 testRect.setY(testRect.y() - 16);
                 testRect.setWidth(testRect.width() + 24);
@@ -427,7 +428,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
                 it.remove();
                 drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
                 drawAALine(&m_contents, oldLine, true, m_invert);
-                updateRect = updateRect.united(QRect(oldLine.p1(), oldLine.p2()));
+                updateRect = updateRect.united(lineBoundingRect(oldLine));
             }
 
             if (updateRect.isEmpty()) {
@@ -483,7 +484,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     for (const QLine &line : queuedLines) {
         drawAALine(EPFrameBuffer::instance()->framebuffer(), line, true, m_invert);
 
-        updateRect = updateRect.united(QRect(line.p1(), line.p2()));
+        updateRect = updateRect.united(lineBoundingRect(line));
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 #endif//Q_PROCESSOR_ARM
@@ -662,6 +663,15 @@ void DrawingArea::doZoom()
     QRectF boundingRect = drawnLine.boundingRect();
     setZoom(boundingRect.x() / 1600, boundingRect.y() / 1200, boundingRect.width() / 1600, boundingRect.height() / 1200);
 #endif//Q_PROCESSOR_ARM
+}
+
+QRect DrawingArea::lineBoundingRect(const QLine &line)
+{
+    const int x1 = qMin(line.x1(), line.x2());
+    const int y1 = qMin(line.y1(), line.y2());
+    const int x2 = qMax(line.x1(), line.x2());
+    const int y2 = qMax(line.y1(), line.y2());
+    return QRect(x1, y1, x2 - x1, y2 - y1);
 }
 
 #ifdef Q_PROCESSOR_ARM
