@@ -46,7 +46,11 @@ void DrawingArea::clear()
                                               EPFrameBuffer::FullUpdate);
 #endif
     } else {
-        m_contents.fill(Qt::white);
+        if (m_invert) {
+            m_contents.fill(Qt::black);
+        } else {
+            m_contents.fill(Qt::white);
+        }
         update();
         m_hasEdited = false;
         m_undoneLines.clear();
@@ -526,7 +530,11 @@ void DrawingArea::redrawBackbuffer()
         // Probably haven't gotten the proper geometry yet
         return;
     }
-    m_contents.fill(Qt::white);
+    if (m_invert) {
+        m_contents.fill(Qt::black);
+    } else {
+        m_contents.fill(Qt::white);
+    }
 
     QPainter painter(&m_contents);
 
@@ -577,7 +585,11 @@ void DrawingArea::redrawBackbuffer()
         painter.save();
 
         if (drawnLine.brush == Page::InvalidBrush) { // FIXME: hack for detecting clears
-            m_contents.fill(Qt::white);
+            if (m_invert) {
+                m_contents.fill(Qt::black);
+            } else {
+                m_contents.fill(Qt::white);
+            }
             continue;
         } else if (drawnLine.brush == Page::Eraser) {
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
