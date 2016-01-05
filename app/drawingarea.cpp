@@ -133,41 +133,41 @@ static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bo
     }
 #endif
 
-    int col = distance * distance * 4.0/9.0 * 256;
+    int color = distance * distance * 4.0/9.0 * 256;
 
     if (invert) {
-        col = 256 - col;
+        color = 256 - color;
         if (aa) {
-            if (col > 128) {
+            if (color > 128) {
                 return;
             }
         } else {
-            if (col < 128) {
+            if (color < 128) {
                 return;
             }
-            col = 255;
+            color = 255;
         }
-        col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
-        *address++ |= (col >> 8) & 0xff;
-        *address++ |= col & 0xff;
+        color = (((color >> 3) & 0x001F) | ((color << 3) & 0x07E0) | ((color << 8) & 0xF800));
+        *address++ |= (color >> 8) & 0xff;
+        *address++ |= color & 0xff;
     } else {
         if (aa) {
-            if (col < 128) {
+            if (color < 128) {
                 return;
             }
         } else {
-            if (col > 128) {
+            if (color > 128) {
                 return;
             }
-            col = 0;
+            color = 0;
         }
 //        if (fb->format() == QImage::Format_ARGB32_Premultiplied) {
 //            QRgb *pix = (QRgb*)address;
 //            *pix = qRgb(col, col, col);
 //        } else {
-            col = (((col >> 3) & 0x001F) | ((col << 3) & 0x07E0) | ((col << 8) & 0xF800));
-            *address++ &= (col >> 8) & 0xff;
-            *address++ &= col & 0xff;
+            color = (((color >> 3) & 0x001F) | ((color << 3) & 0x07E0) | ((color << 8) & 0xF800));
+            *address++ &= (color >> 8) & 0xff;
+            *address++ &= color & 0xff;
 //        }
     }
 }
