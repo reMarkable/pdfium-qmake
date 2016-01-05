@@ -485,6 +485,7 @@ void DrawingArea::redrawBackbuffer()
 
 void DrawingArea::doZoom()
 {
+#ifdef Q_PROCESSOR_ARM
     Digitizer *digitizer = Digitizer::instance();
 
     PenPoint penPoint, prevPenPoint = digitizer->acquireLock();
@@ -515,6 +516,7 @@ void DrawingArea::doZoom()
 
     QRectF boundingRect = drawnLine.boundingRect();
     setZoom(boundingRect.x() / 1600, boundingRect.y() / 1200, boundingRect.width() / 1600, boundingRect.height() / 1200);
+#endif//Q_PROCESSOR_ARM
 }
 
 #ifdef Q_PROCESSOR_ARM
