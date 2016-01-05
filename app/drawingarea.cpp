@@ -272,6 +272,11 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     Digitizer *digitizer = Digitizer::instance();
 
+    if (digitizer->buttonPressed()) {
+        handleGesture();
+        return;
+    }
+
     PenPoint point;
     PenPoint prevPoint = digitizer->acquireLock();
 
@@ -671,6 +676,99 @@ void DrawingArea::doZoom()
 
     QRectF boundingRect = drawnLine.boundingRect();
     setZoom(boundingRect.x() / 1600, boundingRect.y() / 1200, boundingRect.width() / 1600, boundingRect.height() / 1200);
+#endif//Q_PROCESSOR_ARM
+}
+
+enum Direction {
+    Invalid,
+    Up,
+    Right,
+    Left,
+    Down
+};
+
+Direction getDirection(PenPoint first, PenPoint second)
+{
+    const float dx = first.x - second.x;
+    const float dy = first.y - second.y;
+    if (fabs(dx) > fabs(dy)) {
+        if (dx > 0) {
+            return Up;
+        } else {
+            return Down;
+        }
+    } else {
+        if (dy > 0) {
+            return Right;
+        } else {
+            return Left;
+        }
+    }
+}
+
+QString directionToString(const Direction &direction)
+{
+    switch(direction) {
+    case Up: return QStringLiteral("Up");
+    case Right: return QStringLiteral("Right");
+    case Left: return QStringLiteral("Left");
+    case Down: return QStringLiteral("Down");
+    default: return QStringLiteral("Invalid");
+    }
+}
+
+void DrawingArea::handleGesture()
+{
+#ifdef Q_PROCESSOR_ARM
+    Digitizer *digitizer = Digitizer::instance();
+
+    PenPoint penPoint, prevPenPoint = digitizer->acquireLock();
+    QPointF prevPoint(prevPenPoint.x * 1600, prevPenPoint.y * 1200);
+
+    QPainter painter(EPFrameBuffer::instance()->framebuffer());
+    QPen pen;
+    pen.setWidth(5);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setBrush(Qt::Dense4Pattern);
+    painter.setPen(pen);
+
+    Predictor xPredictor;
+    Predictor yPredictor;
+
+    //xPredictor.smoothFactor = 0.001;
+    //yPredictor.smoothFactor = 0.001;
+
+    qDebug() << "Gesture:";
+
+    Direction currentDirection = Invalid, newDirection = Invalid;
+    QVector<Direction> directions;
+    int newDirectionCount = 0;
+    while (digitizer->getPoint(&penPoint)) {
+        penPoint.x = xPredictor.getPrediction(penPoint.x);
+        penPoint.y = yPredictor.getPrediction(penPoint.y);
+
+        QPointF point(penPoint.x * 1600, penPoint.y * 1200);
+        Direction direction = getDirection(prevPenPoint, penPoint);
+
+        if (direction == newDirection) {
+            newDirectionCount++;
+        } else {
+            newDirection = direction;
+            newDirectionCount = 0;
+        }
+
+        if (newDirectionCount > 3 && currentDirection != newDirection) {
+            currentDirection = newDirection;
+            directions.append(currentDirection);
+            qDebug() << directionToString(newDirection);
+        }
+
+        painter.drawLine(prevPoint, point);
+        sendUpdate(QRect(prevPoint.toPoint(), point.toPoint()), EPFrameBuffer::Mono);
+        prevPoint = point;
+    }
+
+    digitizer->releaseLock();
 #endif//Q_PROCESSOR_ARM
 }
 
