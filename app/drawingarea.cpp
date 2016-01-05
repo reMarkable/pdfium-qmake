@@ -65,11 +65,16 @@ void DrawingArea::undo()
 
     m_undoneLines.append(m_lines.takeLast());
 
-    redrawBackbuffer();
-
     m_hasEdited = true;
-    qDebug() << Q_FUNC_INFO << "Undo completed in" << timer.elapsed();
-    update();
+
+    QPolygon lastLine;
+    foreach(const PenPoint &penPoint, m_undoneLines.last().points) {
+        QPoint point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
+                   (penPoint.y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
+        lastLine.append(point);
+    }
+    redrawBackbuffer();
+    update(lastLine.boundingRect());
 }
 
 void DrawingArea::redo()
