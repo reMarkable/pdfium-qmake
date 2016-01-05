@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QDebug>
 #include <QScreen>
+#include <QPainter>
 
 #include "drawingarea.h"
 #include "batterymonitor.h"
@@ -24,12 +25,18 @@ int main(int argc, char *argv[])
     qputenv("QT_QPA_PLATFORM", "minimal:enable_fonts");
     qputenv("QT_QPA_FONTDIR", "/data/fonts/");
     qputenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS", "/dev/input/event0");
-
-    EPFrameBuffer::instance()->clearScreen();
 #endif
     QApplication app(argc, argv);
 
 #ifdef Q_PROCESSOR_ARM
+    { // Show loading screen
+        QImage *fb = EPFrameBuffer::instance()->framebuffer();
+        fb->fill(Qt::white);
+        QPainter painter(fb);
+        painter.drawText(fb->rect().center(), "Starting...");
+        EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+    }
+
     if (!Digitizer::initialize("/dev/input/event1")) {
         qWarning() << "Bailing without digitizer";
         return 1;
