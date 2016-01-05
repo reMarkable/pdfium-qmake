@@ -269,7 +269,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     m_hasEdited = true;
 
 #ifdef Q_PROCESSOR_ARM
-    QThread::currentThread()->setPriority(QThread::HighestPriority);
 
     Digitizer *digitizer = Digitizer::instance();
 
