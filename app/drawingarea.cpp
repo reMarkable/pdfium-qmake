@@ -593,7 +593,6 @@ void DrawingArea::redrawBackbuffer()
                 break;
             case Page::Gray:
                 pen.setBrush(Qt::Dense4Pattern);
-                pen.setColor(Qt::black);
                 break;
             }
         }
