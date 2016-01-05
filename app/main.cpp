@@ -26,7 +26,10 @@ int main(int argc, char *argv[])
     qputenv("QT_QPA_FONTDIR", "/data/fonts/");
     qputenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS", "/dev/input/event0");
 #endif
+
     QApplication app(argc, argv);
+    app.setApplicationName(QStringLiteral("xochitl"));
+    app.setOrganizationName("remarkable");
 
 #ifdef Q_PROCESSOR_ARM
     { // Show loading screen
