@@ -162,5 +162,10 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             color: "white"
         }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: debugWindow.visible = !debugWindow.visible
+        }
     }
 }

@@ -225,5 +225,21 @@ Window {
                 rootItem.openDocument(path)
             }
         }
+
+        Rectangle {
+            id: debugWindow
+            visible: false
+            anchors {
+                right: parent.right
+                bottom: parent.bottom
+            }
+            width: 120
+            height: 20
+
+            Text {
+                anchors.fill: parent
+                text: SystemMonitor.memoryUsed + " MB used"
+            }
+        }
     }
 }

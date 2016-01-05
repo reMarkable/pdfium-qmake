@@ -25,15 +25,12 @@ SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
 
 void SystemMonitor::doPoll()
 {
-    long rss = 0L;
-    FILE* fp = NULL;
-    if ((fp = fopen("/proc/self/statm", "r" )) != NULL) {
-        if (fscanf(fp, "%*s%ld", &rss ) == 1) {
-            qDebug() << ((size_t)rss * (size_t)sysconf(_SC_PAGESIZE)) / (1024 * 1024) << "MB used";
-        }
-        fclose(fp);
-    }
+    checkBattery();
+    checkMemory();
+}
 
+void SystemMonitor::checkBattery()
+{
     QFile file("/sys/class/power_supply/max170xx_battery/capacity");
 
     if (!file.open(QIODevice::ReadOnly)) {
@@ -50,5 +47,30 @@ void SystemMonitor::doPoll()
 
     m_batteryLeft = batteryPercentage;
     emit batteryChanged();
+}
+
+void SystemMonitor::checkMemory()
+{
+    FILE* fp = NULL;
+    if ((fp = fopen("/proc/self/statm", "r" )) == NULL) {
+        qWarning() << "Unable to open statm";
+        return;
+    }
+
+    long rss = 0L;
+    int valuesRead = fscanf(fp, "%*s%ld", &rss);
+    fclose(fp);
+
+    if (valuesRead != 1) {
+        qWarning() << "Failed to read memory usage";
+        return;
+    }
+
+    int usage = (size_t(rss) * (size_t(sysconf(_SC_PAGESIZE)))) / (1024 * 1024);
+
+    if (usage != m_memoryUsed) {
+        m_memoryUsed = usage;
+        emit memoryUsedChanged();
+    }
 }
 
