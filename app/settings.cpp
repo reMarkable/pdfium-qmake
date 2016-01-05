@@ -7,10 +7,6 @@
 
 Settings::Settings(QObject *parent) : QObject(parent)
 {
-    QFile file(SETTINGSFILE);
-    if (!file.exists() && !file.open(QIODevice::WriteOnly)) {
-        qWarning() << "Unable to create settingsfile";
-    }
 }
 
 void Settings::setValue(Settings::Key key, QVariant value)
