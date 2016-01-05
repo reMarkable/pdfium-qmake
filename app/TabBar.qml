@@ -110,10 +110,27 @@ Rectangle {
         }
     }
 
+    Image {
+        id: rotateButton
+        source: rootItem.rotation === 0 ? "qrc:/icons/rotate-left.png" : "qrc:/icons/rotate-right.png"
+        anchors {
+            verticalCenter: parent.verticalCenter
+            right: batteryIcon.left
+            rightMargin: 5
+        }
+        height: 50
+        width: 50
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: rootItem.rotateScreen()
+        }
+    }
+
     Item {
         id: batteryIcon
 
-        width: 90
+        width: 70
         visible: width > 0
         anchors {
             right: parent.right
@@ -122,7 +139,7 @@ Rectangle {
         }
 
         Rectangle {
-            width: 80
+            width: 60
             height: parent.height / 2
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
@@ -144,11 +161,6 @@ Rectangle {
             anchors.rightMargin: 5
             anchors.verticalCenter: parent.verticalCenter
             color: "white"
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: rootItem.rotateScreen()
         }
     }
 }

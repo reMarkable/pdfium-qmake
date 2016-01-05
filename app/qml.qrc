@@ -17,5 +17,7 @@
         <file>icons/book.png</file>
         <file>icons/new-note.png</file>
         <file>icons/new-sketch.png</file>
+        <file>icons/rotate-left.png</file>
+        <file>icons/rotate-right.png</file>
     </qresource>
 </RCC>
