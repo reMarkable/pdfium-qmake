@@ -18,7 +18,7 @@ Window {
         anchors.centerIn: parent
         width: (rotation === 0) ? parent.width : parent.height
         height: (rotation === 0) ? parent.height : parent.width
-        rotation: Settings.getValue(Settings.Rotation, 0)
+        rotation: Settings.getValue(Settings.Rotation, 270)
 
         property bool focusMode: false
 
