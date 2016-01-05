@@ -319,6 +319,15 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
 
     Predictor xPredictor;
     Predictor yPredictor;
+
+    // Tweak for writing
+    if (m_currentBrush == Page::Pen) {
+        xPredictor.predictionFactor = 0;
+        yPredictor.predictionFactor = 0;
+        xPredictor.smoothFactor = 0.7;
+        yPredictor.smoothFactor = 0.7;
+    }
+
     while (digitizer->getPoint(&point)) {
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
