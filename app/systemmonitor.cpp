@@ -1,4 +1,4 @@
-#include "batterymonitor.h"
+#include "systemmonitor.h"
 #include <stdio.h>
 #ifdef Q_PROCESSOR_ARM
 #include <sys/sysconf.h>
@@ -9,7 +9,7 @@
 #include <QTimer>
 #include <QDebug>
 
-BatteryMonitor::BatteryMonitor(QObject *parent) : QObject(parent),
+SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
     m_batteryLeft(0)
 {
     // Get initial values
@@ -23,7 +23,7 @@ BatteryMonitor::BatteryMonitor(QObject *parent) : QObject(parent),
     timer->start();
 }
 
-void BatteryMonitor::doPoll()
+void SystemMonitor::doPoll()
 {
     long rss = 0L;
     FILE* fp = NULL;

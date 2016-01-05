@@ -5,7 +5,7 @@
 #include <QPainter>
 
 #include "drawingarea.h"
-#include "batterymonitor.h"
+#include "systemmonitor.h"
 #include "collection.h"
 #include "settings.h"
 
@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
 #endif
 
     qmlRegisterType<DrawingArea>("com.magmacompany", 1, 0, "DrawingArea");
-    qmlRegisterSingletonType<BatteryMonitor>("com.magmacompany", 1, 0, "BatteryMonitor", [](QQmlEngine *, QJSEngine*) -> QObject* {
-        return new BatteryMonitor;
+    qmlRegisterSingletonType<SystemMonitor>("com.magmacompany", 1, 0, "SystemMonitor", [](QQmlEngine *, QJSEngine*) -> QObject* {
+        return new SystemMonitor;
     });
     qmlRegisterSingletonType<Collection>("com.magmacompany", 1, 0, "Collection", [](QQmlEngine *, QJSEngine*) -> QObject* {
         return new Collection;

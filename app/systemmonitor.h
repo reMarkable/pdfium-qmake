@@ -1,15 +1,15 @@
-#ifndef BATTERYMONITOR_H
-#define BATTERYMONITOR_H
+#ifndef SYSTEMMONITOR_H
+#define SYSTEMMONITOR_H
 
 #include <QObject>
 
-class BatteryMonitor : public QObject
+class SystemMonitor : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(qreal batteryLeft READ batteryLeft NOTIFY batteryChanged)
 
 public:
-    explicit BatteryMonitor(QObject *parent = 0);
+    explicit SystemMonitor(QObject *parent = 0);
 
 public slots:
     qreal batteryLeft() {
@@ -26,4 +26,4 @@ private:
     qreal m_batteryLeft;
 };
 
-#endif // BATTERYMONITOR_H
+#endif // SYSTEMMONITOR_H

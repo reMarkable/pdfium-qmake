@@ -147,7 +147,7 @@ Rectangle {
 
             Rectangle {
                 height: parent.height - 10
-                width: (parent.width - 10) * BatteryMonitor.batteryLeft
+                width: (parent.width - 10) * SystemMonitor.batteryLeft
                 anchors.left: parent.left
                 anchors.leftMargin: 5
                 anchors.verticalCenter: parent.verticalCenter
