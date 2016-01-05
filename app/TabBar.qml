@@ -49,7 +49,7 @@ Rectangle {
             id: tabRepeater
             model: tabBar.tabModel
             Rectangle {
-                width: 200
+                width: 175
                 visible: tabBar.height > 0
                 height: tabBar.height
                 Text {
