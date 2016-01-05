@@ -16,22 +16,19 @@ Window {
     Item {
         id: rootItem
         anchors.centerIn: parent
-        width: parent.height
-        height: parent.width
-        rotation: 270
+        width: (rotation === 0) ? parent.width : parent.height
+        height: (rotation === 0) ? parent.height : parent.width
+        rotation: Settings.getValue(Settings.Rotation, 0)
 
         property bool focusMode: false
 
         function rotateScreen() {
             if (rotation === 270) {
                 rotation = 0
-                width = parent.width
-                height = parent.height
             } else {
                 rotation = 270
-                width = parent.height
-                height = parent.width
             }
+            Settings.setValue(Settings.Rotation, rotation)
         }
 
         function openDocument(path) {

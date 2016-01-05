@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     drawingarea.cpp \
     batterymonitor.cpp \
     page.cpp \
-    collection.cpp
+    collection.cpp \
+    settings.cpp
 
 RESOURCES += qml.qrc
 
@@ -22,7 +23,8 @@ HEADERS += \
     predictor.h \
     batterymonitor.h \
     page.h \
-    collection.h
+    collection.h \
+    settings.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app

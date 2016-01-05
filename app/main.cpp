@@ -7,6 +7,7 @@
 #include "drawingarea.h"
 #include "batterymonitor.h"
 #include "collection.h"
+#include "settings.h"
 
 #ifdef Q_PROCESSOR_ARM
 #include "digitizer.h"
@@ -52,6 +53,9 @@ int main(int argc, char *argv[])
     });
     qmlRegisterSingletonType<Collection>("com.magmacompany", 1, 0, "Collection", [](QQmlEngine *, QJSEngine*) -> QObject* {
         return new Collection;
+    });
+    qmlRegisterSingletonType<Settings>("com.magmacompany", 1, 0, "Settings", [](QQmlEngine *, QJSEngine*) -> QObject* {
+        return new Settings;
     });
 
     QQmlApplicationEngine engine;
