@@ -549,8 +549,11 @@ void DrawingArea::redrawBackbuffer()
         int backgroundWidth = m_page->background().width();
         float scaleRatio = qMax(float(backgroundWidth) / float(width()),
                                 float(backgroundHeight) / float(height())) / m_zoomFactor;
-        backgroundHeight /= scaleRatio;
-        backgroundWidth /= scaleRatio;
+
+        if (scaleRatio > 1) {
+            backgroundHeight /= scaleRatio;
+            backgroundWidth /= scaleRatio;
+        }
 
         float widthRatio = float(backgroundWidth) / float(width());
         float heightRatio = float(backgroundHeight) / float(height());
