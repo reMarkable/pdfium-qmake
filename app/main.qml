@@ -233,7 +233,7 @@ Window {
                 right: parent.right
                 bottom: parent.bottom
             }
-            width: 120
+            width: 150
             height: 20
 
             Text {
