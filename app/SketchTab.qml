@@ -140,7 +140,7 @@ Rectangle {
                     if (drawingArea.zoomFactor > 1 ) {
                         drawingArea.setZoom(0, 0, 1, 1)
                     } else {
-                        drawingArea.zoomtoolSelected = true
+                        drawingArea.zoomtoolSelected = !drawingArea.zoomtoolSelected
                     }
                 }
             }
