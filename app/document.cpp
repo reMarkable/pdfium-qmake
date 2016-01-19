@@ -1,6 +1,9 @@
 #include "document.h"
+
+#include <QFileInfo>
 #include <QMutexLocker>
 #include <QDebug>
+#include <QFile>
 
 #define CACHE_COUNT 5 // Cache up to 5 page before and after
 
@@ -12,10 +15,39 @@ Document::Document(QString path, QObject *parent)
       m_dimensions(1200, 1560)
 {
     connect(this, SIGNAL(backgroundLoaded(QImage,int)), SLOT(cacheBackground(QImage,int)));
+
+    QFileInfo pathInfo(path);
+
+    QFile metadataFile(path + ".metadata");
+    if (metadataFile.open(QIODevice::ReadOnly)) {
+        int lastPageOpen = metadataFile.readLine().toInt();
+        if (lastPageOpen > 0) {
+            m_currentIndex = lastPageOpen;
+        }
+    }
+
+    QString cachedBackgroundPath = path + ".cached.jpg";
+    if (QFile::exists(cachedBackgroundPath)) {
+        QImage cachedBackground = QImage(cachedBackgroundPath);
+        if (!cachedBackground.isNull()) {
+            m_cachedBackgrounds[m_currentIndex] = cachedBackground;
+        }
+    }
+
+    qDebug() << pathInfo.canonicalFilePath();
 }
 
 Document::~Document()
 {
+    QFile metadataFile(m_path + ".metadata");
+    if (metadataFile.open(QIODevice::WriteOnly)) {
+        metadataFile.write(QByteArray::number(m_currentIndex) + "\n");
+    }
+
+    QMutexLocker locker(&m_cacheLock);
+    if (m_cachedBackgrounds.contains(m_currentIndex)) {
+        m_cachedBackgrounds[m_currentIndex].save(m_path + ".cached.jpg");
+    }
 }
 
 QImage Document::background()
@@ -49,31 +81,31 @@ Line Document::popLine()
     return m_lines[m_currentIndex].takeLast();
 }
 
-void Document::setCurrentIndex(int index)
+void Document::setCurrentIndex(int newIndex)
 {
     QMutexLocker locker(&m_cacheLock);
 
-    if (index >= m_pageCount) {
+    if (newIndex >= m_pageCount) {
         return;
     }
 
-    const int cacheMin = qMax(index - CACHE_COUNT, 0);
-    const int cacheMax = index + CACHE_COUNT;
+    const int cacheMin = qMax(newIndex - CACHE_COUNT, 0);
+    const int cacheMax = newIndex + CACHE_COUNT;
 
     foreach(int index, m_cachedBackgrounds.keys()) {
-        if (index < cacheMin || index > cacheMax) {
-            qDebug() << "removing" << index;
-            m_cachedBackgrounds.remove(index);
+        if (index > cacheMin || index < cacheMax) {
+            continue;
         }
+
+        m_cachedBackgrounds.remove(index);
     }
 
-    m_currentIndex = index;
+    m_currentIndex = newIndex;
     locker.unlock();
 
     preload();
 
     emit currentIndexChanged();
-    qDebug() << "herp";
 }
 
 void Document::setDimensions(QSize size)
@@ -90,10 +122,14 @@ void Document::setDimensions(QSize size)
 
 void Document::preload()
 {
-    QMetaObject::invokeMethod(this,
-                              "loadBackground",
-                              Qt::QueuedConnection,
-                              Q_ARG(int, m_currentIndex));
+    QMutexLocker locker(&m_cacheLock);
+
+    if (!m_cachedBackgrounds.contains(m_currentIndex)) {
+        QMetaObject::invokeMethod(this,
+                                  "loadBackground",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(int, m_currentIndex));
+    }
 
     for (int i=1; i<CACHE_COUNT; i++) {
         const int indexForward = m_currentIndex + i;

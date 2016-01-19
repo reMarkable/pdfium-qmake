@@ -14,7 +14,7 @@ public:
 
 public slots:
     QStringList folderEntries(QString path = QString()) const;
-    bool isFolder(const QString &path, const QString &name) const;
+    bool isFolder(const QString &path) const;
     QObject *getDocument(const QString &path);
     QStringList recentlyUsedPaths() const;
     QString thumbnailPath(const QString &documentPath) const;

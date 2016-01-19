@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QStringList>
 
 ImageDocument::ImageDocument(QString path, QObject *parent) :
@@ -31,9 +32,13 @@ void ImageDocument::loadBackground(int index)
     if (cachedIndices().contains(index)) {
         return;
     }
-    qDebug() << "loading" << index << "/" << m_files.size();
+
+    QElapsedTimer timer;
+    timer.start();
 
     QImage image(m_files[index]);
+    qDebug() << "Image loaded in" << timer.restart() << "ms";
     image = image.scaled(dimensions(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    qDebug() << "Image scaled in" << timer.elapsed() << "ms";
     emit backgroundLoaded(image.convertToFormat(QImage::Format_RGB16), index);
 }

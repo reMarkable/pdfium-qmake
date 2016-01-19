@@ -49,15 +49,21 @@ QStringList Collection::folderEntries(QString path) const
     QDir dir(path);
     QFileInfoList files = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
     QStringList paths;
-    for (const QFileInfo file : files) {
-        paths.append(file.absoluteFilePath());
+    for (const QFileInfo &file : files) {
+        if (file.isFile() && file.suffix() == "pdf") {
+            paths.append(file.absoluteFilePath());
+        }
+
+        if (file.isDir()) {
+            paths.append(file.absoluteFilePath());
+        }
     }
     return paths;
 }
 
-bool Collection::isFolder(const QString &path, const QString &name) const
+bool Collection::isFolder(const QString &path) const
 {
-    return !QFile::exists(m_basePath + '/' + path + '/' + name + '/' + "metadata.dat");
+    return !QFile::exists(path + ".metadata");
 }
 
 QObject *Collection::getDocument(const QString &path)
@@ -102,12 +108,18 @@ QStringList Collection::recentlyUsedPaths() const
 
 QString Collection::thumbnailPath(const QString &documentPath) const
 {
+    QString cachedPath(documentPath + ".cached.jpg");
+    if (QFile::exists(cachedPath)) {
+        return cachedPath;
+    }
+
     QDir dir(documentPath);
     QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.png", QDir::Files, QDir::Name);
     if (fileList.isEmpty()) {
         qWarning() << Q_FUNC_INFO << "No images in path" << documentPath;
         return QString();
     }
+
     return fileList.first().absoluteFilePath();
 }
 

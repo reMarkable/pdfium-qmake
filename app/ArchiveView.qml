@@ -46,7 +46,9 @@ Rectangle {
 
                 Image {
                     id: folderIcon
-                    source: "qrc:/icons/folder.png"
+                    source: Collection.isFolder(modelData) ? "qrc:/icons/folder.png" :"qrc:/icons/book.png"
+                    width: 70
+                    height: 70
                     anchors {
                         left: parent.left
                         verticalCenter: parent.verticalCenter
