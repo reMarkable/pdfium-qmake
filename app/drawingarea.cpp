@@ -11,19 +11,19 @@
 
 DrawingArea::DrawingArea() :
     m_invert(false),
-    m_currentBrush(Page::Paintbrush),
+    m_currentBrush(Line::Paintbrush),
     m_hasEdited(false),
     m_zoomFactor(1.0),
     m_zoomRect(0, 0, 1.0, 1.0),
     m_zoomSelected(false),
-    m_currentColor(Page::Black)
+    m_currentColor(Line::Black)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
 void DrawingArea::paint(QPainter *painter)
 {
-    if (m_contents.isNull() || (m_page && m_page->background().isNull() && m_page->hasBackground())) {
+    if (m_contents.isNull() || (m_document && m_document->background().isNull())) {
         painter->setPen(Qt::black);
         painter->drawText(contentsBoundingRect().center(), "Loading...");
         return;
@@ -54,20 +54,24 @@ void DrawingArea::clear()
         update();
         m_hasEdited = false;
         m_undoneLines.clear();
-        m_lines.append(Page::Line()); // empty dummy for undoing
+        if (m_document) {
+            m_document->addLine(Line()); // empty dummy for undoing
+        }
     }
 }
 
 void DrawingArea::undo()
 {
-    if (m_lines.isEmpty()) {
+    if (m_document && m_document->lines().isEmpty()) {
         return;
     }
 
     QElapsedTimer timer;
     timer.start();
 
-    m_undoneLines.append(m_lines.takeLast());
+    if (m_document) {
+        m_undoneLines.append(m_document->popLine());
+    }
 
     m_hasEdited = true;
 
@@ -78,6 +82,9 @@ void DrawingArea::undo()
         lastLine.append(point);
     }
     redrawBackbuffer();
+    //QPainter painter(EPFrameBuffer::instance()->framebuffer());
+    //painter.drawImage(0, 0, m_contents);
+    //sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Mono);
     update(lastLine.boundingRect());
 }
 
@@ -87,7 +94,10 @@ void DrawingArea::redo()
         return;
     }
 
-    m_lines.append(m_undoneLines.takeLast());
+    if (m_document) {
+        m_document->addLine(m_undoneLines.takeLast());
+    }
+
     redrawBackbuffer();
     m_hasEdited = true;
     update();
@@ -107,17 +117,18 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
     update();
 }
 
-void DrawingArea::setPage(Page *page)
+void DrawingArea::setDocument(Document *document)
 {
-    m_page = page;
-    if (!page) {
+    m_document = document;
+    if (!document) {
         return;
     }
-    m_lines = page->lines();
+
     m_undoneLines.clear();
 
     redrawBackbuffer();
-    connect(page, SIGNAL(backgroundLoaded()), SLOT(redrawBackbuffer()));
+    connect(document, SIGNAL(backgroundChanged()), SLOT(redrawBackbuffer()));
+    connect(document, SIGNAL(currentIndexChanged()), SLOT(redrawBackbuffer()));
 }
 
 static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bool invert)
@@ -296,14 +307,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     QElapsedTimer lutTimer;
     int freeLuts = 1;
 
-    if (m_currentBrush == Page::Eraser) {
+    if (m_currentBrush == Line::Eraser) {
         pen.setWidthF(10 * m_zoomFactor);
         pen.setColor(Qt::white);
         painter.setPen(pen);
         selfPainter.setPen(pen);
     }
 
-    if (m_currentBrush == Page::Pen &&  (prevPoint.x * 1600 != event->globalX() || prevPoint.y * 1200 != event->globalY())) {
+    if (m_currentBrush == Line::Pen &&  (prevPoint.x * 1600 != event->globalX() || prevPoint.y * 1200 != event->globalY())) {
         QLine line(prevPoint.x * 1600, prevPoint.y * 1200, event->globalX(), event->globalY());
         QRect updateRect = lineBoundingRect(line);
         drawAALine(&m_contents, line, false, m_invert);
@@ -311,15 +322,15 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         sendUpdate(updateRect, EPFrameBuffer::Mono);
     }
 
-    if (m_currentBrush == Page::Paintbrush) {
-        if (m_currentColor == Page::White) {
+    if (m_currentBrush == Line::Paintbrush) {
+        if (m_currentColor == Line::White) {
             pen.setColor(Qt::white);
-        } else if (m_currentColor == Page::Gray) {
+        } else if (m_currentColor == Line::Gray) {
             pen.setBrush(Qt::Dense4Pattern);
         }
     }
 
-    Page::Line drawnLine;
+    Line drawnLine;
     drawnLine.color = m_currentColor;
     drawnLine.brush = m_currentBrush;
     drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() + m_zoomRect.x(),
@@ -330,7 +341,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     Predictor yPredictor;
 
     // Tweak for writing
-    if (m_currentBrush == Page::Pen) {
+    if (m_currentBrush == Line::Pen) {
         xPredictor.predictionFactor = 0;
         yPredictor.predictionFactor = 0;
         xPredictor.smoothFactor = 0.7;
@@ -351,7 +362,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         QRect updateRect = lineBoundingRect(line);
 
         switch(m_currentBrush) {
-        case Page::Paintbrush: {
+        case Line::Paintbrush: {
             qreal pointsize = point.pressure * point.pressure * 10.0;
             pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
             if (pointsize < 2) pointsize = 2;
@@ -364,13 +375,13 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             break;
         }
 
-        case Page::Eraser:
+        case Line::Eraser:
             painter.drawLine(line);
             selfPainter.drawLine(globalLine);
             sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
 
-        case Page::Pencil:
+        case Line::Pencil:
             pen.setWidthF(m_zoomFactor);
             painter.setPen(pen);
             painter.drawLine(line);
@@ -379,7 +390,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
             sendUpdate(updateRect, EPFrameBuffer::Mono);
             break;
 
-        case Page::Pen: {
+        case Line::Pen: {
             drawAALine(&m_contents, globalLine, false, m_invert);
             drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
 
@@ -483,13 +494,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     digitizer->releaseLock();
 
     m_undoneLines.clear();
-    if (m_page) {
-        m_page->addLine(drawnLine);
+    if (m_document) {
+        m_document->addLine(drawnLine);
     }
-    m_lines.append(drawnLine);
 
     // Check if we have queued AA lines to draw
-    if (m_currentBrush != Page::Pen || queuedLines.isEmpty()) {
+    if (m_currentBrush != Line::Pen || queuedLines.isEmpty()) {
         return;
     }
 
@@ -536,77 +546,83 @@ void DrawingArea::redrawBackbuffer()
         m_contents.fill(Qt::white);
     }
 
-    QPainter painter(&m_contents);
-
-    if (m_page) {
-        if (m_page->hasBackground() && m_page->background().isNull()) {
-            // Background not loaded yet
-            return;
-        }
-
-        // Draw the background image
-        int backgroundHeight = m_page->background().height();
-        int backgroundWidth = m_page->background().width();
-        float scaleRatio = qMax(float(backgroundWidth) / float(width()),
-                                float(backgroundHeight) / float(height())) / m_zoomFactor;
-
-        if (scaleRatio > 1) {
-            backgroundHeight /= scaleRatio;
-            backgroundWidth /= scaleRatio;
-        }
-
-        float widthRatio = float(backgroundWidth) / float(width());
-        float heightRatio = float(backgroundHeight) / float(height());
-
-        int targetX = 0;
-        int targetWidth = backgroundWidth;
-        int targetY = 0;
-        int targetHeight = backgroundHeight;
-
-        if (widthRatio < 1) {
-            const int excessWidth = width() - backgroundWidth;
-            targetX = excessWidth / 2;
-        } else {
-            //targetWidth = width();
-        }
-
-        if (heightRatio < 1) {
-            const int excessHeight = height() - backgroundHeight;
-            targetY = excessHeight / 2;
-        } else {
-            //targetHeight = height();
-        }
-
-        painter.drawImage(QRect(targetX, targetY, targetWidth, targetHeight), m_page->background());
+    if (!m_document) {
+        return;
     }
 
+    QPainter painter(&m_contents);
+
+
+    QImage background = m_document->background();
+
+    if (background.isNull()) {
+        // Background not loaded yet
+        qDebug() << "monkeyshit";
+        return;
+    }
+
+    // Draw the background image
+    int backgroundHeight = background.height();
+    int backgroundWidth = background.width();
+    float scaleRatio = qMax(float(backgroundWidth) / float(width()),
+                            float(backgroundHeight) / float(height())) / m_zoomFactor;
+
+    if (scaleRatio > 1) {
+        backgroundHeight /= scaleRatio;
+        backgroundWidth /= scaleRatio;
+    }
+
+    float widthRatio = float(backgroundWidth) / float(width());
+    float heightRatio = float(backgroundHeight) / float(height());
+
+    int targetX = 0;
+    int targetWidth = backgroundWidth;
+    int targetY = 0;
+    int targetHeight = backgroundHeight;
+
+    if (widthRatio < 1) {
+        const int excessWidth = width() - backgroundWidth;
+        targetX = excessWidth / 2;
+    } else {
+        //targetWidth = width();
+    }
+
+    if (heightRatio < 1) {
+        const int excessHeight = height() - backgroundHeight;
+        targetY = excessHeight / 2;
+    } else {
+        //targetHeight = height();
+    }
+
+    painter.drawImage(QRect(targetX, targetY, targetWidth, targetHeight), background);
+
     // Re-draw lines on top
-    for (const Page::Line &drawnLine : m_lines) {
+    for (const Line &drawnLine : m_document->lines()) {
         QPen pen(Qt::black);
         pen.setCapStyle(Qt::RoundCap);
 
         painter.save();
 
-        if (drawnLine.brush == Page::InvalidBrush) { // FIXME: hack for detecting clears
+        if (drawnLine.brush == Line::InvalidBrush) { // FIXME: hack for detecting clears
             if (m_invert) {
                 m_contents.fill(Qt::black);
             } else {
                 m_contents.fill(Qt::white);
             }
             continue;
-        } else if (drawnLine.brush == Page::Eraser) {
+        } else if (drawnLine.brush == Line::Eraser) {
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
-        } else if (drawnLine.brush == Page::Paintbrush) {
+        } else if (drawnLine.brush == Line::Paintbrush) {
             switch(drawnLine.color) {
-            case Page::White:
+            case Line::White:
                 pen.setBrush(Qt::SolidPattern);
                 pen.setColor(Qt::white);
                 break;
-            case Page::Black:
+            case Line::Black:
                 pen.setBrush(Qt::SolidPattern);
                 pen.setColor(Qt::black);
                 break;
-            case Page::Gray:
+            case Line::Gray:
                 pen.setBrush(Qt::Dense4Pattern);
                 break;
             }
@@ -620,7 +636,7 @@ void DrawingArea::redrawBackbuffer()
             QLine globalLine(mapFromScene(pointA).toPoint(), mapFromScene(pointB).toPoint());
 
             switch(drawnLine.brush){
-            case Page::Paintbrush: {
+            case Line::Paintbrush: {
                 qreal pointsize = drawnLine.points[i].pressure * drawnLine.points[i].pressure * 10.0;
                 pointsize -= (fabs(globalLine.dx()) + fabs(globalLine.dy())) / (10.0 * m_zoomFactor);
                 if (pointsize < 2) pointsize = 2;
@@ -629,18 +645,18 @@ void DrawingArea::redrawBackbuffer()
                 painter.drawLine(globalLine);
                 break;
             }
-            case Page::Eraser:
+            case Line::Eraser:
                 pen.setWidthF(10 * m_zoomFactor);
                 pen.setColor(Qt::white);
                 painter.setPen(pen);
                 painter.drawLine(globalLine);
                 break;
-            case Page::Pencil:
+            case Line::Pencil:
                 pen.setWidthF(m_zoomFactor);
                 painter.setPen(pen);
                 painter.drawLine(globalLine);
                 break;
-            case Page::Pen:
+            case Line::Pen:
                 drawAALine(&m_contents, globalLine, false, m_invert);
                 drawAALine(&m_contents, globalLine, true, m_invert);
                 break;

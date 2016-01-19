@@ -5,14 +5,16 @@ Item {
     id: document
 
     property string documentPath
-    onDocumentPathChanged: pageModel = Collection.getPages(documentPath)
-    property var pageModel: []
+    onDocumentPathChanged: drawingArea.document = Collection.getDocument(documentPath)
     property int page: 0
+    onPageChanged: {
+        if (drawingArea.document) {
+            drawingArea.document.currentIndex = page
+        }
+    }
 
     Component.onDestruction: {
-        for (var i=0; i<pageModel.length; i++) {
-            pageModel[i].destroy()
-        }
+        drawingArea.document.destroy()
     }
 
     onVisibleChanged: {
@@ -24,17 +26,17 @@ Item {
     }
 
     Keys.onRightPressed: {
-        if (page < pageModel.length - 1) {
+        //if (page < pageModel.length - 1) {
             page++
-            event.accepted = true
-        }
+        //    event.accepted = true
+        //}
     }
 
     Keys.onLeftPressed: {
-        if (page > 0) {
+        //if (page > 0) {
             page--
-            event.accepted = true
-        }
+        //    event.accepted = true
+        //}
     }
 
     Rectangle {
@@ -44,7 +46,6 @@ Item {
             id: drawingArea
             currentBrush: DrawingArea.Pen
             anchors.fill: parent
-            page: document.pageModel.length === 0 ? null : document.pageModel[document.page]
         }
 
         Column {

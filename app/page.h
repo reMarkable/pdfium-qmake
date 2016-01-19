@@ -4,38 +4,14 @@
 #include <QObject>
 #include <QImage>
 #include "digitizer.h"
+#include <fpdfview.h>
 
 class Page : public QObject
 {
     Q_OBJECT
-
 public:
-    enum Color {
-        Black,
-        Gray,
-        White
-    };
-    Q_ENUM(Color)
 
-    enum Brush {
-        Paintbrush,
-        Pencil,
-        Pen,
-        Eraser,
-        ZoomTool,
-        InvalidBrush = -1
-
-    };
-    Q_ENUM(Brush)
-
-
-public:
-    struct Line {
-        Brush brush = InvalidBrush;
-        Color color = Black;
-        QVector<PenPoint> points;
-    };
-
+    Page(FPDF_PAGE page, QObject *parent = 0);
     Page(QString backgroundPath, QObject *parent = 0);
     Page(const Page &);
     Page &operator=(const Page &);
@@ -58,6 +34,7 @@ private:
     QVector<Page::Line> m_lines;
     QString m_backgroundPath;
     QImage m_background;
+    FPDF_PAGE m_pdfPage;
 };
 
 #endif // PAGE_H

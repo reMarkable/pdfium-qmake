@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QThread>
-#include "page.h"
 
 class Collection : public QObject
 {
@@ -11,11 +10,12 @@ class Collection : public QObject
 
 public:
     explicit Collection(QObject *parent = 0);
+    ~Collection();
 
 public slots:
     QStringList folderEntries(QString path = QString()) const;
     bool isFolder(const QString &path, const QString &name) const;
-    QList<QObject *> getPages(const QString &path);
+    QObject *getDocument(const QString &path);
     QStringList recentlyUsedPaths() const;
     QString thumbnailPath(const QString &documentPath) const;
     QString title(const QString &documentPath) const;

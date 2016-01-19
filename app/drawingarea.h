@@ -3,8 +3,8 @@
 
 #include <QQuickPaintedItem>
 #include <QImage>
-#include "digitizer.h"
-#include "page.h"
+#include "line.h"
+#include "document.h"
 #include <QPointer>
 
 #ifdef Q_PROCESSOR_ARM
@@ -15,11 +15,11 @@ class DrawingArea : public QQuickPaintedItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(Page::Brush currentBrush MEMBER m_currentBrush NOTIFY currentBrushChanged)
+    Q_PROPERTY(Line::Brush currentBrush MEMBER m_currentBrush NOTIFY currentBrushChanged)
     Q_PROPERTY(bool zoomtoolSelected MEMBER m_zoomSelected NOTIFY zoomtoolSelectedChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor NOTIFY zoomFactorChanged)
-    Q_PROPERTY(Page::Color currentColor MEMBER m_currentColor NOTIFY currentColorChanged)
-    Q_PROPERTY(Page* page MEMBER m_page WRITE setPage)
+    Q_PROPERTY(Line::Color currentColor MEMBER m_currentColor NOTIFY currentColorChanged)
+    Q_PROPERTY(Document* document MEMBER m_document WRITE setDocument)
 
 public:
     DrawingArea();
@@ -33,7 +33,7 @@ public slots:
     void setZoom(double x, double y, double width, double height);
     qreal zoomFactor() { return m_zoomFactor; }
 
-    void setPage(Page *page);
+    void setDocument(Document *document);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -57,16 +57,15 @@ private:
 #endif
 
     bool m_invert;
-    Page::Brush m_currentBrush;
+    Line::Brush m_currentBrush;
     QImage m_contents;
     bool m_hasEdited;
-    QVector<Page::Line> m_lines;
-    QList<Page::Line> m_undoneLines;
+    QList<Line> m_undoneLines;
     double m_zoomFactor;
     QRectF m_zoomRect;
     bool m_zoomSelected;
-    Page::Color m_currentColor;
-    QPointer<Page> m_page;
+    Line::Color m_currentColor;
+    QPointer<Document> m_document;
 };
 
 #endif // DRAWINGAREA_H

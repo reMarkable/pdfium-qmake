@@ -8,12 +8,17 @@ TARGET = xochitl
 
 SOURCES += main.cpp \
     drawingarea.cpp \
-    page.cpp \
     collection.cpp \
     settings.cpp \
-    systemmonitor.cpp
+    systemmonitor.cpp \
+    document.cpp \
+    pdfdocument.cpp \
+    imagedocument.cpp
 
 RESOURCES += qml.qrc
+
+LIBS += -L../pdfium/ -lpdfium
+INCLUDEPATH += ../pdfium/pdfium/public
 
 # Default rules for deployment.
 include(deployment.pri)
@@ -21,10 +26,13 @@ include(deployment.pri)
 HEADERS += \
     drawingarea.h \
     predictor.h \
-    page.h \
     collection.h \
     settings.h \
-    systemmonitor.h
+    systemmonitor.h \
+    document.h \
+    line.h \
+    pdfdocument.h \
+    imagedocument.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app
