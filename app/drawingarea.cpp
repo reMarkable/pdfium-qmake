@@ -309,7 +309,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     int freeLuts = 1;
 
     if (m_currentBrush == Line::Eraser) {
-        pen.setWidthF(10 * m_zoomFactor);
+        pen.setWidthF(30 * m_zoomFactor);
         pen.setColor(Qt::white);
         painter.setPen(pen);
         selfPainter.setPen(pen);

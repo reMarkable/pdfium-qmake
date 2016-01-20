@@ -29,30 +29,19 @@ Rectangle {
             width: parent.width
             height: (width - iconMargin) * 4 + iconMargin
 
-            border.width: 4//drawingArea.currentBrush === DrawingArea.Paintbrush ? 4 : 0
+            border.width: 4
             border.color: drawingArea.currentBrush === DrawingArea.Paintbrush ? "gray" : "white"
             radius: toolRadius
 
-            /*Rectangle {
+            Image {
                 id: brushIcon
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: toolBox.width - iconMargin * 2
                 height: width
                 anchors.margins: iconMargin
-                border.width: 4//drawingArea.currentBrush === DrawingArea.Paintbrush ? 4 : 0
-                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush ? "gray" : "white"*/
-                Image {
-                    //anchors.fill: parent
-                    id: brushIcon
-                    anchors.top: parent.top
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: toolBox.width - iconMargin * 2
-                    height: width
-                    anchors.margins: iconMargin
-                    source: "qrc:/icons/brush.svg"
-                }
-            //}
+                source: "qrc:/icons/brush.svg"
+            }
 
             MouseArea {
                 anchors.fill: parent
@@ -70,15 +59,16 @@ Rectangle {
                 }
                 width: brushIcon.width
                 height: width
-                radius: toolRadius
+                radius: width / 2
 
-                border.width: 2
-                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Black ? "gray" : "white"
+                color: "black"
+
                 Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: 4
+                    anchors.centerIn: parent
+                    width: 20
+                    height: width
                     radius: width / 2
-                    color: "black"
+                    color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Black ? "white" : "black"
                 }
 
                 MouseArea {
@@ -100,17 +90,18 @@ Rectangle {
                 }
                 width: brushIcon.width
                 height: width
-                radius: toolRadius
+                radius: width / 2
 
+                color: "gray"
                 border.width: 2
-                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Gray ? "gray" : "white"
+                border.color: "black"
+
                 Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: 4
+                    anchors.centerIn: parent
+                    width: 20
+                    height: width
                     radius: width / 2
-                    color: "gray"
-                    border.color: "black"
-                    border.width: 2
+                    color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Gray ? "white" : "gray"
                 }
 
                 MouseArea {
@@ -132,17 +123,18 @@ Rectangle {
                 }
                 width: brushIcon.width
                 height: width
-                radius: toolRadius
+                radius: width / 2
 
+                color: "white"
                 border.width: 2
-                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.White ? "gray" : "white"
+                border.color: "black"
+
                 Rectangle {
-                    anchors.fill: parent
-                    anchors.margins: 4
+                    anchors.centerIn: parent
+                    width: 20
+                    height: width
                     radius: width / 2
-                    color: "white"
-                    border.color: "black"
-                    border.width: 2
+                    color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.White ? "black" : "white"
                 }
 
                 MouseArea {
@@ -180,12 +172,35 @@ Rectangle {
         }
 
         Rectangle {
+            id: eraserSelect
+            width: parent.width
+            height: width
+            radius: toolRadius
+
+            //border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 3 : 0
+            border.width: 4
+            border.color: drawingArea.currentBrush === DrawingArea.Eraser ? "gray" : "white"
+
+            Image {
+                anchors.fill: parent
+                anchors.margins: iconMargin
+                source: "qrc:/icons/eraser.svg"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.currentBrush = DrawingArea.Eraser
+                }
+            }
+        }
+
+        Rectangle {
             id: zoomSelect
             width: parent.width
             height: width
             radius: toolRadius
 
-            //border.width: (drawingArea.zoomtoolSelected ) || (drawingArea.zoomFactor > 1) ? 3 : 0
             color: drawingArea.zoomtoolSelected ? "gray" : "white"
 
             Image {
