@@ -6,14 +6,14 @@
 class SystemMonitor : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal batteryLeft READ batteryLeft NOTIFY batteryChanged)
+    Q_PROPERTY(int batteryLeft READ batteryLeft NOTIFY batteryChanged)
     Q_PROPERTY(int memoryUsed READ memoryUsed NOTIFY memoryUsedChanged)
 
 public:
     explicit SystemMonitor(QObject *parent = 0);
 
 public slots:
-    qreal batteryLeft() {
+    int batteryLeft() {
         return m_batteryLeft;
     }
     int memoryUsed() {

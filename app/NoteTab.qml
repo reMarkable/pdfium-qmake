@@ -2,6 +2,8 @@ import QtQuick 2.0
 import com.magmacompany 1.0
 
 Rectangle {
+    property int iconMargin: 8
+
     Column {
         anchors.fill: parent
         anchors.topMargin: 75
@@ -40,29 +42,34 @@ Rectangle {
         id: toolBox
         width: 75
         height: 100
+        spacing: 5
+        visible: !rootItem.focusMode
         anchors {
             left: parent.left
             top: parent.top
             leftMargin: 5
             topMargin: 100
         }
+
         Rectangle {
             width: parent.width
             height: width
-            color: "white"
-            border.width: 1
+            radius: iconMargin * 2
 
-            Text {
+            color: "white"
+
+            border.width: 2
+
+            Image {
                 anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: "CLEAR"
-                font.pointSize: 7
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        drawingArea.clear()
-                    }
+                anchors.margins: 5
+                source: "qrc:/icons/clear page.svg"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.clear()
                 }
             }
         }
@@ -71,19 +78,41 @@ Rectangle {
             width: parent.width
             height: width
             color: "white"
-            border.width: 1
+            border.width: 2
+            radius: 10
 
-            Text {
+            Image {
                 anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: "UNDO"
-                font.pointSize: 7
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        drawingArea.undo()
-                    }
+                anchors.margins: iconMargin
+                source: "qrc:/icons/undo.svg"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    drawingArea.undo()
+                }
+            }
+        }
+
+        Rectangle {
+            width: parent.width
+            height: width
+            radius: iconMargin * 2
+
+            color: "white"
+            border.width: 2
+
+            Image {
+                anchors.fill: parent
+                anchors.margins: iconMargin
+                source: "qrc:/icons/focus+.svg"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    rootItem.focusMode = true
                 }
             }
         }

@@ -75,12 +75,15 @@ void EPRenderer::drawRects()
         }
     }
 
+    //qDebug() << "starting drawing" << timer.elapsed();
     QPainter painter(fb);
+    painter.setRenderHint(QPainter::Antialiasing);
     painter.setBackground(Qt::white);
 
     for(const QRect &area : damagedAreas) {
         painter.eraseRect(area);
     }
+    //qDebug() << "erased damage" << timer.elapsed();
 
     QRect totalDamaged;
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
@@ -108,6 +111,7 @@ void EPRenderer::drawRects()
             }
         }
     }
+    //qDebug() << "drawn" << timer.elapsed();
     if (timer.elapsed() > 50) {
         qDebug() << Q_FUNC_INFO << "Drawing took:" << timer.restart() << "ms";
         qDebug() << Q_FUNC_INFO << "Damaged rect:" << totalDamaged;

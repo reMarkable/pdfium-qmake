@@ -62,7 +62,8 @@ void DrawingArea::clear()
 
 void DrawingArea::undo()
 {
-    if (m_document && m_document->lines().isEmpty()) {
+    if (!m_document || m_document->lines().isEmpty()) {
+        qDebug() << "no lines to undo";
         return;
     }
 
@@ -496,6 +497,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     m_undoneLines.clear();
     if (m_document) {
         m_document->addLine(drawnLine);
+    } else {
+        qWarning() << "Can't store line, no document set";
     }
 
     // Check if we have queued AA lines to draw

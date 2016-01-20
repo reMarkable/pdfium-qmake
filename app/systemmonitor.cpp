@@ -10,7 +10,7 @@
 #include <QDebug>
 
 SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
-    m_batteryLeft(0)
+    m_batteryLeft(95)
 {
     // Get initial values
     doPoll();
@@ -39,7 +39,7 @@ void SystemMonitor::checkBattery()
     }
 
     QByteArray fileContent = file.readAll().trimmed();
-    qreal batteryPercentage = fileContent.toDouble() / 100.0;
+    int batteryPercentage = fileContent.toDouble();
 
     if (batteryPercentage == m_batteryLeft) {
         return;

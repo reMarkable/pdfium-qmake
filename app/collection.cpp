@@ -99,8 +99,8 @@ QStringList Collection::recentlyUsedPaths() const
         return QStringList() << m_basePath + "/Local/dijkstra.pdf"
                              //<< m_basePath + "/Local/jantu.pdf"
                              //<< m_basePath + "/Dropbox/images.zip"
-                             << m_basePath + "/imx.pdf"
-                             << m_basePath + "/master.pdf";
+                             << m_basePath + "/Local/imx.pdf"
+                             << m_basePath + "/Dropbox/master.pdf";
     } else {
         return recentlyUsed;
     }

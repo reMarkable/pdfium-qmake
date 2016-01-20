@@ -7,17 +7,48 @@
         <file>NoteTab.qml</file>
         <file>DocumentTab.qml</file>
         <file>ArchiveView.qml</file>
-        <file>icons/paintbrush.png</file>
-        <file>icons/pencil.png</file>
-        <file>icons/zoom-in.png</file>
-        <file>icons/zoom-out.png</file>
-        <file>icons/eraser.png</file>
         <file>TabBar.qml</file>
-        <file>icons/folder.png</file>
-        <file>icons/book.png</file>
-        <file>icons/new-note.png</file>
-        <file>icons/new-sketch.png</file>
         <file>icons/rotate-left.png</file>
         <file>icons/rotate-right.png</file>
+        <file>icons/back.svg</file>
+        <file>icons/batt_charge.svg</file>
+        <file>icons/batt_max.svg</file>
+        <file>icons/batt low.svg</file>
+        <file>icons/Batt med-high.svg</file>
+        <file>icons/batt med.svg</file>
+        <file>icons/book.svg</file>
+        <file>icons/brush.svg</file>
+        <file>icons/Charge.svg</file>
+        <file>icons/clear page.svg</file>
+        <file>icons/delete page.svg</file>
+        <file>icons/Dropbox.svg</file>
+        <file>icons/eraser.svg</file>
+        <file>icons/folder.svg</file>
+        <file>icons/forward.svg</file>
+        <file>icons/Full folder.svg</file>
+        <file>icons/help.svg</file>
+        <file>icons/home.svg</file>
+        <file>icons/info.svg</file>
+        <file>icons/list.svg</file>
+        <file>icons/mail.svg</file>
+        <file>icons/pen.svg</file>
+        <file>icons/pencil.svg</file>
+        <file>icons/redo.svg</file>
+        <file>icons/send.svg</file>
+        <file>icons/trash.svg</file>
+        <file>icons/undo.svg</file>
+        <file>icons/zoom.svg</file>
+        <file>icons/calc.svg</file>
+        <file>icons/focus-.svg</file>
+        <file>icons/focus+.svg</file>
+        <file>icons/new note.svg</file>
+        <file>icons/new page.svg</file>
+        <file>icons/new sketch.svg</file>
+        <file>icons/pluss.svg</file>
+        <file>icons/x-out.svg</file>
+        <file>icons/xoom-.svg</file>
+        <file>icons/xoom+.svg</file>
+        <file>icons/new note-large.svg</file>
+        <file>icons/new sketch-large.svg</file>
     </qresource>
 </RCC>

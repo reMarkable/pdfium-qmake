@@ -25,20 +25,20 @@ Rectangle {
                 height: mainScreen.width / 3
                 width: height
                 anchors.centerIn: parent
-                border.width: 2
                 Image {
-                    source: "qrc:/icons/new-note.png"
+                    source: "qrc:/icons/new note-large.svg"
                     anchors.fill: parent
                     anchors.margins: 40
+                    smooth: true
+                    //opacity: 0.5
                 }
 
-                Text {
-                    anchors {
-                        bottom: parent.bottom
-                        bottomMargin: 10
-                        horizontalCenter: parent.horizontalCenter
-                    }
-                    text: "NEW NOTE"
+                Image {
+                    source: "qrc:/icons/pluss.svg"
+                    width: parent.width / 3
+                    height: width
+                    anchors.left: parent.left
+                    anchors.top: parent.top
                 }
 
                 MouseArea {
@@ -55,19 +55,19 @@ Rectangle {
                 height: mainScreen.width / 3
                 width: height
                 anchors.centerIn: parent
-                border.width: 2
                 Image {
-                    source: "qrc:/icons/new-sketch.png"
+                    source: "qrc:/icons/new sketch-large.svg"
                     anchors.fill: parent
                     anchors.margins: 40
+                    smooth: true
                 }
-                Text {
-                    anchors {
-                        bottom: parent.bottom
-                        bottomMargin: 10
-                        horizontalCenter: parent.horizontalCenter
-                    }
-                    text: "NEW SKETCH"
+
+                Image {
+                    source: "qrc:/icons/pluss.svg"
+                    width: parent.width / 3
+                    height: width
+                    anchors.left: parent.left
+                    anchors.top: parent.top
                 }
 
                 MouseArea {
@@ -130,7 +130,7 @@ Rectangle {
                     Image {
                         anchors.fill: parent
                         anchors.margins: 4
-                        source: "file://" + Collection.thumbnailPath(modelData)
+                        source: Collection.thumbnailPath(modelData) === "" ? "qrc:/icons/clear page.svg" : "file://" + Collection.thumbnailPath(modelData)
                         fillMode: Image.PreserveAspectCrop
                         Rectangle {
                             anchors.fill: parent

@@ -85,7 +85,7 @@ Window {
 
         TabBar {
             id: tabBar
-            height: rootItem.focusMode ? 0 : 60
+            height: rootItem.focusMode ? 0 : 75
             anchors {
                 top: parent.top
                 left: parent.left
