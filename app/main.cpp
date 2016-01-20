@@ -3,7 +3,6 @@
 #include <QDebug>
 #include <QScreen>
 #include <QPainter>
-#include <QElapsedTimer>
 
 #include "drawingarea.h"
 #include "systemmonitor.h"
@@ -20,8 +19,6 @@ Q_IMPORT_PLUGIN(QsgEpaperPlugin)
 
 int main(int argc, char *argv[])
 {
-    QElapsedTimer timer;
-    timer.start();
 #ifdef Q_PROCESSOR_ARM
     qDebug() << "we're running on an epaper device";
     QCoreApplication::addLibraryPath("/data/lib/");
@@ -40,25 +37,11 @@ int main(int argc, char *argv[])
 
 #ifdef Q_PROCESSOR_ARM
     { // Show loading screen
-        qDebug() << timer.restart();
-        qDebug() << "Starting to initialize framebuffer...";
         QImage *fb = EPFrameBuffer::instance()->framebuffer();
-        qDebug() << timer.restart();
-        qDebug() << "Filling display";
-        fb->fill(Qt::white);
-        qDebug() << timer.restart();
-        qDebug() << "Creating painter";
         QPainter painter(fb);
-        qDebug() << timer.restart();
-        qDebug() << "Loading splash";
         QImage splashScreen("/data/start-crushed.png");
-        qDebug() << timer.restart();
-        qDebug() << "Drawing splash";
         painter.drawImage(0, 0, splashScreen);
-        qDebug() << timer.restart();
-        qDebug() << "Doing update";
         EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
-        qDebug() << timer.restart();
     }
 
     if (!Digitizer::initialize("/dev/input/event1")) {
