@@ -3,6 +3,7 @@ import com.magmacompany 1.0
 
 Rectangle {
     property int iconMargin: 8
+    property int toolRadius: 5
 
     DrawingArea {
         id: drawingArea
@@ -27,19 +28,31 @@ Rectangle {
             id: thickBrushSelect
             width: parent.width
             height: (width - iconMargin) * 4 + iconMargin
-            border.width: drawingArea.currentBrush === DrawingArea.Paintbrush ? 4 : 2
-            radius: 10
-            color: drawingArea.currentBrush === DrawingArea.Paintbrush ? "gray" : "white"
 
-            Image {
+            border.width: 4//drawingArea.currentBrush === DrawingArea.Paintbrush ? 4 : 0
+            border.color: drawingArea.currentBrush === DrawingArea.Paintbrush ? "gray" : "white"
+            radius: toolRadius
+
+            /*Rectangle {
                 id: brushIcon
                 anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: toolBox.width - iconMargin * 2
                 height: width
                 anchors.margins: iconMargin
-                source: "qrc:/icons/brush.svg"
-            }
+                border.width: 4//drawingArea.currentBrush === DrawingArea.Paintbrush ? 4 : 0
+                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush ? "gray" : "white"*/
+                Image {
+                    //anchors.fill: parent
+                    id: brushIcon
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: toolBox.width - iconMargin * 2
+                    height: width
+                    anchors.margins: iconMargin
+                    source: "qrc:/icons/brush.svg"
+                }
+            //}
 
             MouseArea {
                 anchors.fill: parent
@@ -53,23 +66,19 @@ Rectangle {
                 anchors {
                     top: brushIcon.bottom
                     horizontalCenter: parent.horizontalCenter
-                    margins: 2
+                    margins: iconMargin
                 }
                 width: brushIcon.width
                 height: width
-                radius: width / 2
+                radius: toolRadius
 
-                border.width: drawingArea.currentColor === DrawingArea.Black ? 4 : 2
-                border.color: "black"
-
+                border.width: 2
+                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Black ? "gray" : "white"
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: parent.width / 2
-                    height: width
+                    anchors.fill: parent
+                    anchors.margins: 4
                     radius: width / 2
                     color: "black"
-                    border.width: 2
-                    border.color: "black"
                 }
 
                 MouseArea {
@@ -91,19 +100,17 @@ Rectangle {
                 }
                 width: brushIcon.width
                 height: width
-                radius: width / 2
+                radius: toolRadius
 
-                border.width: drawingArea.currentColor === DrawingArea.Gray ? 4 : 2
-                border.color: "black"
-
+                border.width: 2
+                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Gray ? "gray" : "white"
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: parent.width / 2
-                    height: width
+                    anchors.fill: parent
+                    anchors.margins: 4
                     radius: width / 2
                     color: "gray"
-                    border.width: 2
                     border.color: "black"
+                    border.width: 2
                 }
 
                 MouseArea {
@@ -125,18 +132,17 @@ Rectangle {
                 }
                 width: brushIcon.width
                 height: width
-                radius: width / 2
+                radius: toolRadius
 
-                border.width: drawingArea.currentColor === DrawingArea.White ? 4 : 2
-
+                border.width: 2
+                border.color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.White ? "gray" : "white"
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: parent.width / 2
-                    height: width
+                    anchors.fill: parent
+                    anchors.margins: 4
                     radius: width / 2
                     color: "white"
-                    border.width: 2
                     border.color: "black"
+                    border.width: 2
                 }
 
                 MouseArea {
@@ -153,10 +159,11 @@ Rectangle {
             id: thinBrushSelect
             width: parent.width
             height: width
-            radius: iconMargin * 2
+            radius: toolRadius
 
-            border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 3 : 2
-            color: drawingArea.currentBrush === DrawingArea.Pencil ? "gray" : "white"
+            //border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 3 : 0
+            border.width: 4
+            border.color: drawingArea.currentBrush === DrawingArea.Pencil ? "gray" : "white"
 
             Image {
                 anchors.fill: parent
@@ -176,9 +183,9 @@ Rectangle {
             id: zoomSelect
             width: parent.width
             height: width
-            radius: iconMargin * 2
+            radius: toolRadius
 
-            border.width: drawingArea.zoomtoolSelected ? 3 : 2
+            //border.width: (drawingArea.zoomtoolSelected ) || (drawingArea.zoomFactor > 1) ? 3 : 0
             color: drawingArea.zoomtoolSelected ? "gray" : "white"
 
             Image {
@@ -203,11 +210,11 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: width
-            radius: iconMargin * 2
+            radius: toolRadius
 
             color: "white"
 
-            border.width: 2
+            border.width: 0
 
             Image {
                 anchors.fill: parent
@@ -227,8 +234,8 @@ Rectangle {
             width: parent.width
             height: width
             color: "white"
-            border.width: 2
-            radius: 10
+            //border.width: 0
+            radius: toolRadius
 
             Image {
                 anchors.fill: parent
@@ -247,10 +254,10 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: width
-            radius: iconMargin * 2
+            radius: toolRadius
 
             color: "white"
-            border.width: 2
+            border.width: 0
 
             Image {
                 anchors.fill: parent
@@ -269,10 +276,10 @@ Rectangle {
         Rectangle {
             width: parent.width
             height: width
-            radius: iconMargin * 2
+            radius: toolRadius
 
             color: "white"
-            border.width: 2
+            //border.width: 0
 
             Image {
                 anchors.fill: parent

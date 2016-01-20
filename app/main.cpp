@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     qputenv("QT_QPA_PLATFORM", "minimal:enable_fonts");
     qputenv("QT_QPA_FONTDIR", "/data/fonts/");
     qputenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS", "/dev/input/event0");
-    //qputenv("QT_MESSAGE_PATTERN", "%{function}: %{message}");
+    qputenv("QT_MESSAGE_PATTERN", "%{function}: %{message}");
 #else
     qputenv("QT_MESSAGE_PATTERN", "\033[34m%{function}\033[0m: %{message}");
 #endif

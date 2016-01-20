@@ -20,6 +20,8 @@ RESOURCES += qml.qrc
 LIBS += -L../pdfium/ -lpdfium
 INCLUDEPATH += ../pdfium/pdfium/public
 
+DEFINES += QT_MESSAGELOGCONTEXT
+
 # Default rules for deployment.
 include(deployment.pri)
 
