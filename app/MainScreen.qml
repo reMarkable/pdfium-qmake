@@ -128,8 +128,87 @@ Rectangle {
         }
     }
 
+    Text {
+        id: settingsHeader
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: settingsRow.top
+            bottomMargin: 30
+            leftMargin: 30
+        }
+        color: window.fontColor
+        text: "Quick settings"
+        font.pointSize: 25
+        font.bold: true
 
+        Image {
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height
+            width: height
+            source: "qrc:/icons/forward.svg"
+        }
+    }
 
+    Rectangle {
+        anchors {
+            right: parent.right
+            left: parent.left
+            bottom: settingsRow.top
+            leftMargin: 30
+            rightMargin: 30
+            bottomMargin: 20
+        }
+        height: 3
+        color: "gray"
+    }
+
+    Row {
+        id: settingsRow
+        height: 100
+        anchors.top: newSketchItem.bottom
+        anchors.left: parent.left
+        anchors.leftMargin: 30
+        anchors.right: parent.right
+        anchors.topMargin: 150
+        Repeater {
+            id: settingsRepeater
+            model: [ {"title": "Lock Device", "icon": "qrc:/icons/x-out.svg"},
+                {"title": "Wi-Fi Settings", "icon": "qrc:/icons/focus+.svg"},
+                {"title": "Settings", "icon": "qrc:/icons/list.svg"},
+                {"title": "Setup Guide", "icon": "qrc:/icons/help.svg"},
+            ]
+
+            Item {
+                width: settingsRow.width / 5
+                height: 50
+
+                Image {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        left: parent.left
+                    }
+                    id: icon
+                    height: 30
+                    width: 30
+                    source: modelData.icon
+                }
+
+                Text {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        right: parent.right
+                        leftMargin: 10
+                        left: icon.right
+                    }
+
+                    text: modelData.title
+                }
+            }
+        }
+    }
 
     Text {
         id: archiveHeader
@@ -144,6 +223,15 @@ Rectangle {
         text: "Frequently used"
         font.pointSize: 25
         font.bold: true
+
+        Image {
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height
+            width: height
+            source: "qrc:/icons/forward.svg"
+        }
     }
 
     Rectangle {
@@ -167,8 +255,8 @@ Rectangle {
             leftMargin: 10
             right: parent.right
             rightMargin: 10
-            top: newSketchItem.bottom
-            topMargin: 150
+            top: settingsRow.bottom
+            topMargin: 100
         }
 
         columns: 4
@@ -183,7 +271,7 @@ Rectangle {
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
                     //anchors.centerIn: parent
-                    height: parent.width - 20
+                    height: parent.width - 50
                     width: height
                     source: Collection.thumbnailPath(modelData) === "" ? "" : "file://" + Collection.thumbnailPath(modelData)
                     fillMode: Image.PreserveAspectCrop
@@ -212,11 +300,182 @@ Rectangle {
                 }
             }
         }
+    }
 
-        Item {
-            width: archiveGrid.width / archiveGrid.columns
-            height: width
+    Text {
+        anchors {
+            left: parent.left
+            right: recentlyUsedColumn.right
+            bottom: recentlyUsedColumn.top
+            bottomMargin: 30
+            leftMargin: 30
+        }
+        color: window.fontColor
+        text: "Recently edited"
+        font.pointSize: 25
+        font.bold: true
+
+        Image {
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height
+            width: height
+            source: "qrc:/icons/forward.svg"
         }
     }
+
+    Rectangle {
+        anchors {
+            right: recentlyUsedColumn.right
+            left: parent.left
+            bottom: recentlyUsedColumn.top
+            leftMargin: 30
+            rightMargin: 30
+            bottomMargin: 20
+        }
+        height: 3
+        color: "gray"
+    }
+
+    Column {
+        id: recentlyUsedColumn
+        anchors.top: archiveGrid.bottom
+        anchors.left: parent.left
+        anchors.leftMargin: 30
+        anchors.right: parent.horizontalCenter
+        anchors.topMargin: 150
+        Repeater {
+            model: [
+                {"title": "Master thesis.pdf", "icon": "qrc:/icons/book.svg"},
+                {"title": "Master notebook.rm", "icon": "qrc:/icons/new note.svg"},
+                {"title": "Master sketchbook.rm", "icon": "qrc:/icons/new sketch.svg"},
+                {"title": "Doodling sketchbook", "icon": "qrc:/icons/new sketch.svg"},
+            ]
+
+            Item {
+                width: recentlyUsedColumn.width - 30
+                height: 50
+
+                Image {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        left: parent.left
+                    }
+                    id: recentIcon
+                    height: 30
+                    width: 30
+                    source: modelData.icon
+                }
+
+                Text {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        right: parent.right
+                        leftMargin: 10
+                        left: recentIcon.right
+                    }
+
+                    text: modelData.title
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 2
+                    color: "gray"
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+        }
+    }
+
+    Text {
+        anchors {
+            left: recentlyImportedColumn.left
+            right: parent.right
+            bottom: recentlyImportedColumn.top
+            bottomMargin: 30
+            rightMargin: 30
+        }
+        color: window.fontColor
+        text: "Recently imported"
+        font.pointSize: 25
+        font.bold: true
+
+        Image {
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            anchors.verticalCenter: parent.verticalCenter
+            height: parent.height
+            width: height
+            source: "qrc:/icons/forward.svg"
+        }
+    }
+
+    Rectangle {
+        anchors {
+            left: recentlyImportedColumn.left
+            right: parent.right
+            bottom: recentlyImportedColumn.top
+            rightMargin: 60
+            bottomMargin: 20
+        }
+        height: 3
+        color: "gray"
+    }
+
+    Column {
+        id: recentlyImportedColumn
+        anchors.top: archiveGrid.bottom
+        anchors.right: parent.left
+        anchors.rightMargin: 30
+        anchors.left: parent.horizontalCenter
+        anchors.topMargin: 150
+        Repeater {
+            model: [
+                {"title": "Master thesis.pdf", "icon": "qrc:/icons/book.svg"},
+                {"title": "Master notebook.rm", "icon": "qrc:/icons/new note.svg"},
+                {"title": "Master sketchbook.rm", "icon": "qrc:/icons/new sketch.svg"},
+                {"title": "Doodling sketchbook", "icon": "qrc:/icons/new sketch.svg"},
+            ]
+
+            Item {
+                width: recentlyUsedColumn.width - 30
+                height: 50
+
+                Image {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        left: parent.left
+                    }
+                    id: recentImportIcon
+                    height: 30
+                    width: 30
+                    source: modelData.icon
+                }
+
+                Text {
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        right: parent.right
+                        leftMargin: 10
+                        left: recentImportIcon.right
+                    }
+
+                    text: modelData.title
+                }
+
+                Rectangle {
+                    width: parent.width
+                    height: 2
+                    color: "gray"
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+        }
+    }
+
 }
 

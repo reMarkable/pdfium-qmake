@@ -125,6 +125,8 @@ QString Collection::thumbnailPath(const QString &documentPath) const
 
 QString Collection::title(const QString &documentPath) const
 {
-    QDir dir(documentPath);
-    return dir.dirName();
+    //QDir dir(documentPath);
+    //QString title = dir.dirName();
+    //
+    return QFileInfo(documentPath).fileName();
 }
