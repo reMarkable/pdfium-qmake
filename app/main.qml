@@ -252,7 +252,7 @@ Window {
             border.width: 15
             radius: 10
             color: "white"
-            //visible: false
+            visible: false
 
             Text {
                 anchors.fill: parent

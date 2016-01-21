@@ -141,6 +141,12 @@ int main(int argc, char *argv[])
 
 #ifdef Q_PROCESSOR_ARM
     app.exec();
+    EPFrameBuffer::instance()->clearScreen();
+    QImage *fb = EPFrameBuffer::instance()->framebuffer();
+    QPainter painter(fb);
+    QImage splashScreen("/data/shutdown.jpg");
+    painter.drawImage(0, 0, splashScreen);
+    EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
     QProcess::execute("/system/bin/reboot", QStringList("-p"));
     return 0;
 #else
