@@ -8,7 +8,7 @@ Rectangle {
     property var objectList: []
     property var tabModel: []
     property int currentTab: 0
-    property int tabBorderSize: 2
+    property int tabBorderSize: 4
     property int tabRadius: 10
     property int marginTop: 5
 
@@ -25,27 +25,29 @@ Rectangle {
         id: tabRow
         anchors.fill: parent
         anchors.topMargin: marginTop
+        anchors.leftMargin: marginTop
         spacing: 1
 
         Rectangle {
             id: homebutton
-            width: 100
+            width: 75
             height: tabBar.height - marginTop
             visible: tabBar.height > 0
             border.width: tabBorderSize
-            border.color: tabBar.currentTab === 0 ? "black" : "gray"
+            border.color: tabBar.currentTab === 0 ? "black" : "lightGray"
             radius: tabRadius
-            //color: tabBar.currentTab === 0 ? "white" : "gray"
-            Text {
-                anchors.fill: parent
-                //anchors.leftMargin: 10
-                anchors.topMargin: 20
-                //verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                color: tabBar.currentTab === 0 ? "black" : "gray"
-                text: "HOME"
-                font.family: "Helvetica"
+            //color: "black"
+            color: tabBar.currentTab === 0 ? "white" : "lightGray"
+            Image {
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.topMargin: 10
+                width: 35
+                height: 35
+                smooth: true
+                source: "qrc:/icons/home_small.svg"
             }
+
             Rectangle {
                 anchors {
                     top: parent.top
@@ -170,32 +172,15 @@ Rectangle {
     }
 
     Image {
-        id: rotateButton
-        source: rootItem.rotation === 0 ? "qrc:/icons/rotate-left.png" : "qrc:/icons/rotate-right.png"
-        anchors {
-            verticalCenter: parent.verticalCenter
-            verticalCenterOffset: - (tabRadius + marginTop - 1) / 2
-            right: batteryIcon.left
-            rightMargin: 5
-        }
-        height: 40
-        width: height
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: rootItem.rotateScreen()
-        }
-    }
-
-    Image {
         id: batteryIcon
 
-        width: 70
-        height: parent.height - (tabRadius + marginTop + 1)
+        width: 45
+        height: 45//parent.height - (tabRadius + marginTop + 1)
         //visible: width > 0
         //color: "red"
         anchors {
-            right: parent.right
+            right: rotateButton.left
+            rightMargin: 10
             verticalCenter: parent.verticalCenter
             verticalCenterOffset: - (tabRadius + marginTop) / 2
         }
@@ -210,6 +195,24 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             onClicked: debugWindow.visible = !debugWindow.visible
+        }
+    }
+
+    Image {
+        id: rotateButton
+        source: rootItem.rotation === 0 ? "qrc:/icons/Rotate_lying.svg" : "qrc:/icons/Rotate_standing.svg"
+        anchors {
+            verticalCenter: parent.verticalCenter
+            verticalCenterOffset: - (tabRadius + marginTop - 1) / 2
+            right: parent.right
+            rightMargin: 15
+        }
+        height: 40
+        width: height
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: rootItem.rotateScreen()
         }
     }
 }

@@ -98,7 +98,7 @@ QStringList Collection::recentlyUsedPaths() const
     if (recentlyUsed.isEmpty()) {
         return QStringList() << m_basePath + "/Local/dijkstra.pdf"
                              //<< m_basePath + "/Local/jantu.pdf"
-                             //<< m_basePath + "/Dropbox/images.zip"
+                             << m_basePath + "/Dropbox/images.zip"
                              << m_basePath + "/Local/imx.pdf"
                              << m_basePath + "/Dropbox/master.pdf";
     } else {

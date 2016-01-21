@@ -50,5 +50,10 @@
         <file>icons/xoom+.svg</file>
         <file>icons/new note-large.svg</file>
         <file>icons/new sketch-large.svg</file>
+        <file>icons/home_small.svg</file>
+        <file>icons/clear page-thumb.svg</file>
+        <file>icons/Archive-large.svg</file>
+        <file>icons/Rotate_standing.svg</file>
+        <file>icons/Rotate_lying.svg</file>
     </qresource>
 </RCC>

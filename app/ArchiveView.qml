@@ -6,22 +6,11 @@ Rectangle {
 
     signal openBook(var path)
 
-    Text {
-        id: header
-        text: "ARCHIVE"
-        font.pointSize: 20
-        anchors {
-            margins: 20
-            top: parent.top
-            left: parent.left
-        }
-    }
-
     Rectangle {
         id: folderlistContainer
         width: parent.width / 2 - 40
         anchors {
-            top: header.bottom
+            top: parent.top
             left: parent.left
             bottom: parent.bottom
             topMargin: 20
@@ -52,7 +41,7 @@ Rectangle {
                     anchors {
                         left: parent.left
                         verticalCenter: parent.verticalCenter
-                        leftMargin: 5
+                        leftMargin: 15
                     }
                 }
 
@@ -87,7 +76,7 @@ Rectangle {
         width: parent.width / 2 - 40
         border.width: 0
         anchors {
-            top: header.bottom
+            top: parent.top
             right: parent.right
             bottom: parent.bottom
             topMargin: 20
@@ -115,8 +104,8 @@ Rectangle {
                         verticalCenter: parent.verticalCenter
                         leftMargin: 5
                     }
-                    height: parent.height - 5
-                    width: height
+                    width: 70
+                    height: 70
                 }
 
                 Text {
