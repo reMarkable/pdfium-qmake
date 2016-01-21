@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QScreen>
 #include <QPainter>
+#include <QStringList>
+#include <QTimer>
 
 #include "drawingarea.h"
 #include "systemmonitor.h"
@@ -15,7 +17,38 @@
 
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QsgEpaperPlugin)
-#endif
+
+#include <unistd.h>
+#include <errno.h>
+
+static int s_crashRecursingCounter = 0;
+static char *s_programPath = nullptr;
+
+static void s_crashHandler(int sig)
+{
+    //Q_UNUSED(sig);
+    printf("counter: %d sig: %d\n", s_crashRecursingCounter, sig);
+
+    // Ensure that we don't loop this forever
+    s_crashRecursingCounter++;
+
+    // Automatically kill ourselves if we hang for 10 seconds
+    signal(SIGALRM, SIG_DFL);
+    alarm(10);
+
+    if (s_crashRecursingCounter > 1) {
+        printf("We have crashed too much, aborting...\n");
+        _exit(255);
+    }
+
+    printf("We have crashed, attempting to restart: %s...\n", s_programPath);
+    if (execl(s_programPath, s_programPath, "-havecrashed", (char*)NULL) < 0) {
+        printf("Failed to launch ourselves: %d (%s)\n", errno, strerror(errno));
+        _exit(255);
+    }
+}
+
+#endif // Q_PROCESSOR_ARM
 
 int main(int argc, char *argv[])
 {
@@ -36,6 +69,38 @@ int main(int argc, char *argv[])
     app.setOrganizationName("remarkable");
 
 #ifdef Q_PROCESSOR_ARM
+    s_programPath = argv[0];
+
+    { // Check if we have already crashed, avoid restart-loops
+        QStringList arguments = app.arguments();
+        if (arguments.contains("-havecrashed")) {
+            s_crashRecursingCounter = 1;
+
+            // If we run for more than 10 seconds,
+            // assume it is okay to restart if we crash again
+//            QTimer::singleShot(10000, []() -> void {
+//                s_crashRecursingCounter = 0;
+//            });
+        }
+    }
+
+    { // Install crash handler
+        sigset_t mask;
+        sigemptyset(&mask);
+        signal(SIGSEGV, &s_crashHandler);
+        sigaddset(&mask, SIGSEGV);
+        signal(SIGBUS, &s_crashHandler);
+        sigaddset(&mask, SIGBUS);
+        signal(SIGFPE, &s_crashHandler);
+        sigaddset(&mask, SIGFPE);
+        signal(SIGILL, &s_crashHandler);
+        sigaddset(&mask, SIGILL);
+        signal(SIGABRT, &s_crashHandler);
+        sigaddset(&mask, SIGABRT);
+
+        sigprocmask(SIG_UNBLOCK, &mask, 0);
+    }
+
     { // Show loading screen
         QImage *fb = EPFrameBuffer::instance()->framebuffer();
         QPainter painter(fb);
