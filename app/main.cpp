@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QStringList>
 #include <QTimer>
+#include <QProcess>
 
 #include "drawingarea.h"
 #include "systemmonitor.h"
@@ -138,6 +139,12 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
+#ifdef Q_PROCESSOR_ARM
+    app.exec();
+    QProcess::execute("/system/bin/reboot", QStringList("-p"));
+    return 0;
+#else
     return app.exec();
+#endif
 }
 

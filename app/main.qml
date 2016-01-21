@@ -76,6 +76,7 @@ Window {
                 return
             } else if (event.key === Qt.Key_PowerOff) {
                 console.log("Poweroff requested")
+                shutdownDialog.visible = true
                 event.accepted = true
                 return
             }
@@ -239,6 +240,76 @@ Window {
             Text {
                 anchors.fill: parent
                 text: SystemMonitor.memoryUsed + " MB used"
+            }
+        }
+
+
+        Rectangle {
+            id: shutdownDialog
+            anchors.centerIn: parent
+            width: 850
+            height: 400
+            border.width: 15
+            radius: 10
+            color: "white"
+            //visible: false
+
+            Text {
+                anchors.fill: parent
+                anchors.margins: 75
+                text: "Are you sure you want to shut down?"
+                font.pointSize: 18
+                wrapMode: Text.Wrap
+            }
+
+            Rectangle {
+                anchors {
+                    right: parent.horizontalCenter
+                    left: parent.left
+                    bottom: parent.bottom
+                    top: parent.verticalCenter
+                    margins: 35
+                }
+
+                radius: height / 2
+                border.width: 5
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "Yes"
+                    font.pointSize: 18
+                }
+
+                MouseArea {
+                    enabled: shutdownDialog.visible
+                    anchors.fill: parent
+                    onClicked: Qt.quit()
+                }
+            }
+
+            Rectangle {
+                anchors {
+                    left: parent.horizontalCenter
+                    right: parent.right
+                    bottom: parent.bottom
+                    top: parent.verticalCenter
+                    margins: 35
+                }
+
+                radius: height / 2
+                border.width: 5
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "No"
+                    font.pointSize: 18
+                }
+
+                MouseArea {
+                    enabled: shutdownDialog.visible
+                    anchors.fill: parent
+                    onClicked: shutdownDialog.visible = false
+                }
             }
         }
     }

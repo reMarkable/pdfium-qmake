@@ -187,19 +187,18 @@ void EPRenderer::handleEpaperNode(EPNode *node)
 
 bool EPRenderer::visit(QSGTransformNode *node)
 {
-    m_depth++;
     m_transform *= node->matrix();
     return true;
 }
 
 void EPRenderer::endVisit(QSGTransformNode *node)
 {
-    m_depth--;
     m_transform *= node->matrix().inverted();
 }
 
 bool EPRenderer::visit(QSGImageNode *node)
 {
+    m_depth++;
     EPImageNode *imageNode = static_cast<EPImageNode*>(node);
     handleEpaperNode(imageNode);
     return true;
@@ -207,10 +206,12 @@ bool EPRenderer::visit(QSGImageNode *node)
 
 void EPRenderer::endVisit(QSGImageNode *)
 {
+    m_depth--;
 }
 
 bool EPRenderer::visit(QSGRectangleNode *node)
 {
+    m_depth++;
     EPRectangleNode *rectangleNode = static_cast<EPRectangleNode*>(node);
     handleEpaperNode(rectangleNode);
     return true;
@@ -218,10 +219,12 @@ bool EPRenderer::visit(QSGRectangleNode *node)
 
 void EPRenderer::endVisit(QSGRectangleNode *)
 {
+    m_depth--;
 }
 
 bool EPRenderer::visit(QSGGlyphNode *node)
 {
+    m_depth++;
     EPGlyphNode *glyphNode = static_cast<EPGlyphNode*>(node);
     handleEpaperNode(glyphNode);
     return true;
@@ -229,11 +232,13 @@ bool EPRenderer::visit(QSGGlyphNode *node)
 
 void EPRenderer::endVisit(QSGGlyphNode *)
 {
+    m_depth--;
 }
 
 
 bool EPRenderer::visit(QSGPainterNode *node)
 {
+    m_depth++;
     EPPainterNode *painterNode = static_cast<EPPainterNode*>(node);
     handleEpaperNode(painterNode);
     return true;
@@ -241,15 +246,16 @@ bool EPRenderer::visit(QSGPainterNode *node)
 
 void EPRenderer::endVisit(QSGPainterNode *)
 {
+    m_depth--;
 }
 
 bool EPRenderer::visit(QSGClipNode *) { qDebug(Q_FUNC_INFO); return true; }
 
 void EPRenderer::endVisit(QSGClipNode *) { qDebug(Q_FUNC_INFO); }
 
-bool EPRenderer::visit(QSGGeometryNode *) { /*qDebug(Q_FUNC_INFO);*/ return true; }
+bool EPRenderer::visit(QSGGeometryNode *) { qDebug(Q_FUNC_INFO); return true; }
 
-void EPRenderer::endVisit(QSGGeometryNode *) { /*qDebug(Q_FUNC_INFO);*/ }
+void EPRenderer::endVisit(QSGGeometryNode *) { qDebug(Q_FUNC_INFO); }
 
 bool EPRenderer::visit(QSGOpacityNode *) { /*qDebug(Q_FUNC_INFO);*/ return true; }
 
