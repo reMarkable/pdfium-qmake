@@ -18,7 +18,7 @@ Rectangle {
         }
         color: window.fontColor
         text: "Quick actions"
-        font.pointSize: 8
+        font.pointSize: 25
         font.bold: true
     }
 
@@ -53,6 +53,7 @@ Rectangle {
             Text {
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
+                font.pointSize: 18
                 text: "New note"
             }
         }
@@ -83,6 +84,7 @@ Rectangle {
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "New sketch"
+                font.pointSize: 18
             }
         }
 
@@ -112,6 +114,7 @@ Rectangle {
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottomMargin: 20
+                font.pointSize: 18
                 text: "Archive"
             }
         }
@@ -139,7 +142,7 @@ Rectangle {
         }
         color: window.fontColor
         text: "Frequently used"
-        font.pointSize: 8
+        font.pointSize: 25
         font.bold: true
     }
 
@@ -198,6 +201,7 @@ Rectangle {
                     verticalAlignment: Text.AlignVCenter
                     text: Collection.title(modelData)
                     color: window.fontColor
+                    font.pointSize: 18
                 }
 
                 MouseArea {

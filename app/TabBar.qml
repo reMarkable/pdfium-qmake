@@ -96,6 +96,7 @@ Rectangle {
                     anchors.leftMargin: 20
                     anchors.topMargin: 20
                     //verticalAlignment: Text.AlignVCenter
+                    font.pointSize: 14
                     horizontalAlignment: Text.AlignLeft
                     color: tabBar.currentTab === index + 1 ? "black" : "gray"
                     text: modelData
@@ -150,6 +151,7 @@ Rectangle {
                     Text {
                         anchors.centerIn: parent
                         text: "X"
+                        font.pointSize: 14
                         color: tabBar.currentTab === index + 1 ? "black" : "gray"
                     }
 

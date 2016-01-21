@@ -52,6 +52,7 @@ Rectangle {
                         leftMargin: 5
                     }
 
+                    font.pointSize: 18
                     text: Collection.title(modelData)
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -114,6 +115,7 @@ Rectangle {
                         verticalCenter: parent.verticalCenter
                         leftMargin: 5
                     }
+                    font.pointSize: 18
 
                     text: Collection.title(modelData)
                 }

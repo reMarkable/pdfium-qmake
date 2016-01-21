@@ -37,10 +37,19 @@ static void s_crashHandler(int sig)
     alarm(10);
 
     if (s_crashRecursingCounter > 1) {
+        if (EPFrameBuffer::instance() && EPFrameBuffer::instance()->framebuffer()) {
+            QImage *fb = EPFrameBuffer::instance()->framebuffer();
+            QPainter painter(fb);
+            QImage splashScreen("/data/crash.jpg");
+            painter.drawImage(0, 0, splashScreen);
+            EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+        }
+
         printf("We have crashed too much, aborting...\n");
         _exit(255);
     }
 
+    alarm(0);
     printf("We have crashed, attempting to restart: %s...\n", s_programPath);
     if (execl(s_programPath, s_programPath, "-havecrashed", (char*)NULL) < 0) {
         printf("Failed to launch ourselves: %d (%s)\n", errno, strerror(errno));
@@ -78,9 +87,9 @@ int main(int argc, char *argv[])
 
             // If we run for more than 10 seconds,
             // assume it is okay to restart if we crash again
-//            QTimer::singleShot(10000, []() -> void {
-//                s_crashRecursingCounter = 0;
-//            });
+            QTimer::singleShot(10000, []() -> void {
+                s_crashRecursingCounter = 0;
+            });
         }
     }
 
