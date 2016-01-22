@@ -40,7 +40,6 @@ public:
     bool visit(QSGOpacityNode *) override;
     void endVisit(QSGOpacityNode *) override;
 
-    QMutex rectanglesMutex;
     QList<std::shared_ptr<EPNode::Content>> currentRects;
 
 signals:

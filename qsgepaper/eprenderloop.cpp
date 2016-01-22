@@ -66,6 +66,7 @@ void EPRenderLoop::maybeUpdate(QQuickWindow *window)
 
     d->flushDelayedTouchEvent();
     d->polishItems();
+    // TODO: if we thread the renderer, lock here
     d->syncSceneGraph();
     d->renderSceneGraph(window->size());
     d->fireFrameSwapped();

@@ -23,19 +23,28 @@ EPRenderer::EPRenderer(EPRenderContext *context) :
 
 void EPRenderer::render()
 {
-    //qDebug() << Q_FUNC_INFO;
-    rectanglesMutex.lock();
-    //qDebug() << Q_FUNC_INFO << "past mutex";
+    m_redrawTimer.start();
+}
 
+void EPRenderer::drawRects()
+{
+    QElapsedTimer timer;
+    timer.start();
+
+    // Ensure that we don't try to render anything that isn't visible
     for (int i=0; i<currentRects.size(); i++) {
         currentRects[i]->visible = false;
     }
 
+    // Reset state
     m_transform.setToIdentity();;
     m_depth = 0;
     m_order = 0;
+
+    // Walk through the nodes
     visitChildren(rootNode());
 
+    // Sort the nodes in z-order so we draw them in the right order
     std::sort(currentRects.begin(), currentRects.end(), [](const std::shared_ptr<EPNode::Content> &a, const std::shared_ptr<EPNode::Content> &b){
         if (a->z == b->z) {
             return a->order < b->order;
@@ -44,25 +53,14 @@ void EPRenderer::render()
         }
     });
 
-    rectanglesMutex.unlock();
-
-    //emit renderComplete();
-    m_redrawTimer.start();
-}
-
-void EPRenderer::drawRects()
-{
     QImage *fb = EPFrameBuffer::instance()->framebuffer();
     if (fb->isNull()) {
         qWarning() << "Can't draw without a framebuffer";
+        return;
     }
 
-    QElapsedTimer timer;
-    timer.start();
-    QMutexLocker locker(&rectanglesMutex);
-
+    // Figure out which areas we will have to repaint
     QList<QRect> damagedAreas;
-
     QMutableListIterator<std::shared_ptr<EPNode::Content>> it(currentRects);
     while (it.hasNext()) {
         std::shared_ptr<EPNode::Content> rect = it.next();
@@ -111,14 +109,13 @@ void EPRenderer::drawRects()
             }
         }
     }
-    //qDebug() << "drawn" << timer.elapsed();
+
     if (timer.elapsed() > 50) {
         qDebug() << Q_FUNC_INFO << "Drawing took:" << timer.restart() << "ms";
         qDebug() << Q_FUNC_INFO << "Damaged rect:" << totalDamaged;
         qDebug() << Q_FUNC_INFO << "Damaged area:" << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "%";
     }
 
-    locker.unlock();
     painter.end();
 
 #if 0
