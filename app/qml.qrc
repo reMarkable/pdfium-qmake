@@ -64,5 +64,6 @@
         <file>icons/yes.svg</file>
         <file>icons/no.svg</file>
         <file>icons/Power-off.svg</file>
+        <file>MainScreenHeader.qml</file>
     </qresource>
 </RCC>
