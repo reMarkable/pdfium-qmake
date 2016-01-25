@@ -51,6 +51,8 @@ void DrawingArea::clear()
         } else {
             m_contents.fill(Qt::white);
         }
+        QPainter painter(&m_contents);
+        drawBackground(&painter);
         update();
         m_hasEdited = false;
         m_undoneLines.clear();
@@ -555,49 +557,7 @@ void DrawingArea::redrawBackbuffer()
 
     QPainter painter(&m_contents);
 
-
-    QImage background = m_document->background();
-
-    if (background.isNull()) {
-        // Background not loaded yet
-        qDebug() << "monkeyshit";
-        return;
-    }
-
-    // Draw the background image
-    int backgroundHeight = background.height();
-    int backgroundWidth = background.width();
-    float scaleRatio = qMax(float(backgroundWidth) / float(width()),
-                            float(backgroundHeight) / float(height())) / m_zoomFactor;
-
-    if (scaleRatio > 1) {
-        backgroundHeight /= scaleRatio;
-        backgroundWidth /= scaleRatio;
-    }
-
-    float widthRatio = float(backgroundWidth) / float(width());
-    float heightRatio = float(backgroundHeight) / float(height());
-
-    int targetX = 0;
-    int targetWidth = backgroundWidth;
-    int targetY = 0;
-    int targetHeight = backgroundHeight;
-
-    if (widthRatio < 1) {
-        const int excessWidth = width() - backgroundWidth;
-        targetX = excessWidth / 2;
-    } else {
-        //targetWidth = width();
-    }
-
-    if (heightRatio < 1) {
-        const int excessHeight = height() - backgroundHeight;
-        targetY = excessHeight / 2;
-    } else {
-        //targetHeight = height();
-    }
-
-    painter.drawImage(QRect(targetX, targetY, targetWidth, targetHeight), background);
+    drawBackground(&painter);
 
     // Re-draw lines on top
     for (const Line &drawnLine : m_document->lines()) {
@@ -673,6 +633,53 @@ void DrawingArea::redrawBackbuffer()
     if (timer.elapsed() > 75) {
         qDebug() << "Redrawing backbuffer completed in" <<  timer.elapsed() << "ms";
     }
+}
+
+void DrawingArea::drawBackground(QPainter *painter)
+{
+
+    QImage background = m_document->background();
+
+    if (background.isNull()) {
+        // Background not loaded yet
+        qDebug() << "monkeyshit";
+        return;
+    }
+
+    // Draw the background image
+    int backgroundHeight = background.height();
+    int backgroundWidth = background.width();
+    float scaleRatio = qMax(float(backgroundWidth) / float(width()),
+                            float(backgroundHeight) / float(height())) / m_zoomFactor;
+
+    if (scaleRatio > 1) {
+        backgroundHeight /= scaleRatio;
+        backgroundWidth /= scaleRatio;
+    }
+
+    float widthRatio = float(backgroundWidth) / float(width());
+    float heightRatio = float(backgroundHeight) / float(height());
+
+    int targetX = 0;
+    int targetWidth = backgroundWidth;
+    int targetY = 0;
+    int targetHeight = backgroundHeight;
+
+    if (widthRatio < 1) {
+        const int excessWidth = width() - backgroundWidth;
+        targetX = excessWidth / 2;
+    } else {
+        //targetWidth = width();
+    }
+
+    if (heightRatio < 1) {
+        const int excessHeight = height() - backgroundHeight;
+        targetY = excessHeight / 2;
+    } else {
+        //targetHeight = height();
+    }
+
+    painter->drawImage(QRect(targetX, targetY, targetWidth, targetHeight), background);
 }
 
 void DrawingArea::doZoom()

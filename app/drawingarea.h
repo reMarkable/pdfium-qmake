@@ -49,6 +49,7 @@ private slots:
     void redrawBackbuffer();
 
 private:
+    void drawBackground(QPainter *painter);
     void doZoom();
     void handleGesture();
     QRect lineBoundingRect(const QLine &line);
