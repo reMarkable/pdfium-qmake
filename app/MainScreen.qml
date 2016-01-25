@@ -175,10 +175,10 @@ Rectangle {
         anchors.topMargin: 150
         Repeater {
             id: settingsRepeater
-            model: [ {"title": "Lock Device", "icon": "qrc:/icons/x-out.svg"},
-                {"title": "Wi-Fi Settings", "icon": "qrc:/icons/focus+.svg"},
-                {"title": "Settings", "icon": "qrc:/icons/list.svg"},
-                {"title": "Setup Guide", "icon": "qrc:/icons/help.svg"},
+            model: [ {"title": "Lock Device", "icon": "qrc:/icons/Lock_small.svg"},
+                {"title": "Wi-Fi Settings", "icon": "qrc:/icons/Wi-Fi_small.svg"},
+                {"title": "Settings", "icon": "qrc:/icons/settings_small.svg"},
+                {"title": "Setup Guide", "icon": "qrc:/icons/Help_small.svg"},
             ]
 
             Item {

@@ -55,5 +55,9 @@
         <file>icons/Archive-large.svg</file>
         <file>icons/Rotate_standing.svg</file>
         <file>icons/Rotate_lying.svg</file>
+        <file>icons/Help_small.svg</file>
+        <file>icons/settings_small.svg</file>
+        <file>icons/Wi-Fi_small.svg</file>
+        <file>icons/Lock_small.svg</file>
     </qresource>
 </RCC>
