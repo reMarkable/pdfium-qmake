@@ -9,6 +9,7 @@ Rectangle {
         id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Paintbrush
+        document: Collection.getDocument("/data/documents/sketch")
     }
 
     Column {
