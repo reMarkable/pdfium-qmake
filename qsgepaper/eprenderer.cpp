@@ -110,7 +110,7 @@ void EPRenderer::drawRects()
         }
     }
 
-    if (timer.elapsed() > 50) {
+    if (timer.elapsed() > 75) {
         qDebug() << Q_FUNC_INFO << "Drawing took:" << timer.restart() << "ms";
         qDebug() << Q_FUNC_INFO << "Damaged rect:" << totalDamaged;
         qDebug() << Q_FUNC_INFO << "Damaged area:" << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "%";

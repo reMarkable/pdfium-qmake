@@ -259,7 +259,7 @@ Rectangle {
             topMargin: 100
         }
 
-        columns: 4
+        columns: 5
         columnSpacing: 0
 
         Repeater {

@@ -637,7 +637,6 @@ void DrawingArea::redrawBackbuffer()
 
 void DrawingArea::drawBackground(QPainter *painter)
 {
-
     QImage background = m_document->background();
 
     if (background.isNull()) {

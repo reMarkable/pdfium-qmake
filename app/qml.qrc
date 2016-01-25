@@ -59,5 +59,7 @@
         <file>icons/settings_small.svg</file>
         <file>icons/Wi-Fi_small.svg</file>
         <file>icons/Lock_small.svg</file>
+        <file>ToolButton.qml</file>
+        <file>ColorButton.qml</file>
     </qresource>
 </RCC>

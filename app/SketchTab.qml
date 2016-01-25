@@ -3,7 +3,6 @@ import com.magmacompany 1.0
 
 Rectangle {
     property int iconMargin: 8
-    property int toolRadius: 5
 
     DrawingArea {
         id: drawingArea
@@ -25,121 +24,51 @@ Rectangle {
             topMargin: 100
         }
 
-        Rectangle {
-            id: thickBrushSelect
-            width: parent.width
+        ToolButton {
+            id: brushButton
+            icon: "qrc:/icons/brush.svg"
+            active: drawingArea.currentBrush === DrawingArea.Paintbrush
+            onClicked: drawingArea.currentBrush = DrawingArea.Paintbrush
+
             height: (width - iconMargin) * 4 + iconMargin
 
-            border.width: 4
-            border.color: drawingArea.currentBrush === DrawingArea.Paintbrush ? "gray" : "white"
-            radius: toolRadius
-
-            Image {
-                id: brushIcon
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: toolBox.width - iconMargin * 2
-                height: width
-                anchors.margins: iconMargin
-                source: "qrc:/icons/brush.svg"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.currentBrush = DrawingArea.Paintbrush
-                }
-            }
-
-            Rectangle {
-                id: blackIcon
+            Column {
+                spacing: iconMargin
                 anchors {
-                    top: brushIcon.bottom
-                    horizontalCenter: parent.horizontalCenter
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
                     margins: iconMargin
                 }
-                width: brushIcon.width
-                height: width
-                radius: width / 2
 
-                color: "black"
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 20
-                    height: width
-                    radius: width / 2
-                    color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Black ? "white" : "black"
-                }
-
-                MouseArea {
-                    anchors.fill: parent
+                ColorButton {
+                    id: blackIcon
+                    color: "black"
+                    highlightColor: "white"
+                    active: brushButton.active && drawingArea.currentColor === DrawingArea.Black
                     onClicked: {
                         drawingArea.currentBrush = DrawingArea.Paintbrush
                         drawingArea.currentColor = DrawingArea.Black
                     }
                 }
-            }
 
-
-            Rectangle {
-                id: grayIcon
-                anchors {
-                    top: blackIcon.bottom
-                    horizontalCenter: parent.horizontalCenter
-                    margins: iconMargin
-                }
-                width: brushIcon.width
-                height: width
-                radius: width / 2
-
-                color: "gray"
-                border.width: 2
-                border.color: "black"
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 20
-                    height: width
-                    radius: width / 2
-                    color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.Gray ? "white" : "gray"
-                }
-
-                MouseArea {
-                    anchors.fill: parent
+                ColorButton {
+                    id: grayIcon
+                    color: "gray"
+                    highlightColor: "white"
+                    active: brushButton.active && drawingArea.currentColor === DrawingArea.Gray
                     onClicked: {
                         drawingArea.currentBrush = DrawingArea.Paintbrush
                         drawingArea.currentColor = DrawingArea.Gray
                     }
                 }
-            }
 
 
-            Rectangle {
-                id: whiteIcon
-                anchors {
-                    top: grayIcon.bottom
-                    horizontalCenter: parent.horizontalCenter
-                    margins: iconMargin
-                }
-                width: brushIcon.width
-                height: width
-                radius: width / 2
-
-                color: "white"
-                border.width: 2
-                border.color: "black"
-
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: 20
-                    height: width
-                    radius: width / 2
-                    color: drawingArea.currentBrush === DrawingArea.Paintbrush  && drawingArea.currentColor === DrawingArea.White ? "black" : "white"
-                }
-
-                MouseArea {
-                    anchors.fill: parent
+                ColorButton {
+                    id: whiteIcon
+                    color: "white"
+                    highlightColor: "black"
+                    active: brushButton.active && drawingArea.currentColor === DrawingArea.White
                     onClicked: {
                         drawingArea.currentBrush = DrawingArea.Paintbrush
                         drawingArea.currentColor = DrawingArea.White
@@ -148,167 +77,52 @@ Rectangle {
             }
         }
 
-        Rectangle {
-            id: thinBrushSelect
-            width: parent.width
-            height: width
-            radius: toolRadius
-
-            //border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 3 : 0
-            border.width: 4
-            border.color: drawingArea.currentBrush === DrawingArea.Pencil ? "gray" : "white"
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: iconMargin
-                source: "qrc:/icons/pencil.svg"
+        ToolButton {
+            icon: "qrc:/icons/pencil.svg"
+            active: drawingArea.currentBrush === DrawingArea.Pencil
+            onClicked: {
+                drawingArea.currentBrush = DrawingArea.Pencil
             }
+        }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.currentBrush = DrawingArea.Pencil
+        ToolButton {
+            icon: "qrc:/icons/eraser.svg"
+            active: drawingArea.currentBrush === DrawingArea.Eraser
+            onClicked: {
+                drawingArea.currentBrush = DrawingArea.Eraser
+            }
+        }
+
+        ToolButton {
+            icon: drawingArea.zoomFactor > 1 ? "qrc:/icons/xoom-.svg" : "qrc:/icons/xoom+.svg"
+            active: drawingArea.zoomtoolSelected
+            onClicked: {
+                if (drawingArea.zoomFactor > 1 ) {
+                    drawingArea.setZoom(0, 0, 1, 1)
+                } else {
+                    drawingArea.zoomtoolSelected = !drawingArea.zoomtoolSelected
                 }
             }
         }
 
-        Rectangle {
-            id: eraserSelect
-            width: parent.width
-            height: width
-            radius: toolRadius
-
-            //border.width: drawingArea.currentBrush === DrawingArea.Pencil ? 3 : 0
-            border.width: 4
-            border.color: drawingArea.currentBrush === DrawingArea.Eraser ? "gray" : "white"
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: iconMargin
-                source: "qrc:/icons/eraser.svg"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.currentBrush = DrawingArea.Eraser
-                }
-            }
+        ToolButton {
+            icon: "qrc:/icons/clear page.svg"
+            onClicked: drawingArea.clear()
         }
 
-        Rectangle {
-            id: zoomSelect
-            width: parent.width
-            height: width
-            radius: toolRadius
-
-            color: drawingArea.zoomtoolSelected ? "gray" : "white"
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: iconMargin
-                source: drawingArea.zoomFactor > 1 ? "qrc:/icons/xoom-.svg" : "qrc:/icons/xoom+.svg"
-            }
-
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (drawingArea.zoomFactor > 1 ) {
-                        drawingArea.setZoom(0, 0, 1, 1)
-                    } else {
-                        drawingArea.zoomtoolSelected = !drawingArea.zoomtoolSelected
-                    }
-                }
-            }
+        ToolButton {
+            icon: "qrc:/icons/undo.svg"
+            onClicked: drawingArea.undo()
         }
 
-        Rectangle {
-            width: parent.width
-            height: width
-            radius: toolRadius
-
-            color: "white"
-
-            border.width: 0
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: 5
-                source: "qrc:/icons/clear page.svg"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.clear()
-                }
-            }
+        ToolButton {
+            icon: "qrc:/icons/redo.svg"
+            onClicked: drawingArea.redo()
         }
 
-        Rectangle {
-            width: parent.width
-            height: width
-            color: "white"
-            //border.width: 0
-            radius: toolRadius
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: iconMargin
-                source: "qrc:/icons/undo.svg"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.undo()
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: width
-            radius: toolRadius
-
-            color: "white"
-            border.width: 0
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: iconMargin
-                source: "qrc:/icons/redo.svg"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    drawingArea.redo()
-                }
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: width
-            radius: toolRadius
-
-            color: "white"
-            //border.width: 0
-
-            Image {
-                anchors.fill: parent
-                anchors.margins: iconMargin
-                source: "qrc:/icons/focus+.svg"
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    rootItem.focusMode = true
-                }
-            }
+        ToolButton {
+            icon: "qrc:/icons/focus+.svg"
+            onClicked: rootItem.focusMode = true
         }
     }
 }

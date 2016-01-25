@@ -3,6 +3,7 @@ import com.magmacompany 1.0
 
 Item {
     id: document
+    property int iconMargin: 8
 
     property string documentPath
     onDocumentPathChanged: drawingArea.document = Collection.getDocument(documentPath)
@@ -48,99 +49,38 @@ Item {
             anchors.fill: parent
         }
 
+
         Column {
             id: toolBox
-            width: 75
+            width: 64
             height: 100
-            visible: !rootItem.focusMode && !thumbnailGrid.visible
+            visible: !rootItem.focusMode
+            spacing: 5
             anchors {
                 left: parent.left
                 top: parent.top
-                leftMargin: 5
+                leftMargin: iconMargin
                 topMargin: 100
             }
-            Rectangle {
-                width: parent.width
-                height: width
-                color: "white"
-                border.width: 1
 
-                Text {
-                    anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "CLEAR"
-                    font.pointSize: 7
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            drawingArea.clear()
-                        }
-                    }
-                }
+            ToolButton {
+                icon: "qrc:/icons/clear page.svg"
+                onClicked: drawingArea.clear()
             }
 
-            Rectangle {
-                width: parent.width
-                height: width
-                color: "white"
-                border.width: 1
-
-                Text {
-                    anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "UNDO"
-                    font.pointSize: 7
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            drawingArea.undo()
-                        }
-                    }
-                }
+            ToolButton {
+                icon: "qrc:/icons/undo.svg"
+                onClicked: drawingArea.undo()
             }
 
-            Rectangle {
-                width: parent.width
-                height: width
-                color: "white"
-                border.width: 1
-
-                Text {
-                    anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "INDEX"
-                    font.pointSize: 7
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            thumbnailGrid.visible  = true
-                        }
-                    }
-                }
+            ToolButton {
+                icon: "qrc:/icons/redo.svg"
+                onClicked: drawingArea.redo()
             }
 
-            Rectangle {
-                width: parent.width
-                height: width
-                color: "white"
-                border.width: 1
-
-                Text {
-                    anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "FOCUS"
-                    font.pointSize: 7
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            rootItem.focusMode = true
-                        }
-                    }
-                }
+            ToolButton {
+                icon: "qrc:/icons/focus+.svg"
+                onClicked: rootItem.focusMode = true
             }
         }
     }
