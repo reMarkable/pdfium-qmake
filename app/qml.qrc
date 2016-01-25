@@ -61,5 +61,8 @@
         <file>icons/Lock_small.svg</file>
         <file>ToolButton.qml</file>
         <file>ColorButton.qml</file>
+        <file>icons/yes.svg</file>
+        <file>icons/no.svg</file>
+        <file>icons/Power-off.svg</file>
     </qresource>
 </RCC>

@@ -8,6 +8,10 @@ Rectangle {
     signal archiveClicked
     signal openBook(var path)
 
+    property int smallIconSize: 30
+    property int mediumIconSize: 200
+    property int bigIconSize: 250
+
     Text {
         anchors {
             left: parent.left
@@ -46,8 +50,9 @@ Rectangle {
         }
         Image {
             source: "qrc:/icons/new note-large.svg"
-            anchors.fill: parent
-            anchors.margins: 30
+            anchors.centerIn: parent
+            height: bigIconSize
+            width: height
             smooth: true
 
             Text {
@@ -76,8 +81,9 @@ Rectangle {
 
         Image {
             source: "qrc:/icons/new sketch-large.svg"
-            anchors.fill: parent
-            anchors.margins: 30
+            anchors.centerIn: parent
+            height: bigIconSize
+            width: height
             smooth: true
 
             Text {
@@ -106,8 +112,9 @@ Rectangle {
 
         Image {
             source: "qrc:/icons/Archive-large.svg"
-            anchors.fill: parent
-            anchors.margins: 30
+            anchors.centerIn: parent
+            height: bigIconSize
+            width: height
             smooth: true
 
             Text {
@@ -191,8 +198,8 @@ Rectangle {
                         left: parent.left
                     }
                     id: icon
-                    height: 30
-                    width: 30
+                    height: smallIconSize
+                    width: height
                     source: modelData.icon
                 }
 
@@ -249,12 +256,12 @@ Rectangle {
 
     Grid {
         id: archiveGrid
-        height: archiveGrid.width / archiveGrid.columns
+        height: mediumIconSize + 30
         anchors {
             left: parent.left
-            leftMargin: 10
+            leftMargin: 75
             right: parent.right
-            rightMargin: 10
+            rightMargin: 75
             top: settingsRow.bottom
             topMargin: 100
         }
@@ -265,13 +272,12 @@ Rectangle {
         Repeater {
             model: Collection.recentlyUsedPaths()
             Item {
-                width: archiveGrid.width / archiveGrid.columns
-                height: width
+                width: mediumIconSize
+                height: archiveGrid.height
                 Image {
                     anchors.top: parent.top
                     anchors.horizontalCenter: parent.horizontalCenter
-                    //anchors.centerIn: parent
-                    height: parent.width - 50
+                    height: mediumIconSize
                     width: height
                     source: Collection.thumbnailPath(modelData) === "" ? "" : "file://" + Collection.thumbnailPath(modelData)
                     fillMode: Image.PreserveAspectCrop
@@ -363,8 +369,8 @@ Rectangle {
                         left: parent.left
                     }
                     id: recentIcon
-                    height: 30
-                    width: 30
+                    height: smallIconSize
+                    width: height
                     source: modelData.icon
                 }
 
@@ -450,8 +456,8 @@ Rectangle {
                         left: parent.left
                     }
                     id: recentImportIcon
-                    height: 30
-                    width: 30
+                    height: smallIconSize
+                    width: height
                     source: modelData.icon
                 }
 

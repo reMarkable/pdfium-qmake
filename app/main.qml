@@ -101,12 +101,7 @@ Window {
 
             DocumentTab {
                 visible: tabBar.currentTab === tabIndex
-                anchors {
-                    top: tabBar.bottom
-                    right: parent.right
-                    left: parent.left
-                    bottom: parent.bottom
-                }
+                anchors.fill: parent
 
                 property int tabIndex
             }
@@ -117,13 +112,7 @@ Window {
 
             NoteTab {
                 visible: tabBar.currentTab === tabIndex
-                anchors {
-                    top: tabBar.bottom
-                    right: parent.right
-                    left: parent.left
-                    bottom: parent.bottom
-                }
-
+                anchors.fill: parent
                 property int tabIndex
             }
         }
@@ -134,12 +123,7 @@ Window {
             ArchiveView {
                 id: archiveView
                 visible: (tabBar.currentTab === tabIndex)
-                anchors {
-                    top: tabBar.bottom
-                    right: parent.right
-                    left: parent.left
-                    bottom: parent.bottom
-                }
+                anchors.fill: parent
                 property int tabIndex
 
                 onOpenBook: {
@@ -153,20 +137,14 @@ Window {
 
             SketchTab {
                 visible: tabBar.currentTab === tabIndex
-                anchors {
-                    top: tabBar.bottom
-                    right: parent.right
-                    left: parent.left
-                    bottom: parent.bottom
-                }
-
+                anchors.fill: parent
                 property int tabIndex
             }
         }
 
-        MainScreen {
-            id: mainScreen
-            visible: (tabBar.currentTab === 0)
+        Item {
+            id: viewRoot
+
             anchors {
                 top: tabBar.bottom
                 right: parent.right
@@ -174,57 +152,64 @@ Window {
                 bottom: parent.bottom
             }
 
-            onNewNoteClicked: {
-                var index = tabBar.tabModel.indexOf("NOTE")
+            MainScreen {
+                id: mainScreen
+                anchors.fill: parent
+                visible: (tabBar.currentTab === 0)
 
-                if (index === -1) {
-                    var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = noteComponent.createObject(rootItem, {"tabIndex": newIndex})
-                    var tabModel = tabBar.tabModel
-                    tabModel.push("NOTE")
-                    tabBar.tabModel = tabModel
-                    tabBar.currentTab = newIndex
-                    tabBar.objectList.push(createdObject)
-                } else {
-                    tabBar.currentTab = index + 1
+                onNewNoteClicked: {
+                    var index = tabBar.tabModel.indexOf("NOTE")
+
+                    if (index === -1) {
+                        var newIndex = tabBar.tabModel.length + 1
+                        var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                        var tabModel = tabBar.tabModel
+                        tabModel.push("NOTE")
+                        tabBar.tabModel = tabModel
+                        tabBar.currentTab = newIndex
+                        tabBar.objectList.push(createdObject)
+                    } else {
+                        tabBar.currentTab = index + 1
+                    }
+                }
+
+                onNewSketchClicked: {
+                    var index = tabBar.tabModel.indexOf("SKETCH")
+
+                    if (index === -1) {
+                        var newIndex = tabBar.tabModel.length + 1
+                        var createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                        var tabModel = tabBar.tabModel
+                        tabModel.push("SKETCH")
+                        tabBar.tabModel = tabModel
+                        tabBar.currentTab = newIndex
+                        tabBar.objectList.push(createdObject)
+                    } else {
+                        tabBar.currentTab = index + 1
+                    }
+                }
+
+                onArchiveClicked: {
+                    var index = tabBar.tabModel.indexOf("ARCHIVE")
+
+                    if (index === -1) {
+                        var newIndex = tabBar.tabModel.length + 1
+                        var createdObject = archiveComponent.createObject(viewRoot, {"tabIndex": newIndex })
+                        var tabModel = tabBar.tabModel
+                        tabModel.push("ARCHIVE")
+                        tabBar.tabModel = tabModel
+                        tabBar.currentTab = newIndex
+                        tabBar.objectList.push(createdObject)
+                    } else {
+                        tabBar.currentTab = index + 1
+                    }
+                }
+
+                onOpenBook: {
+                    rootItem.openDocument(path)
                 }
             }
 
-            onNewSketchClicked: {
-                var index = tabBar.tabModel.indexOf("SKETCH")
-
-                if (index === -1) {
-                    var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = sketchComponent.createObject(rootItem, {"tabIndex": newIndex})
-                    var tabModel = tabBar.tabModel
-                    tabModel.push("SKETCH")
-                    tabBar.tabModel = tabModel
-                    tabBar.currentTab = newIndex
-                    tabBar.objectList.push(createdObject)
-                } else {
-                    tabBar.currentTab = index + 1
-                }
-            }
-
-            onArchiveClicked: {
-                var index = tabBar.tabModel.indexOf("ARCHIVE")
-
-                if (index === -1) {
-                    var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = archiveComponent.createObject(rootItem, {"tabIndex": newIndex })
-                    var tabModel = tabBar.tabModel
-                    tabModel.push("ARCHIVE")
-                    tabBar.tabModel = tabModel
-                    tabBar.currentTab = newIndex
-                    tabBar.objectList.push(createdObject)
-                } else {
-                    tabBar.currentTab = index + 1
-                }
-            }
-
-            onOpenBook: {
-                rootItem.openDocument(path)
-            }
         }
 
         Rectangle {
@@ -243,72 +228,84 @@ Window {
             }
         }
 
+        Rectangle {
+            anchors.fill: parent
+            color: "#7f000000"
+            visible: shutdownDialog.visible
+        }
+
 
         Rectangle {
             id: shutdownDialog
             anchors.centerIn: parent
-            width: 850
+            width: 750
             height: 400
             border.width: 15
             radius: 10
             color: "white"
             visible: false
 
+            Image {
+                anchors {
+                    top: parent.top
+                    horizontalCenter: parent.horizontalCenter
+                    topMargin: parent.height / 4 - height / 2
+                }
+                source: "qrc:/icons/Power-off.svg"
+                height: 50
+                width: height
+            }
+
             Text {
-                anchors.fill: parent
-                anchors.margins: 75
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    bottom: parent.verticalCenter
+                }
+
                 text: "Are you sure you want to shut down?"
                 font.pointSize: 18
                 wrapMode: Text.Wrap
             }
 
-            Rectangle {
+            Item {
                 anchors {
                     right: parent.horizontalCenter
                     left: parent.left
                     bottom: parent.bottom
                     top: parent.verticalCenter
-                    margins: 35
                 }
 
-                radius: height / 2
-                border.width: 5
-
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: "Yes"
-                    font.pointSize: 18
-                }
-
-                MouseArea {
-                    enabled: shutdownDialog.visible
-                    anchors.fill: parent
-                    onClicked: Qt.quit()
+                    source: "qrc:/icons/yes.svg"
+                    height: 100
+                    width: height
+                    MouseArea {
+                        enabled: shutdownDialog.visible
+                        anchors.fill: parent
+                        onClicked: Qt.quit()
+                    }
                 }
             }
 
-            Rectangle {
+            Item {
                 anchors {
                     left: parent.horizontalCenter
                     right: parent.right
                     bottom: parent.bottom
                     top: parent.verticalCenter
-                    margins: 35
                 }
 
-                radius: height / 2
-                border.width: 5
-
-                Text {
+                Image {
                     anchors.centerIn: parent
-                    text: "No"
-                    font.pointSize: 18
-                }
-
-                MouseArea {
-                    enabled: shutdownDialog.visible
-                    anchors.fill: parent
-                    onClicked: shutdownDialog.visible = false
+                    source: "qrc:/icons/no.svg"
+                    height: 100
+                    width: height
+                    MouseArea {
+                        enabled: shutdownDialog.visible
+                        anchors.fill: parent
+                        onClicked: shutdownDialog.visible = false
+                    }
                 }
             }
         }
