@@ -37,7 +37,7 @@ Window {
 
             if (index === -1) {
                 var newIndex = tabBar.tabModel.length + 1
-                var createdObject = documentComponent.createObject(rootItem, {"tabIndex": newIndex})
+                var createdObject = documentComponent.createObject(viewRoot, {"tabIndex": newIndex})
                 var tabModel = tabBar.tabModel
                 tabModel.push(name)
                 tabBar.tabModel = tabModel

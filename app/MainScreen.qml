@@ -19,7 +19,7 @@ Rectangle {
             top: parent.top
             left: parent.left
             topMargin: 100
-            leftMargin: 100
+            leftMargin: 30
         }
 
         MainScreenHeader {
@@ -52,11 +52,11 @@ Rectangle {
                     font.pointSize: 18
                     text: "New note"
                 }
-            }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: mainScreen.newNoteClicked()
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: mainScreen.newNoteClicked()
+                }
             }
         }
 
@@ -82,12 +82,13 @@ Rectangle {
                     text: "New sketch"
                     font.pointSize: 18
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: mainScreen.newSketchClicked()
+                }
             }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: mainScreen.newSketchClicked()
-            }
         }
 
         Item {
@@ -114,13 +115,12 @@ Rectangle {
                     font.pointSize: 18
                     text: "Archive"
                 }
-            }
 
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    mainScreen.archiveClicked(-1)
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        mainScreen.archiveClicked(-1)
+                    }
                 }
             }
         }
@@ -133,8 +133,8 @@ Rectangle {
 
         anchors {
             topMargin: 100
-            leftMargin: 100
-            rightMargin: 100
+            leftMargin: 30
+            rightMargin: 30
         }
 
         width: mainScreen.width
@@ -190,13 +190,12 @@ Rectangle {
 
     Item {
         id: frequentlyUsed
-        height: (mediumIconSize + 30) * frequentlyUsedGrid.rows
+        height: (mediumIconSize + 60) * frequentlyUsedGrid.rows
         width: quickActions.width
 
         anchors {
             topMargin: 100
             leftMargin: 30
-            //rightMargin: 30
         }
 
         MainScreenHeader {
@@ -217,12 +216,12 @@ Rectangle {
             Repeater {
                 id: frequentlyUsedRepeater
                 model: Collection.recentlyUsedPaths()
+
                 Item {
                     width: mediumIconSize
                     height: frequentlyUsedGrid.height / frequentlyUsedGrid.rows
                     Image {
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.centerIn: parent
                         height: mediumIconSize
                         width: height
                         source: Collection.thumbnailPath(modelData) === "" ? "" : "file://" + Collection.thumbnailPath(modelData)
@@ -387,11 +386,11 @@ Rectangle {
     states: [
         State {
             name: "PORTRAIT"
-            PropertyChanges { target: quickActions; width: mainScreen.width - 200 }
-            PropertyChanges { target: quickSettings; height: 100 }
+            PropertyChanges { target: quickActions; width: mainScreen.width - 60 }
+            PropertyChanges { target: quickSettings; height: smallIconSize }
             PropertyChanges { target: recentlyUsed; height: mainScreen.height / 4}
             PropertyChanges { target: recentlyImported; height: mainScreen.height / 4}
-            PropertyChanges { target: frequentlyUsedGrid; rows: 1 }
+            PropertyChanges { target: frequentlyUsedGrid; rows: 2 }
 
             AnchorChanges { target: quickSettings; anchors.top: quickActions.bottom }
             AnchorChanges { target: quickSettings; anchors.right: parent.right }
@@ -414,7 +413,6 @@ Rectangle {
             PropertyChanges { target: quickSettings; height: 200 }
             PropertyChanges { target: recentlyUsed; height: mainScreen.height / 3 }
             PropertyChanges { target: frequentlyUsedGrid; rows: 2 }
-            //PropertyChanges { target: recentlyImported; width: mainScreen.width / 3}
             PropertyChanges { target: recentlyImported; height: mainScreen.height / 3 }
 
             AnchorChanges { target: quickSettings; anchors.top: parent.top }
