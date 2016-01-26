@@ -503,13 +503,14 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         qWarning() << "Can't store line, no document set";
     }
 
-    // Check if we have queued AA lines to draw
-    if (m_currentBrush != Line::Pen || queuedLines.isEmpty()) {
-        return;
-    }
 
     if (skippedUpdatesCounter > 0) {
         sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
+    }
+
+    // Check if we have queued AA lines to draw
+    if (m_currentBrush != Line::Pen || queuedLines.isEmpty()) {
+        return;
     }
 
     QRect updateRect;
