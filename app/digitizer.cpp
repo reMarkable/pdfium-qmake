@@ -178,21 +178,27 @@ void Digitizer::eventLoop()
         locker.unlock();
 
         QMutexLocker reportLocker(&m_reportLock);
-        // We got a sync event, and we have a valid point
-        if (point.isValid()) {
-            QPointF position(point.x * m_displaySize.width(),
-                             point.y * m_displaySize.height());
-
-            QWindowSystemInterface::handleMouseEvent(0, // No specified window
-                                                     QPointF(0, 0), // No local position
-                                                     position, // Global position
-                                                     m_penOn ? Qt::LeftButton : Qt::NoButton
-                                                     );
-        }
 
         if (!m_running) {
             break;
         }
+
+        if (point.x == -1 || point.y == -1) {
+            continue;
+        }
+        if (point.pressure == -1 && m_penOn) {
+            continue;
+        }
+
+        // We got a sync event, and we have a valid point
+        QPointF position(point.x * m_displaySize.width(),
+                         point.y * m_displaySize.height());
+
+        QWindowSystemInterface::handleMouseEvent(0, // No specified window
+                                                 QPointF(0, 0), // No local position
+                                                 position, // Global position
+                                                 m_penOn ? Qt::LeftButton : Qt::NoButton
+                                                 );
     }
 }
 
