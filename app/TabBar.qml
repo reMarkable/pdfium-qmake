@@ -118,10 +118,12 @@ Rectangle {
                     //visible: tabBar.currentTab === index + 1
                 }
                 MouseArea {
+                    id: tabMouseArea
                     anchors.fill: parent
                     onClicked: {
                         tabBar.currentTab = index + 1
                     }
+                    hoverEnabled: true
                 }
 
                 Rectangle {
@@ -142,6 +144,7 @@ Rectangle {
                     radius: height / 2
                     border.color: tabBar.currentTab === index + 1 ? "black" : "gray"
                     border.width: 1
+                    visible: tabMouseArea.containsMouse
                     anchors {
                         right: parent.right
                         top: parent.top
