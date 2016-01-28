@@ -23,6 +23,7 @@ class DrawingArea : public QQuickPaintedItem
 
 public:
     DrawingArea();
+    ~DrawingArea();
 
     void paint(QPainter *painter) override;
 

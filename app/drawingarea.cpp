@@ -22,6 +22,26 @@ DrawingArea::DrawingArea() :
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
+DrawingArea::~DrawingArea()
+{
+    QElapsedTimer timer;
+    timer.start();
+    QFile csvFile("/data/points.csv");
+    if (!csvFile.open(QIODevice::WriteOnly)) {
+        return;
+    }
+    for(const Line &line : m_document->lines()) {
+        csvFile.write("0,0,0\n");
+        for (const PenPoint &point : line.points) {
+            csvFile.write(QByteArray::number(point.x) + ',');
+            csvFile.write(QByteArray::number(point.y) + ',');
+            csvFile.write(QByteArray::number(point.pressure) + '\n');
+        }
+        csvFile.write("0,0,0\n");
+    }
+    qDebug() << "Storing points completed in" << timer.elapsed() << "ms";
+}
+
 void DrawingArea::paint(QPainter *painter)
 {
     if (m_contents.isNull() || (m_document && m_document->background().isNull())) {
