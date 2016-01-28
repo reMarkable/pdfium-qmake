@@ -23,6 +23,13 @@ struct Predictor
         return value;
     }
 
+    void reset() {
+        valueCount = -5;
+        lastValue = 0;
+        lastDelta = 0;
+        trendDelta = 0;
+    }
+
     double lastValue = 0;
     double lastDelta = 0;
     double trendDelta = 0;
