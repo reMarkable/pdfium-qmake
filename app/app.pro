@@ -34,7 +34,8 @@ HEADERS += \
     document.h \
     line.h \
     pdfdocument.h \
-    imagedocument.h
+    imagedocument.h \
+    penpoint.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app

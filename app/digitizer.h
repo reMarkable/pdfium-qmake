@@ -1,6 +1,8 @@
 #ifndef DIGITIZER_H
 #define DIGITIZER_H
 
+#include "penpoint.h"
+
 #include <QObject>
 #include <QMutex>
 #include <QThread>
@@ -13,17 +15,6 @@ extern "C" {
 
 #define EV_BITS_LONGS (1 + EV_MAX / (8 * sizeof (long)))
 #define EV_BITS_LEN (EV_BITS_LONGS * sizeof (long))
-
-
-struct PenPoint {
-    PenPoint() : x(-1), y(-1), pressure(-1) {}
-    PenPoint(double nx, double ny, float p) : x(nx), y(ny), pressure(p) {}
-    double x;
-    double y;
-    float pressure;
-
-    bool isValid() { return (x != -1 && y != -1 && pressure != -1); }
-};
 
 class Digitizer : public QObject
 {

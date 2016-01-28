@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QVector>
-#include "digitizer.h"
+#include "penpoint.h"
 
 struct Line {
     Q_GADGET

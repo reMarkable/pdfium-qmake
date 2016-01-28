@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QPolygonF>
 
+#include "digitizer.h"
 #include "predictor.h"
 
 DrawingArea::DrawingArea() :
