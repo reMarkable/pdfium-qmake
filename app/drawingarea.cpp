@@ -372,9 +372,24 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         yPredictor.smoothFactor = 0.7;
     }
 
+#ifdef DEBUG_PREDICTION
+    PenPoint prevRealPoint = prevPoint;
+    QPen debugPen;
+    debugPen.setColor(Qt::black);
+    debugPen.setWidth(5);
+    debugPen.setBrush(Qt::Dense4Pattern);
+#endif
+
     while (digitizer->getPoint(&point)) {
         point.x = xPredictor.getPrediction(point.x);
         point.y = yPredictor.getPrediction(point.y);
+#ifdef DEBUG_PREDICTION
+        PenPoint realPoint = point;
+        painter.setPen(debugPen);
+        painter.drawLine(QLine(prevRealPoint.x * 1600, prevRealPoint.y * 1200, realPoint.x * 1600, realPoint.y * 1200));
+        prevRealPoint = point;
+        painter.setPen(pen);
+#endif
 
         // Smooth out the pressure (exponential weighted moving average)
         point.pressure = SMOOTHFACTOR_P * point.pressure + (1.0 - SMOOTHFACTOR_P) * prevPoint.pressure;
