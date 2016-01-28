@@ -59,27 +59,24 @@ void DrawingArea::paint(QPainter *painter)
 
 void DrawingArea::clear()
 {
-    // If the user just reclicks without drawing more, we assume he wants to clear out some ghosting
-    if (!m_hasEdited) {
-#ifdef Q_PROCESSOR_ARM
-        EPFrameBuffer::instance()->sendUpdate(EPFrameBuffer::instance()->framebuffer()->rect(),
-                                              EPFrameBuffer::Grayscale,
-                                              EPFrameBuffer::FullUpdate);
-#endif
+    if (m_invert) {
+        m_contents.fill(Qt::black);
     } else {
-        if (m_invert) {
-            m_contents.fill(Qt::black);
-        } else {
-            m_contents.fill(Qt::white);
-        }
-        QPainter painter(&m_contents);
-        drawBackground(&painter);
-        update();
-        m_hasEdited = false;
-        m_undoneLines.clear();
-        if (m_document) {
-            m_document->addLine(Line()); // empty dummy for undoing
-        }
+        m_contents.fill(Qt::white);
+    }
+
+    if (m_document) {
+        m_document->setDrawnPage(QImage());
+        m_document->storeDrawnPage();
+    }
+
+    QPainter painter(&m_contents);
+    drawBackground(&painter);
+    update();
+    m_hasEdited = false;
+    m_undoneLines.clear();
+    if (m_document) {
+        m_document->addLine(Line()); // empty dummy for undoing
     }
 }
 
@@ -106,6 +103,11 @@ void DrawingArea::undo()
         lastLine.append(point);
     }
     redrawBackbuffer();
+
+    if (m_document) {
+        m_document->setDrawnPage(m_contents);
+    }
+
     //QPainter painter(EPFrameBuffer::instance()->framebuffer());
     //painter.drawImage(0, 0, m_contents);
     //sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Mono);
@@ -123,6 +125,11 @@ void DrawingArea::redo()
     }
 
     redrawBackbuffer();
+
+    if (m_document) {
+        m_document->setDrawnPage(m_contents);
+    }
+
     m_hasEdited = true;
     update();
 }
@@ -535,10 +542,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     m_undoneLines.clear();
     if (m_document) {
         m_document->addLine(drawnLine);
+        m_document->setDrawnPage(m_contents);
     } else {
         qWarning() << "Can't store line, no document set";
     }
-
 
     if (skippedUpdatesCounter > 0) {
         sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
@@ -667,6 +674,7 @@ void DrawingArea::redrawBackbuffer()
         }
         painter.restore();
     }
+
     update();
     if (timer.elapsed() > 75) {
         qDebug() << "Redrawing backbuffer completed in" <<  timer.elapsed() << "ms";
@@ -679,7 +687,6 @@ void DrawingArea::drawBackground(QPainter *painter)
 
     if (background.isNull()) {
         // Background not loaded yet
-        qDebug() << "monkeyshit";
         return;
     }
 

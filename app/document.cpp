@@ -26,15 +26,10 @@ Document::Document(QString path, QObject *parent)
         }
     }
 
-    QString cachedBackgroundPath = path + ".cached.jpg";
+    QString cachedBackgroundPath = getStoredPagePath(m_currentIndex);
     if (QFile::exists(cachedBackgroundPath)) {
-        QImage cachedBackground = QImage(cachedBackgroundPath);
-        if (!cachedBackground.isNull()) {
-            m_cachedBackgrounds[m_currentIndex] = cachedBackground;
-        }
+        m_currentDrawnPage = QImage(cachedBackgroundPath);
     }
-
-    qDebug() << pathInfo.canonicalFilePath();
 }
 
 Document::~Document()
@@ -44,6 +39,9 @@ Document::~Document()
         metadataFile.write(QByteArray::number(m_currentIndex) + "\n");
     }
 
+    // If we have drawn on the current page, we need to store it
+    storeDrawnPage();
+
     QMutexLocker locker(&m_cacheLock);
     if (m_cachedBackgrounds.contains(m_currentIndex)) {
         m_cachedBackgrounds[m_currentIndex].save(m_path + ".cached.jpg");
@@ -52,6 +50,10 @@ Document::~Document()
 
 QImage Document::background()
 {
+    if (!m_currentDrawnPage.isNull()) {
+        return m_currentDrawnPage;
+    }
+
     QMutexLocker locker(&m_cacheLock);
 
     if (!m_cachedBackgrounds.contains(m_currentIndex)) { // it will be loaded soon
@@ -81,8 +83,16 @@ Line Document::popLine()
     return m_lines[m_currentIndex].takeLast();
 }
 
+void Document::setDrawnPage(const QImage &pageContents)
+{
+    m_currentDrawnPage = pageContents;
+}
+
 void Document::setCurrentIndex(int newIndex)
 {
+    // If we have drawn on the current page, we need to store it
+    storeDrawnPage();
+
     QMutexLocker locker(&m_cacheLock);
 
     if (newIndex >= m_pageCount) {
@@ -125,10 +135,7 @@ void Document::preload()
     QMutexLocker locker(&m_cacheLock);
 
     if (!m_cachedBackgrounds.contains(m_currentIndex)) {
-        QMetaObject::invokeMethod(this,
-                                  "loadBackground",
-                                  Qt::QueuedConnection,
-                                  Q_ARG(int, m_currentIndex));
+        loadPage(m_currentIndex);
     }
 
     for (int i=1; i<CACHE_COUNT; i++) {
@@ -136,17 +143,11 @@ void Document::preload()
         const int indexBackward = m_currentIndex + i;
 
         if (!m_cachedBackgrounds.contains(indexForward)) {
-            QMetaObject::invokeMethod(this,
-                                      "loadBackground",
-                                      Qt::QueuedConnection,
-                                      Q_ARG(int, indexForward));
+            loadPage(indexForward);
         }
 
         if (!m_cachedBackgrounds.contains(indexBackward)) {
-            QMetaObject::invokeMethod(this,
-                                      "loadBackground",
-                                      Qt::QueuedConnection,
-                                      Q_ARG(int, indexBackward));
+            loadPage(indexBackward);
         }
     }
 }
@@ -171,7 +172,8 @@ void Document::cacheBackground(QImage image, int index)
 
     m_cachedBackgrounds[index] = image;
 
-    if (index == m_currentIndex) {
+    if (index == m_currentIndex && m_currentDrawnPage.isNull()) {
+        locker.unlock();
         emit backgroundChanged();
     }
 }
@@ -191,4 +193,27 @@ QList<int> Document::cachedIndices()
     QMutexLocker locker(&m_cacheLock);
 
     return m_cachedBackgrounds.keys();
+}
+
+void Document::storeDrawnPage()
+{
+    QString filePath = getStoredPagePath(m_currentIndex);
+    if (m_currentDrawnPage.isNull()) {
+        if (QFileInfo::exists(filePath)) {
+            QFile::remove(filePath);
+        }
+
+        return;
+    }
+
+    m_currentDrawnPage.save(filePath);
+}
+
+void Document::loadPage(int index)
+{
+    QMetaObject::invokeMethod(this,
+                              "loadOriginalPage",
+                              Qt::QueuedConnection,
+                              Q_ARG(int, index));
+
 }

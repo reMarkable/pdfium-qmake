@@ -12,7 +12,7 @@ public:
     virtual ~PdfDocument();
 
 protected slots:
-    virtual void loadBackground(int index) override;
+    virtual void loadOriginalPage(int index) override;
 
 private:
     FPDF_DOCUMENT m_pdfDocument;

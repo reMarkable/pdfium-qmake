@@ -18,8 +18,9 @@ PdfDocument::~PdfDocument()
     }
 }
 
-void PdfDocument::loadBackground(int index)
+void PdfDocument::loadOriginalPage(int index)
 {
+    // TODO: FPDF_QuickDrawPage
     if (index < 0) {
         return;
     }

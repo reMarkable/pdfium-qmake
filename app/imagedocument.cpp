@@ -20,7 +20,7 @@ ImageDocument::ImageDocument(QString path, QObject *parent) :
     setPageCount(m_files.count());
 }
 
-void ImageDocument::loadBackground(int index)
+void ImageDocument::loadOriginalPage(int index)
 {
     if (index >= m_files.size()) {
         return;
