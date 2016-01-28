@@ -55,7 +55,7 @@ private:
     void handleGesture();
     QRect lineBoundingRect(const QLine &line);
 #ifdef Q_PROCESSOR_ARM
-    void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform);
+    void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform, bool blocking = false);
 #endif
 
     bool m_invert;

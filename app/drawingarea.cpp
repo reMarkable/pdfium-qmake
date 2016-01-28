@@ -843,12 +843,12 @@ QRect DrawingArea::lineBoundingRect(const QLine &line)
 }
 
 #ifdef Q_PROCESSOR_ARM
-void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform)
+void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform, bool blocking)
 {
     rect.setWidth(rect.width() + 24 * m_zoomFactor);
     rect.setHeight(rect.height() + 32 * m_zoomFactor);
     rect.setX(rect.x() - 12 * m_zoomFactor);
     rect.setY(rect.y() - 16 * m_zoomFactor);
-    EPFrameBuffer::instance()->sendUpdate(rect, waveform, EPFrameBuffer::PartialUpdate);
+    EPFrameBuffer::instance()->sendUpdate(rect, waveform, EPFrameBuffer::PartialUpdate, blocking);
 }
 #endif
