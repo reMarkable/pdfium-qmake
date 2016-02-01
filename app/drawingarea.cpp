@@ -7,8 +7,12 @@
 #include <QTimer>
 #include <QPolygonF>
 
+#include "../../../magma-experiments/dlib/filtering/kalman_filter.h"
+
 #include "digitizer.h"
 #include "predictor.h"
+
+//#define DEBUG_PREDICTION
 
 DrawingArea::DrawingArea() :
     m_invert(false),
@@ -164,6 +168,7 @@ void DrawingArea::setDocument(Document *document)
 
 static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bool invert)
 {
+    Q_UNUSED(fb)
 #ifdef DEBUG_AA
     if (address >= fb->bits() + fb->byteCount()) {
         qDebug() << "overflow";
@@ -194,11 +199,11 @@ static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bo
         *address++ |= color & 0xff;
     } else {
         if (aa) {
-            if (color < 128) {
+            if (color < 150) {
                 return;
             }
         } else {
-            if (color > 128) {
+            if (color > 150) {
                 return;
             }
             color = 0;
@@ -375,8 +380,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     if (m_currentBrush == Line::Pen) {
         xPredictor.predictionFactor = 0;
         yPredictor.predictionFactor = 0;
-        xPredictor.smoothFactor = 0.7;
-        yPredictor.smoothFactor = 0.7;
+        xPredictor.smoothFactor = 1;
+        yPredictor.smoothFactor = 1;
     }
 
 #ifdef DEBUG_PREDICTION
@@ -387,9 +392,46 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
     debugPen.setBrush(Qt::Dense4Pattern);
 #endif
 
+    //// Set up kalman filter
+    // Chosen by random dice roll
+    dlib::matrix<double, 2, 2> measurementNoise;
+    measurementNoise =
+            519, 0.0,
+            0.0, 519;
+//    measurementNoise =
+//            0.3, 0.0,
+//            0.0, 0.3;
+
+    dlib::matrix<double> processNoise = 0.192 * dlib::identity_matrix<double, 6>();
+
+    // The state stores x,y, dx,dy, ddx,ddy
+    dlib::matrix<double, 6, 6> transitionModel;
+    transitionModel =
+            1, 0, 1, 0, 0, 0,
+            0, 1, 0, 1, 0, 0,
+            0, 0, 1, 0, 1, 0,
+            0, 0, 0, 1, 0, 1,
+            0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 1;
+
+    // We only observe x,y
+    dlib::matrix<double, 2, 6> observationModel;
+    observationModel =
+            1, 0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0;
+
+    dlib::kalman_filter<6, 2> kalmanFilter;
+    kalmanFilter.set_measurement_noise(measurementNoise);
+    kalmanFilter.set_process_noise(processNoise);
+    kalmanFilter.set_observation_model(observationModel);
+    kalmanFilter.set_transition_model(transitionModel);
+
     while (digitizer->getPoint(&point)) {
-        point.x = xPredictor.getPrediction(point.x);
-        point.y = yPredictor.getPrediction(point.y);
+//        xPredictor.predictionFactor = pow(79, 2) * pow(point.pressure, 2);
+//        yPredictor.predictionFactor = pow(79, 2) * pow(point.pressure, 2);
+//        point.x = xPredictor.getPrediction(point.x);
+//        point.y = yPredictor.getPrediction(point.y);
+
 #ifdef DEBUG_PREDICTION
         PenPoint realPoint = point;
         painter.setPen(debugPen);
@@ -397,6 +439,22 @@ void DrawingArea::mousePressEvent(QMouseEvent *event)
         prevRealPoint = point;
         painter.setPen(pen);
 #endif
+        dlib::vector<double, 2> filterInput(point.x, point.y);
+        kalmanFilter.update(filterInput);
+        const dlib::matrix<double, 6, 1> &kalmanPrediction = kalmanFilter.get_predicted_next_state();
+        point.x = kalmanPrediction(0, 0);
+        point.y = kalmanPrediction(1, 0);
+
+        xPredictor.getPrediction(point.x);
+        xPredictor.getPrediction(point.y);
+
+//        xPredictor.predictionFactor = 50 * point.pressure;
+//        yPredictor.predictionFactor = 50 * point.pressure;
+//        //if (m_currentBrush != Line::Pen) {
+        //} else {
+        //    xPredictor.getPrediction(point.x);
+        //    yPredictor.getPrediction(point.y);
+        //}
 
         // Smooth out the pressure (exponential weighted moving average)
         point.pressure = SMOOTHFACTOR_P * point.pressure + (1.0 - SMOOTHFACTOR_P) * prevPoint.pressure;
