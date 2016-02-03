@@ -20,6 +20,9 @@ class DrawingArea : public QQuickPaintedItem
     Q_PROPERTY(qreal zoomFactor READ zoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(Line::Color currentColor MEMBER m_currentColor NOTIFY currentColorChanged)
     Q_PROPERTY(Document* document MEMBER m_document WRITE setDocument)
+    Q_PROPERTY(bool predictionEnabled MEMBER m_predict NOTIFY predictionToggled)
+    Q_PROPERTY(bool doublePredictionEnabled MEMBER m_doublePredict NOTIFY doublePredictionChanged)
+    Q_PROPERTY(int smoothFactor MEMBER m_smoothFactor NOTIFY smoothFactorChanged)
 
 public:
     DrawingArea();
@@ -45,6 +48,9 @@ signals:
     void zoomtoolSelectedChanged();
     void zoomFactorChanged();
     void currentColorChanged();
+    void predictionToggled();
+    void smoothFactorChanged();
+    void doublePredictionChanged();
 
 private slots:
     void redrawBackbuffer();
@@ -68,6 +74,9 @@ private:
     bool m_zoomSelected;
     Line::Color m_currentColor;
     QPointer<Document> m_document;
+    bool m_predict;
+    int m_smoothFactor;
+    bool m_doublePredict;
 };
 
 #endif // DRAWINGAREA_H

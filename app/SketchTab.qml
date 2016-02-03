@@ -124,6 +124,65 @@ Rectangle {
             icon: "qrc:/icons/focus+.svg"
             onClicked: rootItem.focusMode = true
         }
+
+
+        ToolButton {
+            icon: "qrc:/icons/Charge.svg"
+            active: drawingArea.predictionEnabled
+            onClicked: {
+                drawingArea.doublePredictionEnabled = false
+                drawingArea.predictionEnabled = ! drawingArea.predictionEnabled
+            }
+        }
+
+
+        ToolButton {
+            icon: "qrc:/icons/Charge.svg"
+            active: drawingArea.doublePredictionEnabled
+            onClicked: {
+                drawingArea.predictionEnabled = false
+                drawingArea.doublePredictionEnabled = ! drawingArea.doublePredictionEnabled
+            }
+
+            Image {
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                anchors.margins: 8
+                width: 24
+                height: width
+                source: "qrc:/icons/pluss.svg"
+            }
+        }
+
+        Rectangle {
+            width: 64
+            height: 400
+            border.width: 4
+            radius: 5
+
+            Rectangle {
+                width: parent.width
+                height: drawingArea.smoothFactor * parent.height / 1000
+                color: "gray"
+                border.width: 4
+                radius: 5
+            }
+
+            Text {
+                anchors.centerIn: parent
+                rotation: 90
+                text: "smoothing"
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    var smoothFactor = 1000 * mouse.y / height
+                    if (smoothFactor < 300) smoothFactor = 0
+                    drawingArea.smoothFactor = smoothFactor
+                }
+            }
+        }
     }
 }
 
