@@ -180,147 +180,6 @@ void DrawingArea::setDocument(Document *document)
     connect(document, SIGNAL(currentIndexChanged()), SLOT(redrawBackbuffer()));
 }
 
-static void drawAAPixel(QImage *fb, uchar *address, double distance, bool aa, bool invert)
-{
-    Q_UNUSED(fb)
-#ifdef DEBUG_AA
-    if (address >= fb->bits() + fb->byteCount()) {
-        qDebug() << "overflow";
-        return;
-    }
-    if (address <= fb->bits()) {
-        qDebug() << "underflow" << (fb->constBits() - address) << "bytes" << "bytes per line" << fb->bytesPerLine();
-        return;
-    }
-#endif
-
-    int color = distance * distance * 4.0/9.0 * 256;
-
-    if (invert) {
-        color = 256 - color;
-        if (aa) {
-            if (color > 128) {
-                return;
-            }
-        } else {
-            if (color < 128) {
-                return;
-            }
-            color = 255;
-        }
-        color = (((color >> 3) & 0x001F) | ((color << 3) & 0x07E0) | ((color << 8) & 0xF800));
-        *address++ |= (color >> 8) & 0xff;
-        *address++ |= color & 0xff;
-    } else {
-        if (aa) {
-            if (color < 150) {
-                return;
-            }
-        } else {
-            if (color > 150) {
-                return;
-            }
-            color = 0;
-        }
-//        if (fb->format() == QImage::Format_ARGB32_Premultiplied) {
-//            QRgb *pix = (QRgb*)address;
-//            *pix = qRgb(col, col, col);
-//        } else {
-            color = (((color >> 3) & 0x001F) | ((color << 3) & 0x07E0) | ((color << 8) & 0xF800));
-            *address++ &= (color >> 8) & 0xff;
-            *address++ &= color & 0xff;
-//        }
-    }
-}
-
-static void drawAALine(QImage *fb, QLine line, bool aa, bool invert)
-{
-    Q_ASSERT(fb->format() == QImage::Format_RGB16);
-
-    if (!fb->rect().contains(line.p1()) || !fb->rect().contains(line.p2())) {
-        return;
-    }
-
-    // Clamp edges
-    const int maxX = fb->width() - 2;
-    const int maxY = fb->height() - 2;
-
-    int x1 = line.x1();
-    int x2 = line.x2();
-    if (x1 > maxX) x1 = maxX;
-    if (x2 > maxX) x2 = maxX;
-    if (x1 < 2) x1 = 2;
-    if (x2 < 2) x2 = 2;
-
-    int y1 = line.y1();
-    int y2 = line.y2();
-    if (y1 > maxY) y1 = maxY;
-    if (y2 > maxY) y2 = maxY;
-    if (y1 < 2) y1 = 2;
-    if (y2 < 2) y2 = 2;
-
-    line.setP1(QPoint(x1, y1));
-    line.setP2(QPoint(x2, y2));
-
-    const int bytesPerPixel = fb->bytesPerLine() / fb->width();
-
-    uchar *addr = fb->scanLine(line.y1()) + line.x1() * bytesPerPixel;
-
-    int u, v;
-    int du, dv;
-    int uincr, vincr;
-    if ((abs(line.dx()) > abs(line.dy()))) {
-        du = abs(line.dx());
-        dv = abs(line.dy());
-        u = line.x2();
-        v = line.y2();
-        uincr = bytesPerPixel;
-        vincr = fb->bytesPerLine();
-        if (line.dx() < 0) uincr = -uincr;
-        if (line.dy() < 0) vincr = -vincr;
-    } else {
-        du = abs(line.dy());
-        dv = abs(line.dx());
-        u = line.y2();
-        v = line.x2();
-        vincr = bytesPerPixel;
-        uincr = fb->bytesPerLine();
-        if (line.dy() < 0) uincr = -uincr;
-        if (line.dx() < 0) vincr = -vincr;
-    }
-
-    const int uend = u + du;
-    int d = (2 * dv) - du;	    /* Initial value as in Bresenham's */
-    const int incrS = 2 * dv;	/* Δd for straight increments */
-    const int incrD = 2 *(dv - du);	/* Δd for diagonal increments */
-    int twovdu = 0;	/* Numerator of distance; starts at 0 */
-    const float invD = 1.0 / (2.0*sqrt(du*du + dv*dv));   /* Precomputed inverse denominator */
-    const float invD2du = 2.0 * (du*invD);   /* Precomputed constant */
-
-    do {
-        drawAAPixel(fb, addr, twovdu*invD, aa, invert);
-        drawAAPixel(fb, addr + vincr, invD2du - twovdu*invD, aa, invert);
-        drawAAPixel(fb, addr - vincr, invD2du + twovdu*invD, aa, invert);
-
-        if (d < 0)
-        {
-            /* choose straight (u direction) */
-            twovdu = d + du;
-            d = d + incrS;
-        }
-        else
-        {
-            /* choose diagonal (u+v direction) */
-            twovdu = d - du;
-            d = d + incrD;
-            v = v+1;
-            addr = addr + vincr;
-        }
-        u = u+1;
-        addr = addr+uincr;
-    } while (u <= uend);
-}
-
 #define SMOOTHFACTOR_P 0.370
 
 void DrawingArea::mousePressEvent(QMouseEvent *)
@@ -372,6 +231,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         }
     }
 
+    // Store the entire drawn line
     Line drawnLine;
     drawnLine.color = m_currentColor;
     drawnLine.brush = m_currentBrush;
@@ -379,15 +239,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
                                      prevPoint.y * m_zoomRect.height() + m_zoomRect.y(),
                                      prevPoint.pressure));
 
-    Predictor xPredictor;
-    Predictor yPredictor;
-
-    // Tweak for writing
     if (m_currentBrush == Line::Pen) {
-        xPredictor.predictionFactor = 0;
-        yPredictor.predictionFactor = 0;
-        xPredictor.smoothFactor = 1;
-        yPredictor.smoothFactor = 1;
+        pen.setWidth(3.5);
+        painter.setPen(pen);
+        selfPainter.setRenderHint(QPainter::Antialiasing, true);
     }
 
 #ifdef DEBUG_PREDICTION
@@ -399,45 +254,36 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 #endif
 
     //// Set up kalman filter
-    // Chosen by random dice roll
-    dlib::matrix<double, 2, 2> measurementNoise;
-    measurementNoise =
-            519, 0.0,
-            0.0, 519;
-//    measurementNoise =
-//            0.3, 0.0,
-//            0.0, 0.3;
+    dlib::matrix<double> measurementNoise = m_smoothFactor * dlib::identity_matrix<double, 3>();
+    dlib::matrix<double> processNoise = 0.1 * dlib::identity_matrix<double, 9>();
 
-    dlib::matrix<double> processNoise = 0.192 * dlib::identity_matrix<double, 6>();
-
-    // The state stores x,y, dx,dy, ddx,ddy
-    dlib::matrix<double, 6, 6> transitionModel;
+    // The state stores x,y,p dx,dy,dp ddx,ddy,ddp
+    dlib::matrix<double, 9, 9> transitionModel;
     transitionModel =
-            1, 0, 1, 0, 0, 0,
-            0, 1, 0, 1, 0, 0,
-            0, 0, 1, 0, 1, 0,
-            0, 0, 0, 1, 0, 1,
-            0, 0, 0, 0, 1, 0,
-            0, 0, 0, 0, 0, 1;
+            1, 0, 0, 1, 0, 0, 1, 0.1, 0,
+            0, 1, 0, 0, 1, 0, 0, 1, 0.1,
+            0, 0, 1, 0, 0, 1, 0, 0, 1,
+            0, 0, 0, 1, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 1, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 1, 0, 0, 1,
+            0, 0, 0, 0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 1;
 
-    // We only observe x,y
-    dlib::matrix<double, 2, 6> observationModel;
+    // We only observe x,y,p
+    dlib::matrix<double, 3, 9> observationModel;
     observationModel =
-            1, 0, 0, 0, 0, 0,
-            0, 1, 0, 0, 0, 0;
+            1, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 1, 0, 0, 0, 0, 0, 0;
 
-    dlib::kalman_filter<6, 2> kalmanFilter;
+    dlib::kalman_filter<9, 3> kalmanFilter;
     kalmanFilter.set_measurement_noise(measurementNoise);
     kalmanFilter.set_process_noise(processNoise);
     kalmanFilter.set_observation_model(observationModel);
     kalmanFilter.set_transition_model(transitionModel);
 
     while (digitizer->getPoint(&point)) {
-//        xPredictor.predictionFactor = pow(79, 2) * pow(point.pressure, 2);
-//        yPredictor.predictionFactor = pow(79, 2) * pow(point.pressure, 2);
-//        point.x = xPredictor.getPrediction(point.x);
-//        point.y = yPredictor.getPrediction(point.y);
-
 #ifdef DEBUG_PREDICTION
         PenPoint realPoint = point;
         painter.setPen(debugPen);
@@ -445,29 +291,27 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         prevRealPoint = point;
         painter.setPen(pen);
 #endif
-        dlib::vector<double, 2> filterInput(point.x, point.y);
+
+        dlib::vector<double, 3> filterInput(point.x, point.y, point.pressure);
         kalmanFilter.update(filterInput);
-        const dlib::matrix<double, 6, 1> &kalmanPrediction = kalmanFilter.get_predicted_next_state();
+        dlib::matrix<double, 9, 1> kalmanPrediction;
+        if (m_predict) {
+            kalmanPrediction = kalmanFilter.get_predicted_next_state();
+        } else if (m_doublePredict) {
+            kalmanPrediction = kalmanFilter.get_predicted_next_state();
+            kalmanPrediction = transitionModel * kalmanPrediction;
+        } else {
+            kalmanPrediction = kalmanFilter.get_current_state();
+        }
+
         point.x = kalmanPrediction(0, 0);
         point.y = kalmanPrediction(1, 0);
-
-        xPredictor.getPrediction(point.x);
-        xPredictor.getPrediction(point.y);
-
-//        xPredictor.predictionFactor = 50 * point.pressure;
-//        yPredictor.predictionFactor = 50 * point.pressure;
-//        //if (m_currentBrush != Line::Pen) {
-        //} else {
-        //    xPredictor.getPrediction(point.x);
-        //    yPredictor.getPrediction(point.y);
-        //}
-
-        // Smooth out the pressure (exponential weighted moving average)
-        point.pressure = SMOOTHFACTOR_P * point.pressure + (1.0 - SMOOTHFACTOR_P) * prevPoint.pressure;
+        point.pressure = kalmanPrediction(2, 0);
 
         const QLine globalLine(mapFromScene(QPointF(prevPoint.x * 1600, prevPoint.y * 1200)).toPoint(),
                                mapFromScene(QPointF(point.x * 1600, point.y * 1200)).toPoint());
         const QLine line(prevPoint.x * 1600, prevPoint.y * 1200, point.x * 1600, point.y * 1200);
+
 
         QRect updateRect = lineBoundingRect(line);
 
@@ -501,8 +345,17 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             break;
 
         case Line::Pen: {
-            drawAALine(&m_contents, globalLine, false, m_invert);
-            drawAALine(EPFrameBuffer::instance()->framebuffer(), line, false, m_invert);
+            painter.setRenderHint(QPainter::Antialiasing, false);
+            if (point.pressure > 0.9) {
+                pen.setWidth(4);
+            } else {
+                pen.setWidth(3.5);
+            }
+            painter.setPen(pen);
+            selfPainter.setPen(pen);
+            painter.drawLine(line);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            selfPainter.drawLine(globalLine);
 
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
             // up updates we send
@@ -510,7 +363,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
                 sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
                 skippedUpdatesCounter = 0;
             }
-
 
             if (skippedUpdatesCounter == 0) {
                 delayedUpdateRect = updateRect;
@@ -555,17 +407,16 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
                 distanceY = qMin(distanceY, abs(oldLine.y1() - line.y2()));
                 distanceY = qMin(distanceY, abs(oldLine.y2() - line.y2()));
 
-                //qDebug() << hypot(distanceX, distanceY) << hypot(xPredictor.trendDelta * 1600, yPredictor.trendDelta * 1200);
-                if (hypot(distanceX, distanceY) < 80 * hypot(xPredictor.trendDelta * 1600, yPredictor.trendDelta * 1200) ||
-                        testRect.contains(line.p1()) ||
-                        testRect.contains(line.p2())) {
+                if (testRect.contains(line.p1()) || testRect.contains(line.p2())) {
                     continue;
                 }
 
                 // Re-draw line with AA pixels
                 it.remove();
-                drawAALine(EPFrameBuffer::instance()->framebuffer(), oldLine, true, m_invert);
-                drawAALine(&m_contents, QLine(mapFromScene(oldLine.p1()).toPoint(), mapFromScene(oldLine.p2()).toPoint()), true, m_invert);
+
+                painter.drawLine(oldLine);
+                selfPainter.drawLine(QLine(mapFromScene(oldLine.p1()).toPoint(), mapFromScene(oldLine.p2()).toPoint()));
+
                 updateRect = updateRect.united(lineBoundingRect(oldLine));
             }
 
@@ -578,8 +429,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             while (it.hasNext()) {
                 QLine queuedLine = it.next();
                 if (updateRect.contains(queuedLine.p1()) && updateRect.contains(queuedLine.p2())) {
-                    drawAALine(EPFrameBuffer::instance()->framebuffer(), queuedLine, true, m_invert);
-                    drawAALine(&m_contents, queuedLine, true, m_invert);
+                    painter.drawLine(queuedLine);
+                    selfPainter.drawLine(QLine(mapFromScene(queuedLine.p1()).toPoint(), mapFromScene(queuedLine.p2()).toPoint()));
                     it.remove();
                 }
             }
@@ -622,9 +473,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
     QRect updateRect;
     for (const QLine &line : queuedLines) {
-        drawAALine(EPFrameBuffer::instance()->framebuffer(), line, true, m_invert);
+        painter.drawLine(line);
+        selfPainter.drawLine(QLine(mapFromScene(line.p1()).toPoint(), mapFromScene(line.p2()).toPoint()));
 
-        updateRect = updateRect.united(lineBoundingRect(line));
+        if (!updateRect.intersects(delayedUpdateRect)) {
+            updateRect = updateRect.united(lineBoundingRect(line));
+        }
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 #endif//Q_PROCESSOR_ARM
@@ -664,6 +518,7 @@ void DrawingArea::redrawBackbuffer()
     }
 
     QPainter painter(&m_contents);
+    painter.setRenderHint(QPainter::Antialiasing);
 
     drawBackground(&painter);
 
@@ -732,8 +587,15 @@ void DrawingArea::redrawBackbuffer()
                 painter.drawLine(globalLine);
                 break;
             case Line::Pen:
-                drawAALine(&m_contents, globalLine, false, m_invert);
-                drawAALine(&m_contents, globalLine, true, m_invert);
+                if (drawnLine.points[i].pressure > 0.8) {
+                    pen.setWidth(4);
+                    painter.setPen(pen);
+                } else {
+                    pen.setWidth(3.5);
+                    painter.setPen(pen);
+                }
+                painter.drawLine(globalLine);
+
                 break;
             default:
                 break;
