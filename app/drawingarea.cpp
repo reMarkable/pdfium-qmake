@@ -481,7 +481,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
         switch(m_currentBrush) {
         case Line::Paintbrush: {
-            qreal pointsize = point.pressure * point.pressure * 10.0;
+            qreal pointsize = point.pressure * point.pressure * point.pressure * 10.0;
             pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
             if (pointsize < 2) pointsize = 2;
             pen.setWidthF(pointsize * m_zoomFactor);
