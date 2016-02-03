@@ -99,6 +99,8 @@ void DrawingArea::undo()
 
     if (m_document) {
         m_undoneLines.append(m_document->popLine());
+        m_document->setDrawnPage(QImage());
+        m_document->storeDrawnPage();
     }
 
     m_hasEdited = true;
@@ -109,6 +111,7 @@ void DrawingArea::undo()
                    (penPoint.y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
         lastLine.append(point);
     }
+
     redrawBackbuffer();
 
     if (m_document) {
@@ -129,8 +132,11 @@ void DrawingArea::redo()
 
     if (m_document) {
         m_document->addLine(m_undoneLines.takeLast());
+        m_document->setDrawnPage(QImage());
+        m_document->storeDrawnPage();
     }
 
+    m_document->setDrawnPage(QImage());
     redrawBackbuffer();
 
     if (m_document) {
@@ -146,6 +152,11 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
     if (width == 0 || height == 0) {
         qDebug() << "invalid zoom specified";
         return;
+    }
+
+    if (m_document) {
+        m_document->setDrawnPage(QImage());
+        m_document->storeDrawnPage();
     }
 
     m_zoomRect = QRectF(x, y, width, height);
