@@ -621,7 +621,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
     if (skippedUpdatesCounter > 0) {
         sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
-        return;
     }
 
     // Check if we have queued AA lines to draw
