@@ -547,10 +547,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
                 // Avoid overlapping with the rect we just updated
                 QRect testRect = updateRect.united(lineBoundingRect(oldLine));
-                testRect.setX(testRect.x() - 12);
-                testRect.setY(testRect.y() - 16);
-                testRect.setWidth(testRect.width() + 24);
-                testRect.setHeight(testRect.height() + 32);
+                testRect.setX(testRect.x() - 24);
+                testRect.setY(testRect.y() - 32);
+                testRect.setWidth(testRect.width() + 48);
+                testRect.setHeight(testRect.height() + 36);
 
                 // Calculate minimal distance
                 int distanceX =             abs(oldLine.x1() - line.x1());
