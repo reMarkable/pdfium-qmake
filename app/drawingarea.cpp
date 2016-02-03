@@ -323,7 +323,7 @@ static void drawAALine(QImage *fb, QLine line, bool aa, bool invert)
 
 #define SMOOTHFACTOR_P 0.370
 
-void DrawingArea::mousePressEvent(QMouseEvent *event)
+void DrawingArea::mousePressEvent(QMouseEvent *)
 {
     if (m_zoomSelected) {
         doZoom();
