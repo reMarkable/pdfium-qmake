@@ -21,7 +21,10 @@ DrawingArea::DrawingArea() :
     m_zoomFactor(1.0),
     m_zoomRect(0, 0, 1.0, 1.0),
     m_zoomSelected(false),
-    m_currentColor(Line::Black)
+    m_currentColor(Line::Black),
+    m_predict(true),
+    m_smoothFactor(314),
+    m_doublePredict(false)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
 }
