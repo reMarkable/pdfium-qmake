@@ -676,19 +676,23 @@ void DrawingArea::redrawBackbuffer()
 
     drawBackground(&painter);
 
+    int start = 0;
+    for (int i=0; i<m_document->lines().count(); i++) {
+        if (m_document->lines()[i].brush == Line::InvalidBrush) {
+            start = i + 1;
+        }
+    }
+
     // Re-draw lines on top
-    for (const Line &drawnLine : m_document->lines()) {
+    for (int i=start; i<m_document->lines().count(); i++) {
+        const Line &drawnLine = m_document->lines()[i];
         QPen pen(Qt::black);
         pen.setCapStyle(Qt::RoundCap);
 
         painter.save();
 
         if (drawnLine.brush == Line::InvalidBrush) { // FIXME: hack for detecting clears
-            if (m_invert) {
-                m_contents.fill(Qt::black);
-            } else {
-                m_contents.fill(Qt::white);
-            }
+            qWarning() << Q_FUNC_INFO << "Impossible situation, we got invalid brush after we should be after the last";
             continue;
         } else if (drawnLine.brush == Line::Eraser) {
             painter.setCompositionMode(QPainter::CompositionMode_Clear);
