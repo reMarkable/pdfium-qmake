@@ -24,7 +24,7 @@ public:
     // 9: ~2365ms, lots of flashing, delta something?
 
     enum Waveform {
-        Initialize = 0,
+        Initialize = 9,
         Mono = 1,
         Grayscale = 2,
         Highlight = 8
