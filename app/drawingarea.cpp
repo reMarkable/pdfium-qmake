@@ -514,7 +514,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
             // up updates we send
-            if (skippedUpdatesCounter > 2) {
+            if (skippedUpdatesCounter > 3) {
                 sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
                 skippedUpdatesCounter = 0;
             }
