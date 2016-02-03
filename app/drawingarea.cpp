@@ -7,7 +7,7 @@
 #include <QTimer>
 #include <QPolygonF>
 
-#include "../../../magma-experiments/dlib/filtering/kalman_filter.h"
+#include <dlib/filtering/kalman_filter.h>
 
 #include "digitizer.h"
 #include "predictor.h"
