@@ -105,9 +105,9 @@ void DrawingArea::undo()
 
     m_hasEdited = true;
 
-    QPolygon lastLine;
+    QPolygonF lastLine;
     foreach(const PenPoint &penPoint, m_undoneLines.last().points) {
-        QPoint point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
+        QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
                    (penPoint.y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
         lastLine.append(point);
     }
@@ -121,7 +121,7 @@ void DrawingArea::undo()
     //QPainter painter(EPFrameBuffer::instance()->framebuffer());
     //painter.drawImage(0, 0, m_contents);
     //sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Mono);
-    update(lastLine.boundingRect());
+    update(lastLine.boundingRect().toRect());
 }
 
 void DrawingArea::redo()
@@ -201,9 +201,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         return;
     }
 
-    PenPoint point;
-    PenPoint prevPoint = digitizer->acquireLock();
-
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_contents);
     QPen pen(Qt::black);
@@ -211,39 +208,18 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
     // For drawing AA lines
     int skippedUpdatesCounter = 0;
-    QRect delayedUpdateRect;
-    QVector<QLine> queuedLines;
+    QRectF delayedUpdateRect;
+
+    struct LineFragment {
+        LineFragment() {}
+        LineFragment(QPointF p1_, QPointF p2_, qreal pressure_) : p1(p1_), p2(p2_), pressure(pressure_) {}
+        QPointF p1;
+        QPointF p2;
+        qreal pressure;
+    };
+    QVector<LineFragment> queuedLines;
     QElapsedTimer lutTimer;
     int freeLuts = 1;
-
-    if (m_currentBrush == Line::Eraser) {
-        pen.setWidthF(30 * m_zoomFactor);
-        pen.setColor(Qt::white);
-        painter.setPen(pen);
-        selfPainter.setPen(pen);
-    }
-
-    if (m_currentBrush == Line::Paintbrush) {
-        if (m_currentColor == Line::White) {
-            pen.setColor(Qt::white);
-        } else if (m_currentColor == Line::Gray) {
-            pen.setBrush(Qt::Dense4Pattern);
-        }
-    }
-
-    // Store the entire drawn line
-    Line drawnLine;
-    drawnLine.color = m_currentColor;
-    drawnLine.brush = m_currentBrush;
-    drawnLine.points.append(PenPoint(prevPoint.x * m_zoomRect.width() + m_zoomRect.x(),
-                                     prevPoint.y * m_zoomRect.height() + m_zoomRect.y(),
-                                     prevPoint.pressure));
-
-    if (m_currentBrush == Line::Pen) {
-        pen.setWidth(3.5);
-        painter.setPen(pen);
-        selfPainter.setRenderHint(QPainter::Antialiasing, true);
-    }
 
 #ifdef DEBUG_PREDICTION
     PenPoint prevRealPoint = prevPoint;
@@ -283,7 +259,21 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     kalmanFilter.set_observation_model(observationModel);
     kalmanFilter.set_transition_model(transitionModel);
 
-    while (digitizer->getPoint(&point)) {
+    // Exclusively lock the digitizer, and get the last reported position
+    PenPoint prevPenPoint = digitizer->acquireLock();
+    prevPenPoint.x *= 1600;
+    prevPenPoint.y *= 1200;
+
+    // Store the entire drawn line
+    Line drawnLine;
+    drawnLine.color = m_currentColor;
+    drawnLine.brush = m_currentBrush;
+    drawnLine.points.append(PenPoint(prevPenPoint.x * m_zoomRect.width() + m_zoomRect.x(),
+                                     prevPenPoint.y * m_zoomRect.height() + m_zoomRect.y(),
+                                     prevPenPoint.pressure));
+
+    PenPoint penPoint;
+    while (digitizer->getPoint(&penPoint)) {
 #ifdef DEBUG_PREDICTION
         PenPoint realPoint = point;
         painter.setPen(debugPen);
@@ -292,7 +282,8 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         painter.setPen(pen);
 #endif
 
-        dlib::vector<double, 3> filterInput(point.x, point.y, point.pressure);
+        // Predict/smooth the position
+        dlib::vector<double, 3> filterInput(penPoint.x, penPoint.y, penPoint.pressure);
         kalmanFilter.update(filterInput);
         dlib::matrix<double, 9, 1> kalmanPrediction;
         if (m_predict) {
@@ -304,58 +295,29 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             kalmanPrediction = kalmanFilter.get_current_state();
         }
 
-        point.x = kalmanPrediction(0, 0);
-        point.y = kalmanPrediction(1, 0);
-        point.pressure = kalmanPrediction(2, 0);
+        // Get the predicted/smoothed position, scale it up
+        penPoint.x = kalmanPrediction(0, 0) * 1600;
+        penPoint.y = kalmanPrediction(1, 0) * 1200;
+        penPoint.pressure = kalmanPrediction(2, 0);
 
-        const QLine globalLine(mapFromScene(QPointF(prevPoint.x * 1600, prevPoint.y * 1200)).toPoint(),
-                               mapFromScene(QPointF(point.x * 1600, point.y * 1200)).toPoint());
-        const QLine line(prevPoint.x * 1600, prevPoint.y * 1200, point.x * 1600, point.y * 1200);
+        // Store the point in the line
+        drawnLine.points.append(PenPoint(penPoint.x * m_zoomRect.width() + m_zoomRect.x(),
+                                         penPoint.y * m_zoomRect.height() + m_zoomRect.y(),
+                                         penPoint.pressure));
 
 
-        QRect updateRect = lineBoundingRect(line);
+        QPointF point(penPoint.x, penPoint.y);
+        QPointF prevPoint(prevPenPoint.x, prevPenPoint.y);
+        prevPenPoint = penPoint;
 
-        switch(m_currentBrush) {
-        case Line::Paintbrush: {
-            qreal pointsize = point.pressure * point.pressure * 10.0;
-            pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
-            if (pointsize < 2) pointsize = 2;
-            pen.setWidthF(pointsize * m_zoomFactor);
-            painter.setPen(pen);
-            painter.drawLine(line);
-            selfPainter.setPen(pen);
-            selfPainter.drawLine(globalLine);
+        if (m_currentBrush != Line::Pen) {
+            QRectF updateRect = drawLine(&painter, m_currentBrush, m_currentColor, point, prevPoint, penPoint.pressure);
             sendUpdate(updateRect, EPFrameBuffer::Mono);
-            break;
-        }
-
-        case Line::Eraser:
-            painter.drawLine(line);
-            selfPainter.drawLine(globalLine);
-            sendUpdate(updateRect, EPFrameBuffer::Mono);
-            break;
-
-        case Line::Pencil:
-            pen.setWidthF(m_zoomFactor);
-            painter.setPen(pen);
-            painter.drawLine(line);
-            selfPainter.setPen(pen);
-            selfPainter.drawLine(globalLine);
-            sendUpdate(updateRect, EPFrameBuffer::Mono);
-            break;
-
-        case Line::Pen: {
+            drawLine(&selfPainter, m_currentBrush, m_currentColor, mapFromScene(point), mapFromScene(prevPoint), penPoint.pressure);
+        } else {
             painter.setRenderHint(QPainter::Antialiasing, false);
-            if (point.pressure > 0.9) {
-                pen.setWidth(4);
-            } else {
-                pen.setWidth(3.5);
-            }
-            painter.setPen(pen);
-            selfPainter.setPen(pen);
-            painter.drawLine(line);
-            painter.setRenderHint(QPainter::Antialiasing, true);
-            selfPainter.drawLine(globalLine);
+            QRectF updateRect = drawLine(&painter, m_currentBrush, m_currentColor, point, prevPoint, penPoint.pressure);
+            drawLine(&selfPainter, m_currentBrush, m_currentColor, mapFromScene(point), mapFromScene(prevPoint), penPoint.pressure);
 
             // Because we use DU, we only have 16 LUTs available, and therefore need to batch
             // up updates we send
@@ -372,7 +334,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             skippedUpdatesCounter++;
 
             // Do delayed updates for drawing with DU
-            queuedLines.append(line);
+            queuedLines.append(LineFragment(point, prevPoint, penPoint.pressure));
 
             // Try to do semi-intelligently handling of LUT usage for DUs
             if (freeLuts < 1 && lutTimer.elapsed() > 250) {
@@ -380,76 +342,55 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             }
 
             if (freeLuts < 1) {
-                break;
+                continue;
             }
 
             // Start looping over stored lines to see if we can do AA drawing on some of them
-            QMutableVectorIterator<QLine> it(queuedLines);
-            updateRect = QRect();
+            QMutableVectorIterator<LineFragment> it(queuedLines);
+            updateRect = QRectF();
             while(it.hasNext()) {
-                QLine oldLine = it.next();
+                const LineFragment &oldLine = it.next();
 
                 // Avoid overlapping with the rect we just updated
-                QRect testRect = updateRect.united(lineBoundingRect(oldLine));
+                QRectF testRect = updateRect.united(lineBoundingRect(oldLine.p1, oldLine.p2));
                 testRect.setX(testRect.x() - 24);
                 testRect.setY(testRect.y() - 32);
                 testRect.setWidth(testRect.width() + 48);
                 testRect.setHeight(testRect.height() + 36);
 
-                // Calculate minimal distance
-                int distanceX =             abs(oldLine.x1() - line.x1());
-                distanceX = qMin(distanceX, abs(oldLine.x2() - line.x1()));
-                distanceX = qMin(distanceX, abs(oldLine.x1() - line.x2()));
-                distanceX = qMin(distanceX, abs(oldLine.x2() - line.x2()));
-
-                int distanceY =             abs(oldLine.y1() - line.y1());
-                distanceY = qMin(distanceY, abs(oldLine.y2() - line.y1()));
-                distanceY = qMin(distanceY, abs(oldLine.y1() - line.y2()));
-                distanceY = qMin(distanceY, abs(oldLine.y2() - line.y2()));
-
-                if (testRect.contains(line.p1()) || testRect.contains(line.p2())) {
+                if (testRect.contains(point) || testRect.contains(prevPoint)) {
                     continue;
                 }
 
                 // Re-draw line with AA pixels
                 it.remove();
 
-                painter.drawLine(oldLine);
-                selfPainter.drawLine(QLine(mapFromScene(oldLine.p1()).toPoint(), mapFromScene(oldLine.p2()).toPoint()));
+                painter.setRenderHint(QPainter::Antialiasing, true);
+                QRectF updatedRect = drawLine(&painter, m_currentBrush, m_currentColor, oldLine.p1, oldLine.p2, oldLine.pressure);
+                painter.setRenderHint(QPainter::Antialiasing, false);
 
-                updateRect = updateRect.united(lineBoundingRect(oldLine));
+                updateRect = updateRect.united(updatedRect);
             }
 
             if (updateRect.isEmpty()) {
-                break;
+                continue;
             }
 
             // If we're going to do an update (expensive), do all the (cheap) drawings as well
             it.toFront();
             while (it.hasNext()) {
-                QLine queuedLine = it.next();
-                if (updateRect.contains(queuedLine.p1()) && updateRect.contains(queuedLine.p2())) {
-                    painter.drawLine(queuedLine);
-                    selfPainter.drawLine(QLine(mapFromScene(queuedLine.p1()).toPoint(), mapFromScene(queuedLine.p2()).toPoint()));
+                const LineFragment &queuedLine = it.next();
+                if (updateRect.contains(queuedLine.p1) && updateRect.contains(queuedLine.p2)) {
+                    painter.setRenderHint(QPainter::Antialiasing, true);
+                    drawLine(&painter, m_currentBrush, m_currentColor, queuedLine.p1, queuedLine.p2, queuedLine.pressure);
+                    painter.setRenderHint(QPainter::Antialiasing, false);
                     it.remove();
                 }
             }
             freeLuts--;
             lutTimer.restart();
             sendUpdate(updateRect, EPFrameBuffer::Grayscale);
-
-            break;
         }
-        default:
-            break;
-        }
-
-
-        drawnLine.points.append(PenPoint(point.x * m_zoomRect.width() + m_zoomRect.x(),
-                                         point.y * m_zoomRect.height() + m_zoomRect.y(),
-                                         point.pressure));
-
-        prevPoint = point;
     }
 
     digitizer->releaseLock();
@@ -471,14 +412,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         return;
     }
 
-    QRect updateRect;
-    for (const QLine &line : queuedLines) {
-        painter.drawLine(line);
-        selfPainter.drawLine(QLine(mapFromScene(line.p1()).toPoint(), mapFromScene(line.p2()).toPoint()));
+    QRectF updateRect;
+    for (const LineFragment &line : queuedLines) {
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        QRectF updatedRect = drawLine(&painter, m_currentBrush, m_currentColor, line.p1, line.p2, line.pressure);
 
-        if (!updateRect.intersects(delayedUpdateRect)) {
-            updateRect = updateRect.united(lineBoundingRect(line));
-        }
+        updateRect = updateRect.united(updatedRect);
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 #endif//Q_PROCESSOR_ARM
@@ -558,48 +497,11 @@ void DrawingArea::redrawBackbuffer()
             }
         }
 
-        for (int i=1; i<drawnLine.points.size(); i++) {
-            QPointF pointA((drawnLine.points[i-1].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                    (drawnLine.points[i-1].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
-            QPointF pointB((drawnLine.points[i].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                       (drawnLine.points[i].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
-            QLine globalLine(mapFromScene(pointA).toPoint(), mapFromScene(pointB).toPoint());
-
-            switch(drawnLine.brush){
-            case Line::Paintbrush: {
-                qreal pointsize = drawnLine.points[i].pressure * drawnLine.points[i].pressure * 10.0;
-                pointsize -= (fabs(globalLine.dx()) + fabs(globalLine.dy())) / (10.0 * m_zoomFactor);
-                if (pointsize < 2) pointsize = 2;
-                pen.setWidthF(pointsize * m_zoomFactor);
-                painter.setPen(pen);
-                painter.drawLine(globalLine);
-                break;
-            }
-            case Line::Eraser:
-                pen.setWidthF(10 * m_zoomFactor);
-                pen.setColor(Qt::white);
-                painter.setPen(pen);
-                painter.drawLine(globalLine);
-                break;
-            case Line::Pencil:
-                pen.setWidthF(m_zoomFactor);
-                painter.setPen(pen);
-                painter.drawLine(globalLine);
-                break;
-            case Line::Pen:
-                if (drawnLine.points[i].pressure > 0.8) {
-                    pen.setWidth(4);
-                    painter.setPen(pen);
-                } else {
-                    pen.setWidth(3.5);
-                    painter.setPen(pen);
-                }
-                painter.drawLine(globalLine);
-
-                break;
-            default:
-                break;
-            }
+        const QVector<PenPoint> points = drawnLine.points;
+        for (int i=1; i<points.count(); i++) {
+            QPointF point(points[i].x, points[i].y);
+            QPointF prevPoint(points[i-1].x, points[i-1].y);
+            drawLine(&painter, drawnLine.brush, drawnLine.color, mapFromScene(point), mapFromScene(prevPoint), points[i].pressure);
         }
         painter.restore();
     }
@@ -785,22 +687,71 @@ void DrawingArea::handleGesture()
 #endif//Q_PROCESSOR_ARM
 }
 
-QRect DrawingArea::lineBoundingRect(const QLine &line)
+QRectF DrawingArea::lineBoundingRect(const QPointF &point1, const QPointF &point2)
 {
-    const int x1 = qMin(line.x1(), line.x2());
-    const int y1 = qMin(line.y1(), line.y2());
-    const int x2 = qMax(line.x1(), line.x2());
-    const int y2 = qMax(line.y1(), line.y2());
+    const qreal x1 = qMin(point1.x(), point2.x());
+    const qreal y1 = qMin(point1.y(), point2.y());
+    const qreal x2 = qMax(point1.x(), point2.x());
+    const qreal y2 = qMax(point1.y(), point2.y());
     return QRect(x1, y1, x2 - x1, y2 - y1);
 }
 
+QRectF DrawingArea::drawLine(QPainter *painter, const Line::Brush brush, const Line::Color color, const QPointF &point, const QPointF &prevPoint, qreal pressure)
+{
+    const QLineF line(point, prevPoint);
+
+    QPen pen;
+    switch(brush) {
+    case Line::Paintbrush: {
+        qreal pointsize = pressure * pressure * 10.0;
+        pointsize -= (fabs(line.dx()) + fabs(line.dy())) / 10.0;
+        if (pointsize < 2) pointsize = 2;
+        if (color == Line::White) {
+            pen.setColor(Qt::white);
+        } else if (color == Line::Gray) {
+            pen.setBrush(Qt::Dense4Pattern);
+        }
+        pen.setWidthF(pointsize * m_zoomFactor);
+        painter->setPen(pen);
+        break;
+    }
+
+    case Line::Eraser:
+        pen.setWidthF(30 * m_zoomFactor);
+        pen.setColor(Qt::white);
+        painter->setPen(pen);
+        break;
+
+    case Line::Pencil:
+        pen.setWidthF(m_zoomFactor);
+        painter->setPen(pen);
+        break;
+
+    case Line::Pen: {
+        if (pressure > 0.9) {
+            pen.setWidth(4);
+        } else {
+            pen.setWidth(3.5);
+        }
+        painter->setPen(pen);
+        break;
+    }
+    default:
+        qWarning() << Q_FUNC_INFO << "Invalid brush given";
+    }
+
+    painter->drawLine(line);
+
+    return lineBoundingRect(point, prevPoint);
+}
+
 #ifdef Q_PROCESSOR_ARM
-void DrawingArea::sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform, bool blocking)
+void DrawingArea::sendUpdate(QRectF rect, const EPFrameBuffer::Waveform waveform, bool blocking)
 {
     rect.setWidth(rect.width() + 24 * m_zoomFactor);
     rect.setHeight(rect.height() + 32 * m_zoomFactor);
     rect.setX(rect.x() - 12 * m_zoomFactor);
     rect.setY(rect.y() - 16 * m_zoomFactor);
-    EPFrameBuffer::instance()->sendUpdate(rect, waveform, EPFrameBuffer::PartialUpdate, blocking);
+    EPFrameBuffer::instance()->sendUpdate(rect.toRect(), waveform, EPFrameBuffer::PartialUpdate, blocking);
 }
 #endif

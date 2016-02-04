@@ -59,9 +59,11 @@ private:
     void drawBackground(QPainter *painter);
     void doZoom();
     void handleGesture();
-    QRect lineBoundingRect(const QLine &line);
+    QRectF lineBoundingRect(const QPointF &point1, const QPointF &point2);
+    QRectF drawLine(QPainter *painter, const Line::Brush brush, const Line::Color color, const QPointF &point , const QPointF &prevPoint, qreal pressure);
+
 #ifdef Q_PROCESSOR_ARM
-    void sendUpdate(QRect rect, const EPFrameBuffer::Waveform waveform, bool blocking = false);
+    void sendUpdate(QRectF rect, const EPFrameBuffer::Waveform waveform, bool blocking = false);
 #endif
 
     bool m_invert;
