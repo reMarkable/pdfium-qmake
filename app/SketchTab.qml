@@ -11,6 +11,10 @@ Rectangle {
         document: Collection.getDocument("/data/documents/sketch")
     }
 
+    Component.onDestruction: {
+        drawingArea.document.destroy()
+    }
+
     Column {
         id: toolBox
         width: 64
