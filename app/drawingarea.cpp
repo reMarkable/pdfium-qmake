@@ -62,6 +62,7 @@ void DrawingArea::paint(QPainter *painter)
     if (timer.elapsed() > 75) {
         qDebug() << Q_FUNC_INFO << "drawing done in" << timer.elapsed() << "ms";
     }
+    m_lastTransform = painter->transform();
 }
 
 void DrawingArea::clear()
@@ -76,15 +77,15 @@ void DrawingArea::clear()
         m_document->setDrawnPage(QImage());
         m_document->storeDrawnPage();
     }
-
-    QPainter painter(&m_contents);
-    drawBackground(&painter);
-    update();
     m_hasEdited = false;
     m_undoneLines.clear();
     if (m_document) {
         m_document->addLine(Line()); // empty dummy for undoing
     }
+
+    redrawBackbuffer();
+
+    update();
 }
 
 void DrawingArea::undo()
@@ -107,21 +108,25 @@ void DrawingArea::undo()
 
     QPolygonF lastLine;
     foreach(const PenPoint &penPoint, m_undoneLines.last().points) {
-        QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                   (penPoint.y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
+        QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
+                   (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
         lastLine.append(point);
     }
 
-    redrawBackbuffer();
+    QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
+    redrawBackbuffer(updateRect);
+
+    QPainter painter(EPFrameBuffer::instance()->framebuffer());
+    painter.setClipRect(updateRect);
+    painter.setTransform(m_lastTransform);
+    painter.drawImage(0, 0, m_contents);
+//    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
+    sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
 
     if (m_document) {
         m_document->setDrawnPage(m_contents);
     }
 
-    //QPainter painter(EPFrameBuffer::instance()->framebuffer());
-    //painter.drawImage(0, 0, m_contents);
-    //sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Mono);
-    update(lastLine.boundingRect().toRect());
 }
 
 void DrawingArea::redo()
@@ -136,15 +141,28 @@ void DrawingArea::redo()
         m_document->storeDrawnPage();
     }
 
-    m_document->setDrawnPage(QImage());
-    redrawBackbuffer();
+    m_hasEdited = true;
+
+    QPolygonF lastLine;
+    foreach(const PenPoint &penPoint, m_document->lines().last().points) {
+        QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
+                   (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
+        lastLine.append(point);
+    }
+
+    QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
+    redrawBackbuffer(updateRect);
+
+    QPainter painter(EPFrameBuffer::instance()->framebuffer());
+    painter.setClipRect(lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16)));
+    painter.setTransform(m_lastTransform);
+    painter.drawImage(0, 0, m_contents);
+//    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
+    sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
 
     if (m_document) {
         m_document->setDrawnPage(m_contents);
     }
-
-    m_hasEdited = true;
-    update();
 }
 
 void DrawingArea::setZoom(double x, double y, double width, double height)
@@ -176,8 +194,8 @@ void DrawingArea::setDocument(Document *document)
     m_undoneLines.clear();
 
     redrawBackbuffer();
-    connect(document, SIGNAL(backgroundChanged()), SLOT(redrawBackbuffer()));
-    connect(document, SIGNAL(currentIndexChanged()), SLOT(redrawBackbuffer()));
+    connect(document, SIGNAL(backgroundChanged()), SLOT(onBackgroundChanged()));
+    connect(document, SIGNAL(currentIndexChanged()), SLOT(onBackgroundChanged()));
 }
 
 #define SMOOTHFACTOR_P 0.370
@@ -432,7 +450,7 @@ void DrawingArea::geometryChanged(const QRectF &newGeometry, const QRectF &oldGe
     QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-void DrawingArea::redrawBackbuffer()
+void DrawingArea::redrawBackbuffer(QRectF part)
 {
     QElapsedTimer timer;
     timer.start();
@@ -446,20 +464,22 @@ void DrawingArea::redrawBackbuffer()
         // Probably haven't gotten the proper geometry yet
         return;
     }
-    if (m_invert) {
-        m_contents.fill(Qt::black);
-    } else {
-        m_contents.fill(Qt::white);
-    }
 
     if (!m_document) {
         return;
     }
 
+
+    part = mapRectFromScene(part);
     QPainter painter(&m_contents);
+    if (!part.isEmpty()) {
+        painter.setClipRect(part);
+    }
+
     painter.setRenderHint(QPainter::Antialiasing);
 
-    drawBackground(&painter);
+    painter.fillRect(m_contents.rect(), Qt::white);
+    drawBackground(&painter, part);
 
     int start = 0;
     for (int i=0; i<m_document->lines().count(); i++) {
@@ -471,49 +491,35 @@ void DrawingArea::redrawBackbuffer()
     // Re-draw lines on top
     for (int i=start; i<m_document->lines().count(); i++) {
         const Line &drawnLine = m_document->lines()[i];
-        QPen pen(Qt::black);
-        pen.setCapStyle(Qt::RoundCap);
 
-        painter.save();
-
-        if (drawnLine.brush == Line::InvalidBrush) { // FIXME: hack for detecting clears
-            qWarning() << Q_FUNC_INFO << "Impossible situation, we got invalid brush after we should be after the last";
-            continue;
-        } else if (drawnLine.brush == Line::Eraser) {
-            painter.setCompositionMode(QPainter::CompositionMode_Clear);
-        } else if (drawnLine.brush == Line::Paintbrush) {
-            switch(drawnLine.color) {
-            case Line::White:
-                pen.setBrush(Qt::SolidPattern);
-                pen.setColor(Qt::white);
-                break;
-            case Line::Black:
-                pen.setBrush(Qt::SolidPattern);
-                pen.setColor(Qt::black);
-                break;
-            case Line::Gray:
-                pen.setBrush(Qt::Dense4Pattern);
-                break;
-            }
-        }
-
-        const QVector<PenPoint> points = drawnLine.points;
+        const QVector<PenPoint> &points = drawnLine.points;
         for (int i=1; i<points.count(); i++) {
-            QPointF point(points[i].x, points[i].y);
-            QPointF prevPoint(points[i-1].x, points[i-1].y);
-            drawLine(&painter, drawnLine.brush, drawnLine.color, mapFromScene(point), mapFromScene(prevPoint), points[i].pressure);
+            QPointF point = mapFromScene(QPointF(points[i].x, points[i].y));
+            QPointF prevPoint = mapFromScene(QPointF(points[i-1].x, points[i-1].y));
+
+            if (!part.contains(point) && !part.contains(prevPoint)) {
+                continue;
+            }
+
+            drawLine(&painter, drawnLine.brush, drawnLine.color, point, prevPoint, points[i].pressure);
         }
-        painter.restore();
     }
 
-    update();
     if (timer.elapsed() > 75) {
         qDebug() << "Redrawing backbuffer completed in" <<  timer.elapsed() << "ms";
     }
 }
 
-void DrawingArea::drawBackground(QPainter *painter)
+void DrawingArea::onBackgroundChanged()
 {
+    redrawBackbuffer();
+    update();
+}
+
+void DrawingArea::drawBackground(QPainter *painter, const QRectF part)
+{
+    Q_UNUSED(part); // FIXME
+
     QImage background = m_document->background();
 
     if (background.isNull()) {

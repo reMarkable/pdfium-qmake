@@ -53,10 +53,11 @@ signals:
     void doublePredictionChanged();
 
 private slots:
-    void redrawBackbuffer();
+    void redrawBackbuffer(QRectF part = QRectF());
+    void onBackgroundChanged();
 
 private:
-    void drawBackground(QPainter *painter);
+    void drawBackground(QPainter *painter, const QRectF part);
     void doZoom();
     void handleGesture();
     QRectF lineBoundingRect(const QPointF &point1, const QPointF &point2);
@@ -79,6 +80,7 @@ private:
     bool m_predict;
     int m_smoothFactor;
     bool m_doublePredict;
+    QTransform m_lastTransform;
 };
 
 #endif // DRAWINGAREA_H
