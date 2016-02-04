@@ -16,8 +16,6 @@ Document::Document(QString path, QObject *parent)
 {
     connect(this, SIGNAL(backgroundLoaded(QImage,int)), SLOT(cacheBackground(QImage,int)));
 
-    QFileInfo pathInfo(path);
-
     QFile metadataFile(path + ".metadata");
     if (metadataFile.open(QIODevice::ReadOnly)) {
         int lastPageOpen = metadataFile.readLine().toInt();
