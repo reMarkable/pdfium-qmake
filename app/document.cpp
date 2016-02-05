@@ -88,14 +88,20 @@ void Document::setDrawnPage(const QImage &pageContents)
 
 void Document::setCurrentIndex(int newIndex)
 {
-    // If we have drawn on the current page, we need to store it
-    storeDrawnPage();
+    if (m_currentIndex == newIndex) {
+        return;
+    }
 
     QMutexLocker locker(&m_cacheLock);
 
     if (newIndex >= m_pageCount) {
         return;
     }
+
+    // If we have drawn on the current page, we need to store it
+    storeDrawnPage();
+
+    m_currentDrawnPage = QImage();
 
     const int cacheMin = qMax(newIndex - CACHE_COUNT, 0);
     const int cacheMax = newIndex + CACHE_COUNT;
@@ -109,6 +115,11 @@ void Document::setCurrentIndex(int newIndex)
     }
 
     m_currentIndex = newIndex;
+    QString cachedBackgroundPath = getStoredPagePath(m_currentIndex);
+    if (QFile::exists(cachedBackgroundPath)) {
+        m_currentDrawnPage = QImage(cachedBackgroundPath);
+    }
+
     locker.unlock();
 
     preload();
