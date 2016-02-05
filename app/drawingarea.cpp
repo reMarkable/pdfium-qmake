@@ -116,12 +116,14 @@ void DrawingArea::undo()
     QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
     redrawBackbuffer(updateRect);
 
+#ifdef Q_PROCESSOR_ARM
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     painter.setClipRect(updateRect);
     painter.setTransform(m_lastTransform);
     painter.drawImage(0, 0, m_contents);
 //    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
     sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
+#endif
 
     if (m_document) {
         m_document->setDrawnPage(m_contents);
@@ -153,12 +155,14 @@ void DrawingArea::redo()
     QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
     redrawBackbuffer(updateRect);
 
+#ifdef Q_PROCESSOR_ARM
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     painter.setClipRect(lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16)));
     painter.setTransform(m_lastTransform);
     painter.drawImage(0, 0, m_contents);
 //    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
     sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
+#endif
 
     if (m_document) {
         m_document->setDrawnPage(m_contents);
@@ -248,30 +252,26 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 #endif
 
     //// Set up kalman filter
-    dlib::matrix<double> measurementNoise = m_smoothFactor * dlib::identity_matrix<double, 3>();
-    dlib::matrix<double> processNoise = 0.1 * dlib::identity_matrix<double, 9>();
+    dlib::matrix<double> measurementNoise = m_smoothFactor * dlib::identity_matrix<double, 2>();
+    dlib::matrix<double> processNoise = 0.1 * dlib::identity_matrix<double, 6>();
 
-    // The state stores x,y,p dx,dy,dp ddx,ddy,ddp
-    dlib::matrix<double, 9, 9> transitionModel;
+    // The state stores x,y dx,dy ddx,ddy
+    dlib::matrix<double, 6, 6> transitionModel;
     transitionModel =
-            1, 0, 0, 1, 0, 0, 1, 0.1, 0,
-            0, 1, 0, 0, 1, 0, 0, 1, 0.1,
-            0, 0, 1, 0, 0, 1, 0, 0, 1,
-            0, 0, 0, 1, 0, 0, 1, 0, 0,
-            0, 0, 0, 0, 1, 0, 0, 1, 0,
-            0, 0, 0, 0, 0, 1, 0, 0, 1,
-            0, 0, 0, 0, 0, 0, 1, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 1, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 1;
+            1, 0, 0, 1, 0, 0,
+            0, 1, 0, 0, 1, 0,
+            0, 0, 1, 0, 0, 1,
+            0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 1;
 
     // We only observe x,y,p
-    dlib::matrix<double, 3, 9> observationModel;
+    dlib::matrix<double, 2, 6> observationModel;
     observationModel =
-            1, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 1, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 1, 0, 0, 0, 0, 0, 0;
+            1, 0, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0;
 
-    dlib::kalman_filter<9, 3> kalmanFilter;
+    dlib::kalman_filter<6, 2> kalmanFilter;
     kalmanFilter.set_measurement_noise(measurementNoise);
     kalmanFilter.set_process_noise(processNoise);
     kalmanFilter.set_observation_model(observationModel);
@@ -301,9 +301,9 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 #endif
 
         // Predict/smooth the position
-        dlib::vector<double, 3> filterInput(penPoint.x, penPoint.y, penPoint.pressure);
+        dlib::vector<double, 2> filterInput(penPoint.x, penPoint.y);
         kalmanFilter.update(filterInput);
-        dlib::matrix<double, 9, 1> kalmanPrediction;
+        dlib::matrix<double, 6, 1> kalmanPrediction;
         if (m_predict) {
             kalmanPrediction = kalmanFilter.get_predicted_next_state();
         } else if (m_doublePredict) {
@@ -316,7 +316,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         // Get the predicted/smoothed position, scale it up
         penPoint.x = kalmanPrediction(0, 0) * 1600;
         penPoint.y = kalmanPrediction(1, 0) * 1200;
-        penPoint.pressure = kalmanPrediction(2, 0);
 
         // Store the point in the line
         drawnLine.points.append(PenPoint(penPoint.x * m_zoomRect.width() + m_zoomRect.x(),
@@ -333,6 +332,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             sendUpdate(updateRect, EPFrameBuffer::Mono);
             drawLine(&selfPainter, m_currentBrush, m_currentColor, mapFromScene(point), mapFromScene(prevPoint), penPoint.pressure);
         } else {
+            selfPainter.setRenderHint(QPainter::Antialiasing, true);
             painter.setRenderHint(QPainter::Antialiasing, false);
             QRectF updateRect = drawLine(&painter, m_currentBrush, m_currentColor, point, prevPoint, penPoint.pressure);
             drawLine(&selfPainter, m_currentBrush, m_currentColor, mapFromScene(point), mapFromScene(prevPoint), penPoint.pressure);
@@ -355,7 +355,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             queuedLines.append(LineFragment(point, prevPoint, penPoint.pressure));
 
             // Try to do semi-intelligently handling of LUT usage for DUs
-            if (freeLuts < 1 && lutTimer.elapsed() > 250) {
+            if (freeLuts < 3 && lutTimer.elapsed() > 250) {
                 freeLuts++;
             }
 
@@ -737,7 +737,7 @@ QRectF DrawingArea::drawLine(QPainter *painter, const Line::Brush brush, const L
         if (pressure > 0.9) {
             pen.setWidth(4);
         } else {
-            pen.setWidth(3.5);
+            pen.setWidth(3.7);
         }
         painter->setPen(pen);
         break;
