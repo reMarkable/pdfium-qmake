@@ -27,17 +27,17 @@ Item {
     }
 
     Keys.onRightPressed: {
-        //if (page < pageModel.length - 1) {
+        if (page < drawingArea.document.pageCount - 1) {
             page++
-        //    event.accepted = true
-        //}
+            event.accepted = true
+        }
     }
 
     Keys.onLeftPressed: {
-        //if (page > 0) {
+        if (page > 0) {
             page--
-        //    event.accepted = true
-        //}
+            event.accepted = true
+        }
     }
 
     Rectangle {
