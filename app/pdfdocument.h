@@ -12,7 +12,7 @@ public:
     virtual ~PdfDocument();
 
 protected slots:
-    virtual void loadOriginalPage(int index) override;
+    virtual QImage loadOriginalPage(int index) override;
 
 private:
     FPDF_DOCUMENT m_pdfDocument;

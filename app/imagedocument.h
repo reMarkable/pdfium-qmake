@@ -11,7 +11,7 @@ public:
     ImageDocument(QString path, QObject *parent = nullptr);
 
 protected slots:
-    void loadOriginalPage(int index);
+    QImage loadOriginalPage(int index);
 
 private:
     QStringList m_files;

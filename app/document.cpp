@@ -15,8 +15,9 @@ Document::Document(QString path, QObject *parent)
       m_dimensions(1200, 1560),
       m_pageDirty(false)
 {
-    connect(this, SIGNAL(backgroundLoaded(QImage,int)), SLOT(cacheBackground(QImage,int)));
+    // Force these to be queued, we want them called asynchronously
     connect(this, SIGNAL(pageRequested(int)), SLOT(loadPage(int)), Qt::QueuedConnection);
+    connect(this, SIGNAL(storingRequested(QImage,int)), SLOT(storePage(QImage,int)), Qt::QueuedConnection);
 
     QFile metadataFile(path + ".metadata");
     if (metadataFile.open(QIODevice::ReadOnly)) {
@@ -28,7 +29,7 @@ Document::Document(QString path, QObject *parent)
 
     QString cachedBackgroundPath = getStoredPagePath(m_currentIndex);
     if (QFile::exists(cachedBackgroundPath)) {
-        m_cachedBackgrounds[m_currentIndex] = QImage(cachedBackgroundPath);
+        m_pageContents[m_currentIndex] = QImage(cachedBackgroundPath);
     }
 }
 
@@ -39,10 +40,12 @@ Document::~Document()
         metadataFile.write(QByteArray::number(m_currentIndex) + "\n");
     }
 
-    // If we have drawn on the current page, we need to store it
-    storeDrawnPage();
-
     QMutexLocker locker(&m_cacheLock);
+
+    if (m_pageContents.contains(m_currentIndex)) {
+        storePage(m_pageContents[m_currentIndex], m_currentIndex);
+    }
+
     if (m_cachedBackgrounds.contains(m_currentIndex)) {
         m_cachedBackgrounds[m_currentIndex].save(m_path + ".cached.jpg");
     }
@@ -52,11 +55,15 @@ QImage Document::background()
 {
     QMutexLocker locker(&m_cacheLock);
 
-    if (!m_cachedBackgrounds.contains(m_currentIndex)) { // it will be loaded soon
-        return QImage();
+    if (m_pageContents.contains(m_currentIndex)) {
+        return m_pageContents[m_currentIndex];
+    }
+    if (m_cachedBackgrounds.contains(m_currentIndex)) {
+        return m_cachedBackgrounds[m_currentIndex];
     }
 
-    return m_cachedBackgrounds[m_currentIndex];
+    // It will hopefully be returned soon
+    return QImage();
 }
 
 const QVector<Line> &Document::lines()
@@ -83,18 +90,9 @@ void Document::setDrawnPage(const QImage &pageContents)
     QMutexLocker locker(&m_cacheLock);
     m_pageDirty = true;
     if (pageContents.isNull()) {
-        QString filePath = getStoredPagePath(m_currentIndex);
-
-        if (!m_cachedBackgrounds.contains(m_currentIndex)) {
-            if (QFileInfo::exists(filePath)) {
-                QFile::remove(filePath);
-            }
-        }
-
-        m_cachedBackgrounds.remove(m_currentIndex);
-        emit pageRequested(m_currentIndex);
+        m_pageContents.remove(m_currentIndex);
     } else {
-        m_cachedBackgrounds[m_currentIndex] = pageContents;
+        m_pageContents[m_currentIndex] = pageContents;
     }
 }
 
@@ -104,21 +102,20 @@ void Document::setCurrentIndex(int newIndex)
         return;
     }
 
-    QMutexLocker locker(&m_cacheLock);
-
     if (newIndex >= m_pageCount) {
         return;
     }
 
     // If we have drawn on the current page, we need to store it
     if (m_pageDirty) {
-        storeDrawnPage();
+        emit storingRequested(m_pageContents.value(m_currentIndex), m_currentIndex);
         m_pageDirty = false;
     }
 
     const int cacheMin = qMax(newIndex - CACHE_COUNT, 0);
     const int cacheMax = newIndex + CACHE_COUNT;
 
+    QMutexLocker locker(&m_cacheLock);
     foreach(int index, m_cachedBackgrounds.keys()) {
         if (index > cacheMin || index < cacheMax) {
             continue;
@@ -172,27 +169,20 @@ void Document::preload()
 
 void Document::clearCache()
 {
+    QMutexLocker locker(&m_cacheLock);
+
     foreach(int index, m_cachedBackgrounds.keys()) {
         // Only keep the current page
         if (index != m_currentIndex) {
             m_cachedBackgrounds.remove(index);
         }
     }
-}
 
-void Document::cacheBackground(QImage image, int index)
-{
-    QMutexLocker locker(&m_cacheLock);
-
-    if (m_cachedBackgrounds.contains(index)) {
-        qWarning() << "Trying to cache already cached background, index:" << index;
-    }
-
-    m_cachedBackgrounds[index] = image;
-
-    if (index == m_currentIndex) {
-        locker.unlock();
-        emit backgroundChanged();
+    foreach(int index, m_pageContents.keys()) {
+        // Only keep the current page
+        if (index != m_currentIndex) {
+            m_pageContents.remove(index);
+        }
     }
 }
 
@@ -206,42 +196,47 @@ void Document::setPageCount(int pageCount)
     emit pageCountChanged();
 }
 
-QList<int> Document::cachedIndices()
+void Document::loadPage(int index)
 {
     QMutexLocker locker(&m_cacheLock);
 
-    return m_cachedBackgrounds.keys();
+    const QString drawnPagePath = getStoredPagePath(index);
+    if (QFile::exists(drawnPagePath) && !m_pageContents.contains(index)) {
+        locker.unlock();
+
+        QImage page = QImage(drawnPagePath);
+
+        locker.relock();
+
+        m_pageContents[index] = page;
+
+        if (index == m_currentIndex) {
+            emit backgroundChanged();
+        }
+    }
+
+    if (!m_cachedBackgrounds.contains(index)) {
+        locker.unlock();
+        QImage page = loadOriginalPage(index);
+        locker.relock();
+
+        m_cachedBackgrounds[index] = page;
+
+        if (index == m_currentIndex && !m_pageContents.contains(index)) {
+            emit backgroundChanged();
+        }
+    }
 }
 
-void Document::storeDrawnPage()
+void Document::storePage(QImage image, int index)
 {
-    QString filePath = getStoredPagePath(m_currentIndex);
+    QString filePath = getStoredPagePath(index);
 
-    if (!m_cachedBackgrounds.contains(m_currentIndex)) {
+    if (image.isNull()) {
         if (QFileInfo::exists(filePath)) {
             QFile::remove(filePath);
         }
-
-        return;
-    }
-
-    m_cachedBackgrounds[m_currentIndex].save(filePath);
-}
-
-void Document::loadPage(int index)
-{
-    { // Check if it is already cached
-        QMutexLocker locker(&m_cacheLock);
-
-        if (m_cachedBackgrounds.contains(index)) {
-            return;
-        }
-    }
-
-    QString cachedBackgroundPath = getStoredPagePath(index);
-    if (QFile::exists(cachedBackgroundPath)) {
-        cacheBackground(QImage(getStoredPagePath(index)), index);
     } else {
-        loadOriginalPage(index);
+        image.save(filePath);
     }
 }

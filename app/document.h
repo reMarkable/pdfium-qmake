@@ -26,7 +26,6 @@ public:
     Line popLine();
 
     void setDrawnPage(const QImage &pageContents);
-    void storeDrawnPage();
 
 public slots:
     void setCurrentIndex(int index);
@@ -45,19 +44,18 @@ signals:
     void currentIndexChanged();
     void pageCountChanged();
     void backgroundChanged();
-    void backgroundLoaded(QImage image, int index);
     void pageRequested(int index);
+    void storingRequested(QImage image, int index);
 
 protected slots:
-    virtual void loadOriginalPage(int index) = 0;
-    void cacheBackground(QImage image, int index);
+    virtual QImage loadOriginalPage(int index) = 0;
     void setPageCount(int pageCount);
     QSize dimensions() { return m_dimensions; }
     QString path() { return m_path; }
-    QList<int> cachedIndices();
 
 private slots:
     void loadPage(int index);
+    void storePage(QImage image, int index);
 
 private:
     QImage getStoredPage(int index);
@@ -70,6 +68,7 @@ private:
     int m_pageCount;
     QHash<int, QVector<Line>> m_lines;
     QHash<int, QImage> m_cachedBackgrounds;
+    QHash<int, QImage> m_pageContents;
     QMutex m_cacheLock;
     QSize m_dimensions;
     bool m_pageDirty;

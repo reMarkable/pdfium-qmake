@@ -75,7 +75,6 @@ void DrawingArea::clear()
 
     if (m_document) {
         m_document->setDrawnPage(QImage());
-        m_document->storeDrawnPage();
     }
     m_hasEdited = false;
     m_undoneLines.clear();
@@ -101,7 +100,7 @@ void DrawingArea::undo()
     if (m_document) {
         m_undoneLines.append(m_document->popLine());
         m_document->setDrawnPage(QImage());
-        m_document->storeDrawnPage();
+        //m_document->storeDrawnPage();
     }
 
     m_hasEdited = true;
@@ -140,7 +139,7 @@ void DrawingArea::redo()
     if (m_document) {
         m_document->addLine(m_undoneLines.takeLast());
         m_document->setDrawnPage(QImage());
-        m_document->storeDrawnPage();
+        //m_document->storeDrawnPage();
     }
 
     m_hasEdited = true;
@@ -178,7 +177,6 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
 
     if (m_document) {
         m_document->setDrawnPage(QImage());
-        m_document->storeDrawnPage();
     }
 
     m_zoomRect = QRectF(x, y, width, height);

@@ -20,11 +20,11 @@ PdfDocument::~PdfDocument()
     }
 }
 
-void PdfDocument::loadOriginalPage(int index)
+QImage PdfDocument::loadOriginalPage(int index)
 {
     // TODO: FPDF_QuickDrawPage
     if (index < 0) {
-        return;
+        return QImage();
     }
 
     if (!m_pdfDocument) {
@@ -36,11 +36,7 @@ void PdfDocument::loadOriginalPage(int index)
     }
 
     if (index > pageCount()) {
-        return;
-    }
-
-    if (cachedIndices().contains(index)) {
-        return;
+        return QImage();
     }
 
     QElapsedTimer timer;
@@ -105,7 +101,5 @@ void PdfDocument::loadOriginalPage(int index)
         image = image.scaledToHeight(dimensions().height(), Qt::SmoothTransformation);
     }
 
-    emit backgroundLoaded(image.convertToFormat(QImage::Format_RGB16), index);
-
-    qDebug() << "Page" << index << " rendered in" << timer.elapsed() << "ms";
+    return image.convertToFormat(QImage::Format_RGB16);
 }
