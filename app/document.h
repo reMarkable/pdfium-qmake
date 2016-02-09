@@ -46,6 +46,7 @@ signals:
     void pageCountChanged();
     void backgroundChanged();
     void backgroundLoaded(QImage image, int index);
+    void pageRequested(int index);
 
 protected slots:
     virtual void loadOriginalPage(int index) = 0;
@@ -55,8 +56,10 @@ protected slots:
     QString path() { return m_path; }
     QList<int> cachedIndices();
 
-private:
+private slots:
     void loadPage(int index);
+
+private:
     QImage getStoredPage(int index);
     inline QString getStoredPagePath(int index) {
         return m_path + '-' + QString::number(index) + ".cached.jpg";
@@ -69,7 +72,7 @@ private:
     QHash<int, QImage> m_cachedBackgrounds;
     QMutex m_cacheLock;
     QSize m_dimensions;
-    QImage m_currentDrawnPage;
+    bool m_pageDirty;
 };
 
 #endif // DOCUMENT_H
