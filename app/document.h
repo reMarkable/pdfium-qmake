@@ -31,8 +31,6 @@ public:
 public slots:
     void setCurrentIndex(int index);
 
-    void setDimensions(QSize size);
-
     int pageCount() { return m_pageCount; }
 
     /// We should preload pages into our cache
@@ -49,9 +47,8 @@ signals:
     void storingRequested(QImage image, int index);
 
 protected slots:
-    virtual QImage loadOriginalPage(int index) = 0;
+    virtual QImage loadOriginalPage(int index, QSize dimensions) = 0;
     void setPageCount(int pageCount);
-    QSize dimensions() { return m_dimensions; }
     QString path() { return m_path; }
 
 private:
@@ -71,7 +68,6 @@ private:
     QHash<int, QImage> m_cachedBackgrounds;
     QHash<int, QImage> m_pageContents;
     QMutex m_cacheLock;
-    QSize m_dimensions;
     bool m_pageDirty;
     QThread m_workerThread;
 };

@@ -20,7 +20,7 @@ PdfDocument::~PdfDocument()
     }
 }
 
-QImage PdfDocument::loadOriginalPage(int index)
+QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
 {
     // TODO: FPDF_QuickDrawPage
     if (index < 0) {
@@ -45,7 +45,7 @@ QImage PdfDocument::loadOriginalPage(int index)
     FPDF_PAGE pdfPage = FPDF_LoadPage(m_pdfDocument, index);
 
 
-    QImage image(dimensions().width(), dimensions().height(), QImage::Format_Grayscale8);
+    QImage image(dimensions.width(), dimensions.height(), QImage::Format_Grayscale8);
     image.fill(Qt::white);
     FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(image.width(), image.height(),
                                              FPDFBitmap_Gray,
@@ -95,9 +95,9 @@ QImage PdfDocument::loadOriginalPage(int index)
 #endif
 
     if (image.width() > image.height()) {
-        image = image.scaledToWidth(dimensions().width(), Qt::SmoothTransformation);
+        image = image.scaledToWidth(dimensions.width(), Qt::SmoothTransformation);
     } else {
-        image = image.scaledToHeight(dimensions().height(), Qt::SmoothTransformation);
+        image = image.scaledToHeight(dimensions.height(), Qt::SmoothTransformation);
     }
 
     qDebug() << "Page" << index << " loaded in" << timer.elapsed() << "ms";

@@ -20,7 +20,7 @@ ImageDocument::ImageDocument(QString path, QObject *parent) :
     setPageCount(m_files.count());
 }
 
-QImage ImageDocument::loadOriginalPage(int index)
+QImage ImageDocument::loadOriginalPage(int index, QSize dimensions)
 {
     if (index >= m_files.size()) {
         return QImage();
@@ -34,7 +34,7 @@ QImage ImageDocument::loadOriginalPage(int index)
 
     QImage image(m_files[index]);
     qDebug() << "Image loaded in" << timer.restart() << "ms";
-    image = image.scaled(dimensions(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    image = image.scaled(dimensions, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     qDebug() << "Image scaled in" << timer.elapsed() << "ms";
     return image.convertToFormat(QImage::Format_RGB16);
 }

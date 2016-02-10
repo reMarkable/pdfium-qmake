@@ -12,7 +12,6 @@ Document::Document(QString path, QObject *parent)
       m_path(path),
       m_currentIndex(0),
       m_pageCount(1),
-      m_dimensions(1200, 1560),
       m_pageDirty(false)
 {
     // Set up a worker to let stuff be loaded in another thread
@@ -141,18 +140,6 @@ void Document::setCurrentIndex(int newIndex)
     emit currentIndexChanged();
 }
 
-void Document::setDimensions(QSize size)
-{
-    QMutexLocker locker(&m_cacheLock);
-
-    if (size == m_dimensions) {
-        return;
-    }
-
-    m_cachedBackgrounds.clear();
-    setCurrentIndex(m_currentIndex); // force reload
-}
-
 void Document::preload()
 {
     QMutexLocker locker(&m_cacheLock);
@@ -225,7 +212,7 @@ void Document::loadPage(int index)
 
     if (!m_cachedBackgrounds.contains(index)) {
         locker.unlock();
-        QImage page = loadOriginalPage(index);
+        QImage page = loadOriginalPage(index, QSize(1200, 1560));
         locker.relock();
 
         m_cachedBackgrounds[index] = page;
