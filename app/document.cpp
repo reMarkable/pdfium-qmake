@@ -15,9 +15,14 @@ Document::Document(QString path, QObject *parent)
       m_dimensions(1200, 1560),
       m_pageDirty(false)
 {
-    // Force these to be queued, we want them called asynchronously
-    connect(this, SIGNAL(pageRequested(int)), SLOT(loadPage(int)), Qt::QueuedConnection);
-    connect(this, SIGNAL(storingRequested(QImage,int)), SLOT(storePage(QImage,int)), Qt::QueuedConnection);
+    // Set up a worker to let stuff be loaded in another thread
+    DocumentWorker *worker = new DocumentWorker(this);
+    worker->moveToThread(&m_workerThread);
+    m_workerThread.start(QThread::LowPriority);
+
+    connect(&m_workerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
+    connect(this, SIGNAL(pageRequested(int)), worker, SLOT(onPageRequested(int)), Qt::QueuedConnection);
+    connect(this, SIGNAL(storingRequested(QImage,int)), worker, SLOT(onStoringRequested(QImage,int)), Qt::QueuedConnection);
 
     QFile metadataFile(path + ".metadata");
     if (metadataFile.open(QIODevice::ReadOnly)) {
@@ -35,6 +40,9 @@ Document::Document(QString path, QObject *parent)
 
 Document::~Document()
 {
+    m_workerThread.quit();
+    m_workerThread.wait(); // don't destroy while twerking
+
     QFile metadataFile(m_path + ".metadata");
     if (metadataFile.open(QIODevice::WriteOnly)) {
         metadataFile.write(QByteArray::number(m_currentIndex) + "\n");

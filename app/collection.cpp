@@ -24,8 +24,6 @@ Collection::Collection(QObject *parent) : QObject(parent)
     m_basePath = "/home/sandsmark/xo/testdata";
 #endif// Q_PROCESSOR_ARM
 
-    connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), &m_imageloadingThread, SLOT(quit()));
-    m_imageloadingThread.start(QThread::LowestPriority);
 
     FPDF_LIBRARY_CONFIG_ config;
     config.version = 2;
@@ -84,7 +82,6 @@ QObject *Collection::getDocument(const QString &path)
         qWarning() << "Asked for invalid path" << path;
     }
 
-    document->moveToThread(&m_imageloadingThread);
     QTimer::singleShot(10, document, SLOT(preload()));
     QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
     return document;

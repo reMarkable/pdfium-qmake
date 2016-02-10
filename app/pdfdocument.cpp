@@ -44,7 +44,6 @@ QImage PdfDocument::loadOriginalPage(int index)
 
     FPDF_PAGE pdfPage = FPDF_LoadPage(m_pdfDocument, index);
 
-    qDebug() << "Page" << index << " loaded in" << timer.elapsed() << "ms";
 
     QImage image(dimensions().width() * 1.5, dimensions().height() * 1.5, QImage::Format_Grayscale8);
     image.fill(Qt::white);
@@ -59,10 +58,8 @@ QImage PdfDocument::loadOriginalPage(int index)
     int left = image.width() - 1, right = 0,
         top = image.height() - 1, bottom = 0;
 
-    qDebug() << image.width() << image.bytesPerLine();
     for (int y = 0; y < image.height(); ++y) {
         const uchar *row = image.constScanLine(y);
-        //QRgb *row = (QRgb*)p.scanLine(y);
         bool rowFilled = false;
         for (int x = 0; x < image.width(); ++x) {
             if (row[x] == 0x0) {
@@ -100,6 +97,8 @@ QImage PdfDocument::loadOriginalPage(int index)
     } else {
         image = image.scaledToHeight(dimensions().height(), Qt::SmoothTransformation);
     }
+
+    qDebug() << "Page" << index << " loaded in" << timer.elapsed() << "ms";
 
     return image.convertToFormat(QImage::Format_RGB16);
 }

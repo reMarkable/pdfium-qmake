@@ -2,7 +2,6 @@
 #define COLLECTION_H
 
 #include <QObject>
-#include <QThread>
 
 class Collection : public QObject
 {
@@ -24,7 +23,6 @@ signals:
 
 private:
     QString m_basePath;
-    QThread m_imageloadingThread;
 };
 
 #endif // COLLECTION_H

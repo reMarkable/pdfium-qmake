@@ -9,6 +9,7 @@
 #include <QImage>
 #include <QMutex>
 #include <QSize>
+#include <QThread>
 
 class Document : public QObject
 {
@@ -53,11 +54,11 @@ protected slots:
     QSize dimensions() { return m_dimensions; }
     QString path() { return m_path; }
 
-private slots:
+private:
+    friend class DocumentWorker;
     void loadPage(int index);
     void storePage(QImage image, int index);
 
-private:
     QImage getStoredPage(int index);
     inline QString getStoredPagePath(int index) {
         return m_path + '-' + QString::number(index) + ".cached.jpg";
@@ -72,6 +73,30 @@ private:
     QMutex m_cacheLock;
     QSize m_dimensions;
     bool m_pageDirty;
+    QThread m_workerThread;
+};
+
+// To ensure that things are called from another thread
+class DocumentWorker : public QObject
+{
+    Q_OBJECT
+public:
+    DocumentWorker(Document *document) : QObject(), m_document(document)
+    {
+    }
+
+private slots:
+    // These will be asynchronously called on this object's thread,
+    // and synchronously invoke the methods on the Document object
+    void onPageRequested(int index) {
+        m_document->loadPage(index);
+    }
+    void onStoringRequested(QImage image, int index) {
+        m_document->storePage(image, index);
+    }
+
+private:
+    Document *m_document;
 };
 
 #endif // DOCUMENT_H
