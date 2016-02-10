@@ -735,7 +735,7 @@ QRectF DrawingArea::drawLine(QPainter *painter, const Line::Brush brush, const L
         if (pressure > 0.9) {
             pen.setWidth(4);
         } else {
-            pen.setWidth(3.7);
+            pen.setWidthF(3.7);
         }
         painter->setPen(pen);
         break;
