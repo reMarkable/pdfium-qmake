@@ -45,7 +45,7 @@ QImage PdfDocument::loadOriginalPage(int index)
     FPDF_PAGE pdfPage = FPDF_LoadPage(m_pdfDocument, index);
 
 
-    QImage image(dimensions().width() * 1.5, dimensions().height() * 1.5, QImage::Format_Grayscale8);
+    QImage image(dimensions().width(), dimensions().height(), QImage::Format_Grayscale8);
     image.fill(Qt::white);
     FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(image.width(), image.height(),
                                              FPDFBitmap_Gray,
@@ -55,6 +55,7 @@ QImage PdfDocument::loadOriginalPage(int index)
     FPDFBitmap_Destroy(bitmap);
     FPDF_ClosePage(pdfPage);
 
+#if CLIP_PDF
     int left = image.width() - 1, right = 0,
         top = image.height() - 1, bottom = 0;
 
@@ -91,6 +92,7 @@ QImage PdfDocument::loadOriginalPage(int index)
     }
 
     image = image.copy(left, top, width, height);
+#endif
 
     if (image.width() > image.height()) {
         image = image.scaledToWidth(dimensions().width(), Qt::SmoothTransformation);
