@@ -2,37 +2,68 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QMutexLocker>
 
 #define BORDER 100
 
+static bool s_pdfiumInitialized = false;
+
 PdfDocument::PdfDocument(QString path, QObject *parent) :
     Document(path, parent),
-    m_pdfDocument(nullptr)
+    m_pdfDocument(nullptr),
+    m_initialized(false)
 {
 }
 
 PdfDocument::~PdfDocument()
 {
+    QMutexLocker destructionLocker(&m_destructionLock);
+
     if (m_pdfDocument) {
-        if (m_pdfDocument) {
-            FPDF_CloseDocument(m_pdfDocument);
-        }
+        FPDF_CloseDocument(m_pdfDocument);
+        m_pdfDocument = nullptr;
+        FPDF_DestroyLibrary();
     }
 }
 
 QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
 {
-    // TODO: FPDF_QuickDrawPage
+    // TODO: FPDF_QuickDrawPage?
     if (index < 0) {
         return QImage();
     }
 
-    if (!m_pdfDocument) {
-        QElapsedTimer documentTimer;
-        documentTimer.start();
-        m_pdfDocument = FPDF_LoadDocument(path().toLocal8Bit().constData(), nullptr);
-        setPageCount(FPDF_GetPageCount(m_pdfDocument));
-        qDebug() << "Document loaded in" << documentTimer.elapsed() << "ms";
+    { // Try to handle construction/destruction in a thread safe manner
+        QMutexLocker destructionLocker(&m_destructionLock);
+
+        if (!s_pdfiumInitialized) {
+            FPDF_LIBRARY_CONFIG_ config;
+            config.version = 2;
+            config.m_pUserFontPaths = nullptr;
+            config.m_pIsolate = nullptr;
+            config.m_v8EmbedderSlot = 0;
+            FPDF_InitLibraryWithConfig(&config);
+#ifdef Q_PROCESSOR_ARM
+            static const char *s_fontpaths[] = { "/system/fonts/", nullptr };
+            config.m_pUserFontPaths = s_fontpaths;
+#endif
+
+            s_pdfiumInitialized = true;
+            FPDF_InitLibraryWithConfig(&config);
+        }
+
+        if (!m_initialized) {
+            QElapsedTimer documentTimer;
+            documentTimer.start();
+            m_pdfDocument = FPDF_LoadDocument(path().toLocal8Bit().constData(), nullptr);
+            setPageCount(FPDF_GetPageCount(m_pdfDocument));
+            qDebug() << "Document loaded in" << documentTimer.elapsed() << "ms";
+            m_initialized = true;
+        }
+
+        if (!m_pdfDocument) {
+            return QImage();
+        }
     }
 
     if (index > pageCount()) {
