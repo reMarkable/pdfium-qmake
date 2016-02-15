@@ -16,7 +16,7 @@ SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
     doPoll();
 
     QTimer *timer = new QTimer(this);
-    timer->setInterval(60 * 1000); // once a minute
+    timer->setInterval(1000); // every second
     timer->setSingleShot(false);
 
     connect(timer, SIGNAL(timeout()), SLOT(doPoll()));
@@ -34,7 +34,7 @@ void SystemMonitor::checkBattery()
     QFile file("/sys/class/power_supply/max170xx_battery/capacity");
 
     if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open file with battery status:" << file.fileName();
+        //qWarning() << "Unable to open file with battery status:" << file.fileName();
         return;
     }
 
