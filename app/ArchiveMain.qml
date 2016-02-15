@@ -4,12 +4,6 @@ import com.magmacompany 1.0
 Item {
     id: mainArchive
     visible: archiveView.currentBook === ""
-    anchors {
-        top: archiveHeader.bottom
-        bottom: parent.bottom
-        left: parent.left
-        right: parent.right
-    }
     
     property int currentPage: 0
     
@@ -61,7 +55,7 @@ Item {
                         }
                         asynchronous: true
                         
-                        source: "file://" + Collection.thumbnailPath(modelData)
+                        source: Collection.thumbnailPath(modelData)
                         
                         Rectangle {
                             anchors.fill: parent
@@ -83,7 +77,7 @@ Item {
                                 if (editActionsRow.visible) {
                                     bookItem.selected = !bookItem.selected
                                 } else {
-                                    archiveView.currentBook = modelData
+                                    archiveView.openBook(modelData)
                                 }
                             }
                         }
@@ -150,8 +144,15 @@ Item {
                         
                         Image {
                             anchors.fill: parent
-                            anchors.margins: 5
+                            anchors.margins: 10
                             source: "qrc:///icons/forward_white.svg"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                archiveView.currentBook = modelData
+                            }
                         }
                     }
                     
@@ -176,8 +177,8 @@ Item {
                             
                             Image {
                                 anchors.fill: parent
-                                anchors.margins: 5
-                                source: "qrc:///icons/Move_white.svg"
+                                anchors.margins: 10
+                                source: "qrc:///icons/Lock_small_white.svg"
                             }
                         }
                         Rectangle {
@@ -188,7 +189,7 @@ Item {
                             
                             Image {
                                 anchors.fill: parent
-                                anchors.margins: 5
+                                anchors.margins: 10
                                 source: "qrc:///icons/send_white.svg"
                             }
                         }
@@ -200,7 +201,7 @@ Item {
                             
                             Image {
                                 anchors.fill: parent
-                                anchors.margins: 5
+                                anchors.margins: 10
                                 source: "qrc:///icons/Move_white.svg"
                             }
                         }
@@ -212,7 +213,7 @@ Item {
                             
                             Image {
                                 anchors.fill: parent
-                                anchors.margins: 5
+                                anchors.margins: 10
                                 source: "qrc:///icons/Delete_white.svg"
                             }
                         }
@@ -232,7 +233,7 @@ Item {
                         
                         Image {
                             anchors.fill: parent
-                            anchors.margins: 5
+                            anchors.margins: 10
                             source: "qrc:///icons/prikkprikkprikk_white.svg"
                         }
                         

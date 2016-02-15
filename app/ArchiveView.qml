@@ -5,130 +5,268 @@ Rectangle {
     id: archiveView
 
     signal openBook(var path)
+    signal openBookAt(var path, var page)
+
+    property string currentBook: ""
 
     Rectangle {
-        id: folderlistContainer
-        width: parent.width / 2 - 40
+        anchors {
+            verticalCenter: archiveHeader.verticalCenter
+            left: archiveHeader.right
+            leftMargin: -15
+        }
+
+        width: 30
+        height: 30
+        color: archiveHeader.color
+        rotation: 45
+        visible: bookHeader.visible
+    }
+
+    Rectangle {
+        id: archiveHeader
         anchors {
             top: parent.top
             left: parent.left
-            bottom: parent.bottom
-            topMargin: 20
-            leftMargin: 20
+            topMargin: 25
+            leftMargin: 50
         }
 
-        border.width: 0
-        ListView {
-            id: folderList
+        width: 325
+        height: 75
+        color: bookHeader.visible ? "#aaa" : "#666"
+        radius: 5
+
+        Image {
+            id: archiveHeaderIcon
+            anchors {
+                top: parent.top
+                left: parent.left
+                bottom: parent.bottom
+                margins: 20
+            }
+            width: height
+
+            source: "qrc:///icons/Archive-small_white.svg"
+        }
+
+        Text {
+            anchors {
+                left: archiveHeaderIcon.right
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+            }
+            font.bold: true
+            font.pointSize: 15
+            color: "white"
+            text: "Main archive"
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        MouseArea {
             anchors.fill: parent
+            onClicked: archiveView.currentBook = ""
+        }
+    }
 
-            spacing: 5
-            model: Collection.folderEntries()
-            interactive: false
+    Rectangle {
+        id: bookHeader
+        anchors {
+            top: parent.top
+            left: archiveHeader.right
+            topMargin: 25
+            leftMargin: 30
+        }
 
-            property int selected: -1
+        width: 325
+        height: 75
+        color: "#666"
+        radius: 5
+        visible: archiveView.currentBook !== ""
 
-            delegate: Rectangle {
-                border.width: folderList.selected === index ? 2 : 1
-                height: 90
-                width: folderlistContainer.width
+        Image {
+            id: bookHeaderIcon
+            anchors {
+                top: parent.top
+                left: parent.left
+                bottom: parent.bottom
+                margins: 20
+            }
+            width: height
 
-                Image {
-                    id: folderIcon
-                    source: Collection.isFolder(modelData) ? "qrc:/icons/Full folder.svg" :"qrc:/icons/book.svg"
-                    width: 70
-                    height: 70
-                    anchors {
-                        left: parent.left
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 15
-                    }
+            source: "qrc:///icons/Notebook_white.svg"
+
+        }
+
+        Text {
+            anchors {
+                left: bookHeaderIcon.right
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+            }
+            font.bold: true
+            font.pointSize: 15
+            color: "white"
+            text: Collection.title(archiveView.currentBook)
+            horizontalAlignment: Text.AlignHCenter
+        }
+    }
+
+    Rectangle {
+        anchors.fill: editActionsRow
+        color: "#666"
+        visible: editActionsRow.visible
+        radius: 5
+    }
+
+    Row {
+        id: editActionsRow
+        anchors {
+            verticalCenter: editButton.verticalCenter
+            right: editButton.left
+            rightMargin: 10
+        }
+        visible: false
+
+        Item {
+            height: 75
+            width: height
+            Image {
+                anchors {
+                    fill: parent
+                    margins: 10
                 }
 
-                Text {
-                    anchors {
-                        left: folderIcon.right
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 5
-                    }
+                source: "qrc:///icons/Move_white.svg"
+            }
+        }
 
-                    font.pointSize: 18
-                    text: Collection.title(modelData)
-                    verticalAlignment: Text.AlignVCenter
+        Item {
+            height: 75
+            width: height
+            Image {
+                anchors {
+                    fill: parent
+                    margins: 10
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        folderList.selected = index
-                        filelistContainer.folderPath = modelData
-                    }
+                source: "qrc:///icons/Delete_white.svg"
+            }
+        }
+        Item {
+            height: 75
+            width: height
+            Image {
+                anchors {
+                    fill: parent
+                    margins: 10
                 }
+
+                source: "qrc:///icons/send_white.svg"
             }
         }
     }
 
     Rectangle {
-        id: filelistContainer
+        anchors {
+            verticalCenter: editButton.verticalCenter
+            right: editButton.left
+            rightMargin: -width/2
+        }
+        width: 15
+        height: width
+        color: "#666"
+        rotation: 45
+        visible: editActionsRow.visible
+    }
 
-        property string folderPath
-        onFolderPathChanged: fileList.model = Collection.folderEntries(folderPath)
+    Rectangle {
+        id: editButton
+        anchors {
+            top: parent.top
+            right: modeSelect.left
+            topMargin: 25
+            rightMargin: 10
+        }
 
-        width: parent.width / 2 - 40
-        border.width: 0
+        width: height
+        height: 75
+        color: "#666"
+        radius: 5
+
+        Image {
+            anchors {
+                top: parent.top
+                left: parent.left
+                bottom: parent.bottom
+                margins: 10
+            }
+            width: height
+            source: editActionsRow.visible ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white.svg"
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: editActionsRow.visible = !editActionsRow.visible
+        }
+    }
+
+    Rectangle {
+        id: modeSelect
         anchors {
             top: parent.top
             right: parent.right
-            bottom: parent.bottom
-            topMargin: 20
-            rightMargin: 20
+            topMargin: 25
+            rightMargin: 50
         }
 
-        ListView {
-            id: fileList
-            anchors.fill: parent
-            interactive: false
+        width: 150
+        height: 75
+        color: "#666"
+        radius: 5
 
-            spacing: 5
-
-            model: []
-            delegate: Rectangle {
-                border.width: 1
-                height: 90
-                width: folderlistContainer.width
-
-                Image {
-                    id: bookIcon
-                    source: "qrc:/icons/book.svg"
-                    anchors {
-                        left: parent.left
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 5
-                    }
-                    width: 70
-                    height: 70
-                }
-
-                Text {
-                    anchors {
-                        left: bookIcon.right
-                        verticalCenter: parent.verticalCenter
-                        leftMargin: 5
-                    }
-                    font.pointSize: 18
-
-                    text: Collection.title(modelData)
-                }
-
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        archiveView.openBook(modelData)
-                    }
-                }
+        Image {
+            anchors {
+                top: parent.top
+                left: parent.left
+                bottom: parent.bottom
+                margins: 10
             }
+            width: height
+            source: "qrc:///icons/Grid 9.svg"
+        }
+
+        Image {
+            anchors {
+                top: parent.top
+                right: parent.right
+                bottom: parent.bottom
+                margins: 10
+            }
+            width: height
+            source: "qrc:///icons/Grid 36_white.svg"
+        }
+    }
+
+    ArchiveMain {
+        id: mainArchive
+
+        anchors {
+            top: archiveHeader.bottom
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+        }
+    }
+
+    ArchiveBook {
+        id: archiveBook
+
+        anchors {
+            top: archiveHeader.bottom
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
         }
     }
 }
-
