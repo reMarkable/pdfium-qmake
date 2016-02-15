@@ -87,17 +87,19 @@ void EPRenderer::drawRects()
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         Q_ASSERT(rect.get());
         if (rect->dirty) {
+            //painter.setClipRect(rect->transformedRect, );
             totalDamaged = totalDamaged.united(rect->transformedRect);
             damagedAreas.append(rect->transformedRect);
         }
     }
 
+    QRect painterClipRect = totalDamaged;
+    painter.setClipRect(painterClipRect);
     // Rects are sorted in z-order
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         if (rect->dirty) {
             rect->draw(&painter);
             rect->dirty = false;
-            totalDamaged = totalDamaged.united(rect->transformedRect);
             continue;
         }
 
@@ -105,6 +107,8 @@ void EPRenderer::drawRects()
             if (rect->transformedRect.intersects(area)) {
                 rect->draw(&painter);
                 damagedAreas.append(rect->transformedRect);
+                painterClipRect = painterClipRect.united(rect->transformedRect);
+                painter.setClipRect(painterClipRect);
                 break;
             }
         }
@@ -150,9 +154,19 @@ void EPRenderer::drawRects()
 
 #else
     if (((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) > 90) {
-        EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+        static int ghostCount = 0;
+        if (ghostCount > 0) {
+            EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+            ghostCount = 0;
+        } else {
+            EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
+            ghostCount++;
+        }
+        //EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
     } else {
+        //EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
         EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
+        return;
     }
 #endif
 
