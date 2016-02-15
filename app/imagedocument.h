@@ -7,6 +7,8 @@
 
 class ImageDocument : public Document
 {
+    Q_OBJECT
+
 public:
     ImageDocument(QString path, QObject *parent = nullptr);
 
