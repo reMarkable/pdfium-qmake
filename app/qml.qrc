@@ -65,5 +65,28 @@
         <file>icons/no.svg</file>
         <file>icons/Power-off.svg</file>
         <file>MainScreenHeader.qml</file>
+        <file>icons/Index.svg</file>
+        <file>icons/back_white.svg</file>
+        <file>icons/forward_white.svg</file>
+        <file>icons/Index_white.svg</file>
+        <file>icons/Notebook.svg</file>
+        <file>icons/Archive-small_white.svg</file>
+        <file>icons/prikkprikkprikk.svg</file>
+        <file>icons/prikkprikkprikk_white.svg</file>
+        <file>icons/Move_white.svg</file>
+        <file>icons/send_white.svg</file>
+        <file>icons/Delete_white.svg</file>
+        <file>icons/yes_white.svg</file>
+        <file>icons/Notebook_white.svg</file>
+        <file>icons/yes_white-2.svg</file>
+        <file>icons/Grid 9_white.svg</file>
+        <file>icons/Grid 9.svg</file>
+        <file>icons/Grid 36_white.svg</file>
+        <file>icons/Grid 36.svg</file>
+        <file>ArchiveMain.qml</file>
+        <file>ArchiveBook.qml</file>
+        <file>icons/xoom+_white.svg</file>
+        <file>icons/Lock_small_white.svg</file>
+        <file>icons/Open-book_white.svg</file>
     </qresource>
 </RCC>
