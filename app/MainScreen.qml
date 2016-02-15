@@ -224,7 +224,7 @@ Rectangle {
                         anchors.centerIn: parent
                         height: mediumIconSize
                         width: height
-                        source: Collection.thumbnailPath(modelData) === "" ? "" : "file://" + Collection.thumbnailPath(modelData)
+                        source: Collection.thumbnailPath(modelData)
                         fillMode: Image.PreserveAspectCrop
 
                         Image {
@@ -241,6 +241,8 @@ Rectangle {
                         text: Collection.title(modelData)
                         color: window.fontColor
                         font.pointSize: 18
+                        elide: Text.ElideLeft
+                        width: parent.width
                     }
 
                     MouseArea {

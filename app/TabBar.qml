@@ -100,6 +100,8 @@ Rectangle {
                     horizontalAlignment: Text.AlignLeft
                     color: tabBar.currentTab === index + 1 ? "black" : "gray"
                     text: modelData
+                    width: parent.width
+                    elide: Text.ElideRight
                 }
                 Rectangle {
                     anchors {
