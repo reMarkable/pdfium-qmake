@@ -2,17 +2,27 @@ import QtQuick 2.0
 import com.magmacompany 1.0
 
 Rectangle {
+    id: sketchTab
     property int iconMargin: 8
+
+    property QtObject document
+    onDocumentChanged: {
+        if (!document) {
+            return;
+        }
+    }
+
+    Component.onDestruction: {
+        if (document) {
+            document.destroy()
+        }
+    }
 
     DrawingArea {
         id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Paintbrush
-        document: Collection.getDocument("/data/documents/sketch")
-    }
-
-    Component.onDestruction: {
-        drawingArea.document.destroy()
+        document: sketchTab.document
     }
 
     Column {

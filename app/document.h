@@ -14,7 +14,7 @@
 class Document : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int currentIndex MEMBER m_currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
 
 public:
@@ -39,6 +39,9 @@ public slots:
     /// We should clear our cache
     void clearCache();
 
+    int currentIndex() { return m_currentIndex; }
+    QString path() { return m_path; }
+
 signals:
     void currentIndexChanged();
     void pageCountChanged();
@@ -49,7 +52,7 @@ signals:
 protected slots:
     virtual QImage loadOriginalPage(int index, QSize dimensions) = 0;
     void setPageCount(int pageCount);
-    QString path() { return m_path; }
+    void setCurrentBackground(QImage background);
 
 private:
     friend class DocumentWorker;
@@ -58,7 +61,11 @@ private:
 
     QImage getStoredPage(int index);
     inline QString getStoredPagePath(int index) {
-        return m_path + '-' + QString::number(index) + ".cached.jpg";
+        return m_path + '-' + QString::number(index) + ".cached.png";
+    }
+
+    inline QString getThumbnailPath(int index) {
+        return m_path + '-' + QString::number(index) + ".thumbnail.jpg";
     }
 
     QString m_path;

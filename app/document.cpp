@@ -1,11 +1,13 @@
 #include "document.h"
-
 #include <QFileInfo>
 #include <QMutexLocker>
 #include <QDebug>
 #include <QFile>
 
 #define CACHE_COUNT 5 // Cache up to 5 page before and after
+
+#define DEBUG_THIS
+#include "debug.h"
 
 Document::Document(QString path, QObject *parent)
     : QObject(parent),
@@ -14,10 +16,12 @@ Document::Document(QString path, QObject *parent)
       m_pageCount(1),
       m_pageDirty(false)
 {
+    DEBUG_BLOCK;
+
     // Set up a worker to let stuff be loaded in another thread
     DocumentWorker *worker = new DocumentWorker(this);
     worker->moveToThread(&m_workerThread);
-    m_workerThread.start(QThread::LowPriority);
+    m_workerThread.start(QThread::LowestPriority);
 
     connect(&m_workerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
     connect(this, SIGNAL(pageRequested(int)), worker, SLOT(onPageRequested(int)), Qt::QueuedConnection);
@@ -25,10 +29,8 @@ Document::Document(QString path, QObject *parent)
 
     QFile metadataFile(path + ".metadata");
     if (metadataFile.open(QIODevice::ReadOnly)) {
-        int lastPageOpen = metadataFile.readLine().toInt();
-        if (lastPageOpen > 0) {
-            m_currentIndex = lastPageOpen;
-        }
+        m_currentIndex = metadataFile.readLine().toInt();
+        m_pageCount = metadataFile.readLine().toInt();
     }
 
     QString cachedBackgroundPath = getStoredPagePath(m_currentIndex);
@@ -39,22 +41,24 @@ Document::Document(QString path, QObject *parent)
 
 Document::~Document()
 {
+    DEBUG_BLOCK;
+
     m_workerThread.quit();
     m_workerThread.wait(); // don't destroy while twerking
 
     QFile metadataFile(m_path + ".metadata");
     if (metadataFile.open(QIODevice::WriteOnly)) {
         metadataFile.write(QByteArray::number(m_currentIndex) + "\n");
+        metadataFile.write(QByteArray::number(m_pageCount) + "\n");
     }
 
     QMutexLocker locker(&m_cacheLock);
 
     if (m_pageContents.contains(m_currentIndex)) {
         storePage(m_pageContents[m_currentIndex], m_currentIndex);
-    }
-
-    if (m_cachedBackgrounds.contains(m_currentIndex)) {
-        m_cachedBackgrounds[m_currentIndex].save(m_path + ".cached.jpg");
+        m_pageContents[m_currentIndex].save(m_path + ".thumbnail.jpg");
+    } else if (m_cachedBackgrounds.contains(m_currentIndex)){
+        m_cachedBackgrounds[m_currentIndex].save(m_path + ".thumbnail.jpg");
     }
 }
 
@@ -150,7 +154,7 @@ void Document::preload()
 
     for (int i=1; i<CACHE_COUNT; i++) {
         const int indexForward = m_currentIndex + i;
-        const int indexBackward = m_currentIndex + i;
+        const int indexBackward = m_currentIndex - i;
 
         if (!m_cachedBackgrounds.contains(indexForward)) {
             emit pageRequested(indexForward);
@@ -191,6 +195,17 @@ void Document::setPageCount(int pageCount)
     emit pageCountChanged();
 }
 
+void Document::setCurrentBackground(QImage background)
+{
+    QMutexLocker locker(&m_cacheLock);
+    if (m_cachedBackgrounds.contains(m_currentIndex)) {
+        m_cachedBackgrounds.remove(m_currentIndex);
+    }
+    m_cachedBackgrounds[m_currentIndex] = background;
+    locker.unlock();
+    emit backgroundChanged();
+}
+
 void Document::loadPage(int index)
 {
     QMutexLocker locker(&m_cacheLock);
@@ -213,9 +228,19 @@ void Document::loadPage(int index)
     if (!m_cachedBackgrounds.contains(index)) {
         locker.unlock();
         QImage page = loadOriginalPage(index, QSize(1200, 1560));
+        if (page.isNull()) {
+            return;
+        }
+
         locker.relock();
 
         m_cachedBackgrounds[index] = page;
+
+        const QString thumbnailPath = getThumbnailPath(index);
+        if (!QFile::exists(thumbnailPath)) {
+            page.scaledToHeight(512).save(thumbnailPath);
+        }
+
 
         if (index == m_currentIndex && !m_pageContents.contains(index)) {
             emit backgroundChanged();
@@ -232,6 +257,7 @@ void Document::storePage(QImage image, int index)
             QFile::remove(filePath);
         }
     } else {
-        image.save(filePath);
-    }
+        image.save(filePath);        
+        image.scaledToHeight(512).save(getThumbnailPath(index));
+    }    
 }

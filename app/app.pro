@@ -3,6 +3,7 @@ TEMPLATE = app
 QT += qml quick widgets gui_private
 CONFIG += c++11
 
+# QMAKE_CXXFLAGS += -funwind-tables -Wl,--export-dynamic
 # QMAKE_CXXFLAGS += -O3
 TARGET = xochitl
 
@@ -13,7 +14,8 @@ SOURCES += main.cpp \
     systemmonitor.cpp \
     document.cpp \
     pdfdocument.cpp \
-    imagedocument.cpp
+    imagedocument.cpp \
+    nativedocument.cpp
 
 RESOURCES += qml.qrc
 
@@ -35,7 +37,9 @@ HEADERS += \
     line.h \
     pdfdocument.h \
     imagedocument.h \
-    penpoint.h
+    penpoint.h \
+    debug.h \
+    nativedocument.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app

@@ -158,35 +158,25 @@ Window {
                 visible: (tabBar.currentTab === 0)
 
                 onNewNoteClicked: {
-                    var index = tabBar.tabModel.indexOf("NOTE")
-
-                    if (index === -1) {
-                        var newIndex = tabBar.tabModel.length + 1
-                        var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                        var tabModel = tabBar.tabModel
-                        tabModel.push("NOTE")
-                        tabBar.tabModel = tabModel
-                        tabBar.currentTab = newIndex
-                        tabBar.objectList.push(createdObject)
-                    } else {
-                        tabBar.currentTab = index + 1
-                    }
+                    var newIndex = tabBar.tabModel.length + 1
+                    var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                    createdObject.document = Collection.createDocument("Lined")
+                    var tabModel = tabBar.tabModel
+                    tabModel.push(Collection.title(createdObject.document.path()))
+                    tabBar.tabModel = tabModel
+                    tabBar.currentTab = newIndex
+                    tabBar.objectList.push(createdObject)
                 }
 
                 onNewSketchClicked: {
-                    var index = tabBar.tabModel.indexOf("SKETCH")
-
-                    if (index === -1) {
-                        var newIndex = tabBar.tabModel.length + 1
-                        var createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                        var tabModel = tabBar.tabModel
-                        tabModel.push("SKETCH")
-                        tabBar.tabModel = tabModel
-                        tabBar.currentTab = newIndex
-                        tabBar.objectList.push(createdObject)
-                    } else {
-                        tabBar.currentTab = index + 1
-                    }
+                    var newIndex = tabBar.tabModel.length + 1
+                    var createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                    createdObject.document = Collection.createDocument("Sketch")
+                    var tabModel = tabBar.tabModel
+                    tabModel.push(Collection.title(createdObject.document.path()))
+                    tabBar.tabModel = tabModel
+                    tabBar.currentTab = newIndex
+                    tabBar.objectList.push(createdObject)
                 }
 
                 onArchiveClicked: {
@@ -229,11 +219,11 @@ Window {
         }
 
         Rectangle {
+            id: grayOverlay
             anchors.fill: parent
             color: "#7f000000"
             visible: shutdownDialog.visible
         }
-
 
         Rectangle {
             id: shutdownDialog

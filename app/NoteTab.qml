@@ -2,17 +2,38 @@ import QtQuick 2.0
 import com.magmacompany 1.0
 
 Rectangle {
+    id: noteTab
     property int iconMargin: 8
+
+    property QtObject document
+    onDocumentChanged: {
+        if (!document) {
+            return;
+        }
+
+        templateRepeater.model = document.availableTemplates()
+    }
+
+    Component.onDestruction: {
+        if (document) {
+            document.destroy()
+        }
+    }
+
+    property string documentPath
+    onDocumentPathChanged: {
+        if (documentPath === "") {
+            return;
+        }
+
+        document = Collection.getDocument(documentPath)
+    }
 
     DrawingArea {
         id: drawingArea
         anchors.fill: parent
         currentBrush: DrawingArea.Pen
-        document: Collection.getDocument("/data/documents/note")
-    }
-
-    Component.onDestruction: {
-        drawingArea.document.destroy()
+        document: noteTab.document
     }
 
     Column {
@@ -46,6 +67,53 @@ Rectangle {
         ToolButton {
             icon: "qrc:/icons/focus+.svg"
             onClicked: rootItem.focusMode = true
+        }
+
+        ToolButton {
+            id: templateSelectIcon
+            icon: "qrc:/icons/forward.svg"
+            onClicked: {
+                templateSelectRow.visible = !templateSelectRow.visible
+            }
+
+
+            Row {
+                id: templateSelectRow
+                visible: false
+                anchors {
+                    left: parent.right
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+
+                Repeater {
+                    id: templateRepeater
+                    delegate: Rectangle {
+                        height: templateSelectIcon.height
+                        width: height * 2
+                        border.width: 2
+                        color: noteTab.document !== null ? (noteTab.document.currentTemplate === modelData ? "gray" : "white") : "white"
+                        Text {
+                            anchors.centerIn: parent
+                            text: modelData
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                templateSelectRow.visible = false
+                                noteTab.document.currentTemplate = modelData
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        ToolButton {
+            icon: "qrc:/icons/new page.svg"
+            onClicked: {
+                console.log(noteTab.document.availableTemplates())
+            }
         }
 
         ToolButton {
@@ -107,4 +175,3 @@ Rectangle {
         }
     }
 }
-
