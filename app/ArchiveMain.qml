@@ -8,6 +8,7 @@ Item {
     property int currentPage: 0
     
     Grid {
+        id: mainArchiveGrid
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -17,14 +18,16 @@ Item {
         columns: 3
         rows: 3
         spacing: 30
+
+        property int pageItemCount: columns * rows
         
         Repeater {
-            model: Collection.folderEntries()
+            model: Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, mainArchive.currentPage * mainArchiveGrid.pageItemCount)
             
             delegate: Item {
                 id: bookItem
                 width: 320
-                height: 450
+                height: 400
                 property bool selected: false
                 
                 Repeater {
@@ -34,7 +37,7 @@ Item {
                     Rectangle {
                         border.width: 1
                         width: 300
-                        height: 430
+                        height: 380
                         x: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
                         y: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
                     }
@@ -258,7 +261,8 @@ Item {
         spacing: 10
         
         Repeater {
-            model: 5
+            id: pageRowRepeater
+            model: Math.ceil(Collection.localDocumentCount() / mainArchiveGrid.pageItemCount)
             delegate: Rectangle {
                 width: 20
                 height: width
@@ -278,6 +282,7 @@ Item {
         height: 75
         color: "#a0000000"
         radius: 5
+        visible: mainArchive.currentPage < pageRowRepeater.count - 1
         
         Image {
             anchors.fill: parent
@@ -302,6 +307,7 @@ Item {
         height: 75
         color: "#a0000000"
         radius: 5
+        visible: mainArchive.currentPage > 0
         
         Image {
             anchors.fill: parent
