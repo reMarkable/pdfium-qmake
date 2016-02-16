@@ -42,7 +42,7 @@ Window {
             if (index === -1) {
                 var newIndex = tabBar.tabModel.length + 1
                 var createdObject;
-                if (endsWith(name, ".pdf")) {
+                if (endsWith(path, ".pdf")) {
                     createdObject = documentComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.documentPath = path
                 } else {
@@ -51,6 +51,7 @@ Window {
                     } else {
                         createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     }
+                    createdObject.documentPath = path
 
                     createdObject.document = Collection.getDocument(path)
                 }
@@ -196,6 +197,7 @@ Window {
                 }
 
                 onArchiveClicked: {
+                    console.time("archiveclicked")
                     var index = tabBar.tabModel.indexOf("ARCHIVE")
 
                     if (index === -1) {
@@ -209,6 +211,7 @@ Window {
                     } else {
                         tabBar.currentTab = index + 1
                     }
+                    console.timeEnd("archiveclicked")
                 }
 
                 onOpenBook: {
@@ -246,7 +249,7 @@ Window {
             anchors.centerIn: parent
             width: 750
             height: 400
-            border.width: 15
+            border.width: 5
             radius: 10
             color: "white"
             visible: false
