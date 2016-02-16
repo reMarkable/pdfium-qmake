@@ -339,12 +339,7 @@ Rectangle {
             id: recentlyImportedColumn
 
             Repeater {
-                model: [
-                    {"title": "Master thesis.pdf", "icon": "qrc:/icons/book.svg"},
-                    {"title": "Master notebook.rm", "icon": "qrc:/icons/new note.svg"},
-                    {"title": "Master sketchbook.rm", "icon": "qrc:/icons/new sketch.svg"},
-                    {"title": "Doodling sketchbook", "icon": "qrc:/icons/new sketch.svg"},
-                ]
+                model: Collection.recentlyImportedPaths(4)
 
                 Item {
                     width: recentlyUsedColumn.width - 30
@@ -358,7 +353,7 @@ Rectangle {
                         id: recentImportIcon
                         height: smallIconSize
                         width: height
-                        source: modelData.icon
+                        source: "qrc:/icons/book.svg"//modelData.icon
                     }
 
                     Text {
@@ -369,7 +364,7 @@ Rectangle {
                             left: recentImportIcon.right
                         }
 
-                        text: modelData.title
+                        text: Collection.title(modelData)
                     }
 
                     Rectangle {
@@ -378,6 +373,13 @@ Rectangle {
                         color: "gray"
                         anchors.bottom: parent.bottom
                         anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            mainScreen.openBook(modelData)
+                        }
                     }
                 }
             }
