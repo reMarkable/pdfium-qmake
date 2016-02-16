@@ -6,6 +6,15 @@ Item {
     visible: archiveView.currentBook === ""
     
     property int currentPage: 0
+
+    property int smallIconSize: 75
+    property int mediumIconSize: 200
+    property int documentPreviewHeight: 380
+    property int documentPreviewWidth: 300
+
+    function deleteBook(path) {
+        deleteDialog.documentPath = path
+    }
     
     Grid {
         id: mainArchiveGrid
@@ -47,8 +56,8 @@ Item {
                     property int spacing: Math.max(20 / count, 3)
                     Rectangle {
                         border.width: 1
-                        width: 300
-                        height: 380
+                        width: mainArchive.documentPreviewWidth
+                        height: mainArchive.documentPreviewHeight
                         x: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
                         y: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
                     }
@@ -56,18 +65,25 @@ Item {
                 
                 Rectangle {
                     anchors {
-                        fill: parent
-                        bottomMargin: 20
-                        rightMargin: 20
+                        top: parent.top
+                        left: parent.left
                     }
-                    
+                    width: mainArchive.documentPreviewWidth + 2
+                    height: mainArchive.documentPreviewHeight + 2
+
                     border.width: 1
+
                     Image {
+                        id: documentThumbnail
+
                         anchors {
-                            fill: parent
-                            margins: 2
+                            centerIn: parent
                         }
                         asynchronous: true
+                        width: mainArchive.documentPreviewWidth
+                        height: mainArchive.documentPreviewHeight
+                        sourceSize.width: width
+                        sourceSize.height: height
                         
                         source: Collection.thumbnailPath(modelData)
                         
@@ -79,8 +95,11 @@ Item {
                         
                         Image {
                             anchors.centerIn: parent
-                            width: parent.width / 2
+                            width: mainArchive.mediumIconSize
                             height: width
+
+                            sourceSize.width: width
+                            sourceSize.height: width
                             visible: editActionsRow.visible
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                         }
@@ -116,6 +135,8 @@ Item {
                             }
                             width: height
                             source: "qrc:///icons/Notebook.svg"
+                            sourceSize.width: width
+                            sourceSize.height: height
                             
                             Text {
                                 anchors {
@@ -151,7 +172,7 @@ Item {
                             right: parent.right
                         }
                         
-                        width: parent.width / 3
+                        width: mainArchive.smallIconSize
                         height: width
                         color: "#a0000000"
                         radius: 5
@@ -159,6 +180,8 @@ Item {
                         Image {
                             anchors.fill: parent
                             anchors.margins: 10
+                            sourceSize.width: width
+                            sourceSize.height: width
                             source: "qrc:///icons/forward_white.svg"
                         }
 
@@ -184,7 +207,7 @@ Item {
                         visible: false
                         
                         Rectangle {
-                            width: moreButton.width
+                            width: mainArchive.smallIconSize
                             height: width
                             color: "#a0000000"
                             radius: 5
@@ -192,11 +215,13 @@ Item {
                             Image {
                                 anchors.fill: parent
                                 anchors.margins: 10
+                                sourceSize.width: width
+                                sourceSize.height: width
                                 source: "qrc:///icons/Lock_small_white.svg"
                             }
                         }
                         Rectangle {
-                            width: moreButton.width
+                            width: mainArchive.smallIconSize
                             height: width
                             color: "#a0000000"
                             radius: 5
@@ -204,11 +229,14 @@ Item {
                             Image {
                                 anchors.fill: parent
                                 anchors.margins: 10
+                                sourceSize.width: width
+                                sourceSize.height: width
                                 source: "qrc:///icons/send_white.svg"
                             }
                         }
+
                         Rectangle {
-                            width: moreButton.width
+                            width: mainArchive.smallIconSize
                             height: width
                             color: "#a0000000"
                             radius: 5
@@ -216,11 +244,13 @@ Item {
                             Image {
                                 anchors.fill: parent
                                 anchors.margins: 10
+                                sourceSize.width: width
+                                sourceSize.height: height
                                 source: "qrc:///icons/Move_white.svg"
                             }
                         }
                         Rectangle {
-                            width: moreButton.width
+                            width: mainArchive.smallIconSize
                             height: width
                             color: "#a0000000"
                             radius: 5
@@ -228,7 +258,14 @@ Item {
                             Image {
                                 anchors.fill: parent
                                 anchors.margins: 10
+                                sourceSize.width: width
+                                sourceSize.height: width
                                 source: "qrc:///icons/Delete_white.svg"
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: mainArchive.deleteBook(modelData)
                             }
                         }
                     }
@@ -240,14 +277,17 @@ Item {
                             left: parent.left
                         }
                         
-                        width: parent.width / 3
+                        width: mainArchive.smallIconSize
                         height: width
                         color: "#a0000000"
                         radius: 5
                         
                         Image {
-                            anchors.fill: parent
-                            anchors.margins: 10
+                            anchors.centerIn: parent
+                            width: mainArchive.smallIconSize
+                            height: width
+                            sourceSize.width: width
+                            sourceSize.height: width
                             source: "qrc:///icons/prikkprikkprikk_white.svg"
                         }
                         
@@ -299,6 +339,8 @@ Item {
             anchors.fill: parent
             anchors.margins: 5
             source: "qrc:///icons/forward_white.svg"
+            sourceSize.width: width
+            sourceSize.height: height
         }
         
         MouseArea {
@@ -324,11 +366,97 @@ Item {
             anchors.fill: parent
             anchors.margins: 5
             source: "qrc:///icons/back_white.svg"
+            sourceSize.width: width
+            sourceSize.height: height
         }
         
         MouseArea {
             anchors.fill: parent
             onClicked: mainArchive.currentPage--
+        }
+    }
+
+
+    Rectangle {
+        width: rootItem.width
+        height: rootItem.height
+        x: - (viewRoot.x + mainArchive.x)
+        y: - (viewRoot.y + mainArchive.y)
+        visible: deleteDialog.documentPath !== ""
+
+        color: "#7f000000"
+
+        Rectangle {
+            id: deleteDialog
+            anchors.centerIn: parent
+            width: 750
+            height: 400
+            border.width: 5
+            radius: 10
+            color: "white"
+
+            property string documentPath: ""
+
+            Text {
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    margins: 75
+                    bottom: parent.verticalCenter
+                }
+
+                text: "Are you sure you want to delete " + Collection.title(deleteDialog.documentPath) + "?"
+                font.pointSize: 18
+                wrapMode: Text.Wrap
+            }
+
+            Item {
+                anchors {
+                    right: parent.horizontalCenter
+                    left: parent.left
+                    bottom: parent.bottom
+                    top: parent.verticalCenter
+                }
+
+                Image {
+                    anchors.centerIn: parent
+                    source: "qrc:/icons/yes.svg"
+                    height: 100
+                    width: height
+                    MouseArea {
+                        enabled: deleteDialog.visible
+                        anchors.fill: parent
+                        onClicked: {
+                            Collection.deleteDocument(deleteDialog.documentPath)
+                            deleteDialog.documentPath = ""
+                        }
+                    }
+                }
+            }
+
+            Item {
+                anchors {
+                    left: parent.horizontalCenter
+                    right: parent.right
+                    bottom: parent.bottom
+                    top: parent.verticalCenter
+                }
+
+                Image {
+                    anchors.centerIn: parent
+                    source: "qrc:/icons/no.svg"
+                    height: 100
+                    width: height
+                    MouseArea {
+                        enabled: deleteDialog.visible
+                        anchors.fill: parent
+                        onClicked: {
+
+                            deleteDialog.documentPath = ""
+                        }
+                    }
+                }
+            }
         }
     }
 }
