@@ -81,6 +81,8 @@ Item {
                         asynchronous: true
                         
                         source: "file://" + archiveView.currentBook + "-" + index + ".thumbnail.jpg"
+                        sourceSize.width: width
+                        sourceSize.height: height
                         
                         Rectangle {
                             anchors.fill: parent
@@ -94,6 +96,8 @@ Item {
                             height: width
                             visible: editActionsRow.visible
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
+                            sourceSize.width: width
+                            sourceSize.height: height
                         }
                         
                         MouseArea {
@@ -135,6 +139,8 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 10
                             source: "qrc:///icons/xoom+_white.svg"
+                            sourceSize.width: width
+                            sourceSize.height: height
                         }
 
                         MouseArea {
@@ -169,6 +175,8 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 10
                                 source: "qrc:///icons/Lock_small_white.svg"
+                                sourceSize.width: width
+                                sourceSize.height: height
                             }
                         }
                         Rectangle {
@@ -181,6 +189,8 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 10
                                 source: "qrc:///icons/send_white.svg"
+                                sourceSize.width: width
+                                sourceSize.height: height
                             }
                         }
                         Rectangle {
@@ -193,6 +203,8 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 10
                                 source: "qrc:///icons/Move_white.svg"
+                                sourceSize.width: width
+                                sourceSize.height: height
                             }
                         }
                         Rectangle {
@@ -204,6 +216,8 @@ Item {
                             Image {
                                 anchors.fill: parent
                                 anchors.margins: 10
+                                sourceSize.width: width
+                                sourceSize.height: height
                                 source: "qrc:///icons/Delete_white.svg"
                             }
                         }
@@ -225,6 +239,8 @@ Item {
                             anchors.fill: parent
                             anchors.margins: 5
                             source: "qrc:///icons/prikkprikkprikk_white.svg"
+                            sourceSize.width: width
+                            sourceSize.height: height
                         }
                         
                         MouseArea {
@@ -264,6 +280,8 @@ Item {
             }
 
             source: visible ? "file://" + archiveView.currentBook + "-" + previewBackground.index + ".thumbnail.jpg" : ""
+            sourceSize.width: width
+            sourceSize.height: height
 
             Rectangle {
                 anchors {
@@ -273,13 +291,15 @@ Item {
                 }
                 width: height
                 height: 75
-                color: "#a0000000"
+                color: "#666"
                 radius: 5
 
                 Image {
                     anchors.fill: parent
                     anchors.margins: 10
                     source: "qrc:///icons/forward_white.svg"
+                    sourceSize.width: width
+                    sourceSize.height: height
                 }
 
                 MouseArea {
@@ -297,13 +317,15 @@ Item {
 
                 width: height
                 height: 75
-                color: "#a0000000"
+                color: "#666"
                 radius: 5
 
                 Image {
                     anchors.fill: parent
                     anchors.margins: 10
                     source: "qrc:///icons/back_white.svg"
+                    sourceSize.width: width
+                    sourceSize.height: height
                 }
 
                 MouseArea {
@@ -327,6 +349,8 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 10
                     source: "qrc:///icons/Delete_white.svg"
+                    sourceSize.width: width
+                    sourceSize.height: height
                 }
 
                 MouseArea {
@@ -350,6 +374,8 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 10
                     source: "qrc:///icons/Open-book_white.svg"
+                    sourceSize.width: width
+                    sourceSize.height: height
                 }
 
                 MouseArea {
@@ -381,6 +407,8 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 10
                         source: "qrc:///icons/Lock_small_white.svg"
+                        sourceSize.width: width
+                        sourceSize.height: height
                     }
                 }
                 Rectangle {
@@ -393,6 +421,8 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 10
                         source: "qrc:///icons/send_white.svg"
+                        sourceSize.width: width
+                        sourceSize.height: height
                     }
                 }
                 Rectangle {
@@ -405,6 +435,8 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 10
                         source: "qrc:///icons/Move_white.svg"
+                        sourceSize.width: width
+                        sourceSize.height: height
                     }
                 }
                 Rectangle {
@@ -417,6 +449,8 @@ Item {
                         anchors.fill: parent
                         anchors.margins: 10
                         source: "qrc:///icons/Delete_white.svg"
+                        sourceSize.width: width
+                        sourceSize.height: height
                     }
                 }
             }
@@ -437,6 +471,8 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 10
                     source: "qrc:///icons/prikkprikkprikk_white.svg"
+                    sourceSize.width: width
+                    sourceSize.height: height
                 }
 
                 MouseArea {
