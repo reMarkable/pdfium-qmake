@@ -14,7 +14,6 @@ struct TemplateLoader {
         for (QFileInfo fileInfo : files) {
             templates.insert(fileInfo.baseName(), QImage(fileInfo.absoluteFilePath()));
         }
-        qDebug() << templates.keys();
     }
 
     QMap<QString, QImage> templates;
@@ -29,10 +28,6 @@ NativeDocument::NativeDocument(QString documentPath, QString defaultTemplate, QO
 {
     if (!s_templateLoader.templates.isEmpty() && !s_templateLoader.templates.contains(defaultTemplate)) {
         m_defaultTemplate = s_templateLoader.templates.keys().first();
-    }
-
-    if (pageCount() < 1) {
-        setPageCount(1);
     }
 
     QFile metadataFile(path() + ".pagedata");
@@ -99,11 +94,12 @@ void NativeDocument::addPage()
     m_templates[pageCount() - 1] = m_defaultTemplate;
     setPageCount(pageCount() + 1);
     setCurrentIndex(pageCount() - 1);
+    setCurrentBackground(s_templateLoader.templates[m_defaultTemplate]);
 }
 
 QImage NativeDocument::loadOriginalPage(int index, QSize dimensions)
 {
-    if (index < 0 || index > pageCount()) {
+    if (index < 0 || !m_templates.contains(index)) {
         return QImage();
     }
 
