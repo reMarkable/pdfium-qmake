@@ -9,7 +9,7 @@
 static int debugHelper_indent = 0;
 struct DebugHelperClass {
     DebugHelperClass(QString funcInfo) : m_funcInfo(funcInfo) {
-        //qDebug().noquote() << QByteArray(debugHelper_indent, ' ') << '+' << m_funcInfo;
+        //qDebug().noquote() << QByteArray(debugHelper_indent, '\t') << '>' << m_funcInfo;
         m_timer.start();
         debugHelper_indent++;
     }
@@ -17,7 +17,7 @@ struct DebugHelperClass {
     ~DebugHelperClass() {
         debugHelper_indent--;
         if (m_timer.elapsed() > 10) {
-            qDebug().noquote() << QByteArray(debugHelper_indent, ' ') << '-' << m_funcInfo << m_timer.elapsed() << "ms";
+            qDebug().noquote() << QByteArray(debugHelper_indent, '\t') << '<' << m_funcInfo << m_timer.elapsed() << "ms";
         }
     }
 
@@ -25,7 +25,7 @@ struct DebugHelperClass {
     QElapsedTimer m_timer;
 };
 
-#define DEBUG_BLOCK DebugHelperClass debugHelper__Block(Q_FUNC_INFO);
+#define DEBUG_BLOCK DebugHelperClass debugHelper__Block(__PRETTY_FUNCTION__);
 
 #else
 
