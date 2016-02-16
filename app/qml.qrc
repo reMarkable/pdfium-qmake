@@ -88,5 +88,6 @@
         <file>icons/xoom+_white.svg</file>
         <file>icons/Lock_small_white.svg</file>
         <file>icons/Open-book_white.svg</file>
+        <file>icons/page-type.png</file>
     </qresource>
 </RCC>
