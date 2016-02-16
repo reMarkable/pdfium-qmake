@@ -21,15 +21,21 @@ struct DebugHelperClass {
         }
     }
 
+    void tick() {
+        qDebug().noquote() << QByteArray(debugHelper_indent, '\t') << '=' << m_funcInfo << m_timer.elapsed() << "ms";
+    }
+
     QString m_funcInfo;
     QElapsedTimer m_timer;
 };
 
 #define DEBUG_BLOCK DebugHelperClass debugHelper__Block(__PRETTY_FUNCTION__);
+#define DEBUG_TICK debugHelper__Block.tick();
 
 #else
 
 #define DEBUG_BLOCK
+#define DEBUG_TICK
 
 #endif // DEBUG_THIS
 
