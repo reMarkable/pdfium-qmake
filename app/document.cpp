@@ -29,8 +29,8 @@ Document::Document(QString path, QObject *parent)
 
     QFile metadataFile(path + ".metadata");
     if (metadataFile.open(QIODevice::ReadOnly)) {
-        m_currentIndex = metadataFile.readLine().toInt();
-        m_pageCount = metadataFile.readLine().toInt();
+        m_currentIndex = metadataFile.readLine().trimmed().toInt();
+        m_pageCount = metadataFile.readLine().trimmed().toInt();
     }
 
     QString cachedBackgroundPath = getStoredPagePath(m_currentIndex);
