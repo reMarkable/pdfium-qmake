@@ -17,6 +17,7 @@ public slots:
     void setTemplate(QString backgroundTemplate);
     static QStringList availableTemplates();
     QString currentTemplate();
+    void addPage();
 
 signals:
     void templateChanged();

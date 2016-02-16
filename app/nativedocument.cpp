@@ -70,6 +70,7 @@ NativeDocument::~NativeDocument()
 void NativeDocument::setTemplate(QString backgroundTemplate)
 {
     if (!s_templateLoader.templates.contains(backgroundTemplate)) {
+        qWarning() << Q_FUNC_INFO << "Unknown template" << backgroundTemplate;
         return;
     }
 
@@ -93,6 +94,13 @@ QString NativeDocument::currentTemplate()
     return m_templates.value(currentIndex());
 }
 
+void NativeDocument::addPage()
+{
+    m_templates[pageCount() - 1] = m_defaultTemplate;
+    setPageCount(pageCount() + 1);
+    setCurrentIndex(pageCount() - 1);
+}
+
 QImage NativeDocument::loadOriginalPage(int index, QSize dimensions)
 {
     if (index < 0 || index > pageCount()) {
@@ -110,8 +118,9 @@ QImage NativeDocument::loadOriginalPage(int index, QSize dimensions)
             qWarning() << "no templates available!";
             return QImage();
         }
+        qWarning() << Q_FUNC_INFO << "asked for invalid template:" << templateName;
         return s_templateLoader.templates.first();
     }
 
-    return s_templateLoader.templates.value(templateName);
+    return s_templateLoader.templates.value(templateName).scaled(dimensions);
 }
