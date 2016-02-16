@@ -12,6 +12,9 @@
 #include "digitizer.h"
 #include "predictor.h"
 
+#define DEBUG_THIS
+#include "debug.h"
+
 //#define DEBUG_PREDICTION
 
 DrawingArea::DrawingArea() :
@@ -204,7 +207,9 @@ void DrawingArea::setDocument(Document *document)
 
 void DrawingArea::mousePressEvent(QMouseEvent *)
 {
+    DEBUG_BLOCK
     if (m_zoomSelected) {
+        DEBUG_BLOCK
         doZoom();
         m_zoomSelected = false;
         emit zoomtoolSelectedChanged();
@@ -413,6 +418,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
     m_undoneLines.clear();
     if (m_document) {
+        DEBUG_BLOCK
         m_document->addLine(drawnLine);
         m_document->setDrawnPage(m_contents);
     } else {
