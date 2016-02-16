@@ -32,7 +32,7 @@ Rectangle {
             leftMargin: 50
         }
 
-        width: 325
+        width: 250
         height: 75
         color: bookHeader.visible ? "#aaa" : "#666"
         radius: 5
@@ -57,10 +57,9 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
             }
             font.bold: true
-            font.pointSize: 15
+            font.pixelSize: 25
             color: "white"
             text: "Main archive"
-            horizontalAlignment: Text.AlignHCenter
         }
 
         MouseArea {
@@ -78,7 +77,7 @@ Rectangle {
             leftMargin: 30
         }
 
-        width: 325
+        width: 250
         height: 75
         color: "#666"
         radius: 5
@@ -105,10 +104,9 @@ Rectangle {
                 verticalCenter: parent.verticalCenter
             }
             font.bold: true
-            font.pointSize: 15
+            font.pixelSize: 25
             color: "white"
             text: Collection.title(archiveView.currentBook)
-            horizontalAlignment: Text.AlignHCenter
         }
     }
 
