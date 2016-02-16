@@ -113,7 +113,7 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
     return document;
 }
 
-QStringList Collection::recentlyUsedPaths(int count) const
+QStringList Collection::recentlyUsedPaths(int count, int offset) const
 {
     QSettings settings;
     QStringList recentlyUsed = settings.value(RECENTLY_USED_KEY).toStringList();
@@ -124,7 +124,27 @@ QStringList Collection::recentlyUsedPaths(int count) const
 
     QDir dir(collectionPath() + "/Local/");
 
-    QFileInfoList fileList = dir.entryInfoList(QDir::Dirs, QDir::Time);
+    QFileInfoList fileList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Time);
+
+    QStringList paths;
+    for (int i=offset; i<qMin(fileList.count(), count + offset); i++) {
+        paths.append(fileList[i].canonicalFilePath());
+    }
+
+    return paths;
+}
+
+int Collection::localDocumentCount()
+{
+    QDir dir(collectionPath() + "/Local/");
+    return dir.entryList(QDir::Dirs).count();
+}
+
+QStringList Collection::recentlyImportedPaths(int count) const
+{
+    QDir dir(collectionPath() + "/Dropbox/");
+
+    QFileInfoList fileList = dir.entryInfoList(QDir::Files, QDir::Time);
 
     QStringList paths;
     for (int i=0; i<qMin(fileList.count(), count); i++) {

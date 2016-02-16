@@ -18,7 +18,9 @@ public slots:
     bool isFolder(const QString &path) const;
     QObject *getDocument(const QString &path);
     QObject *createDocument(const QString &defaultTemplate);
-    QStringList recentlyUsedPaths(int count) const;
+    QStringList recentlyUsedPaths(int count, int offset = 0) const;
+    int localDocumentCount();
+    QStringList recentlyImportedPaths(int count) const;
     QString thumbnailPath(const QString &documentPath) const;
     QString title(const QString &documentPath) const;
     int pageCount(const QString documentPath) const;
