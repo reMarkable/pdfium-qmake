@@ -11,10 +11,11 @@ Rectangle {
     
     color: "#7f000000"
     
-    property int maxDisplayItems: 9//(rootItem.rotation === 0) ? 8 : 9
-    property int currentThumbnailPage: documentTab.currentPage / maxDisplayItems
-    property int thumbnailPageCount: Math.ceil(documentTab.pageCount / maxDisplayItems)
-    
+    property int maxDisplayItems: 9
+    property int currentThumbnailPage
+    property int thumbnailPageCount
+    property int pageCount
+    property string documentPath
     
     MouseArea {
         anchors.fill: parent
@@ -107,7 +108,7 @@ Rectangle {
         spacing: (thumbnailGrid.maxDisplayItems === 9) ? 50 : 10
         
         Repeater {
-            model: thumbnailGrid.visible ? Math.min(thumbnailGrid.maxDisplayItems, documentTab.pageCount - thumbnailGrid.currentThumbnailPage * thumbnailGrid.maxDisplayItems) : 0
+            model: thumbnailGrid.visible ? Math.min(thumbnailGrid.maxDisplayItems, thumbnailGrid.pageCount - thumbnailGrid.currentThumbnailPage * thumbnailGrid.maxDisplayItems) : 0
             
             delegate: Rectangle {
                 id: thumbnailDelegate
@@ -116,12 +117,12 @@ Rectangle {
                 color: "white"
                 property int pageNumber: modelData + thumbnailGrid.currentThumbnailPage * thumbnailGrid.maxDisplayItems
                 border.color: "black"
-                border.width: documentTab.currentPage === pageNumber ? 8 : 2
+                border.width: thumbnailGrid.currentPage === pageNumber ? 8 : 2
                 
                 Image {
                     anchors.fill: parent
                     anchors.margins: 8
-                    source: "file://" + documentTab.documentPath + "-" + thumbnailDelegate.pageNumber + ".thumbnail.jpg"
+                    source: "file://" + thumbnailGrid.documentPath + "-" + thumbnailDelegate.pageNumber + ".thumbnail.jpg"
                     smooth: false
                     asynchronous: true
                     
@@ -138,7 +139,7 @@ Rectangle {
                         Text {
                             anchors.centerIn: parent
                             color: "white"
-                            text: (thumbnailDelegate.pageNumber + 1) + "/" + documentTab.pageCount
+                            text: (thumbnailDelegate.pageNumber + 1) + "/" + thumbnailGrid.pageCount
                         }
                     }
                 }
@@ -164,6 +165,10 @@ Rectangle {
             margins: 50
         }
         height: 75
+
+        MouseArea {
+            anchors.fill: parent
+        }
         
         Row {
             id: pageRow
