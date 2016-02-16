@@ -116,7 +116,7 @@ Item {
                         
                         Text {
                             anchors.centerIn: parent
-                            text: index
+                            text: (index + 1)
                         }
                     }
                     
