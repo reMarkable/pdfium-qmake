@@ -119,7 +119,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        mainScreen.archiveClicked(-1)
+                        mainScreen.archiveClicked()
                     }
                 }
             }
@@ -211,11 +211,25 @@ Rectangle {
             columns: 5
             columnSpacing: (parent.width / columns) - mediumIconSize
 
-            onRowsChanged: frequentlyUsedRepeater.model = Collection.recentlyUsedPaths(rows * columns)
 
+
+            function reloadModel() {
+                frequentlyUsedRepeater.model = Collection.recentlyUsedPaths(rows * columns)
+            }
+
+            onRowsChanged: reloadModel()
+            Component.onCompleted: reloadModel()
+            Connections {
+                target: Collection
+
+                ignoreUnknownSignals: false
+                onRecentlyUsedChanged: {
+                    frequentlyUsedGrid.reloadModel()
+                }
+            }
             Repeater {
                 id: frequentlyUsedRepeater
-                model: Collection.recentlyUsedPaths()
+
 
                 Item {
                     width: mediumIconSize
