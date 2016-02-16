@@ -14,10 +14,31 @@
 #include <QQmlEngine>
 #include <QDateTime>
 
+#define DEBUG_THIS
+#include "debug.h"
+
 #define RECENTLY_USED_KEY "RecentlyUsed"
 
 Collection::Collection(QObject *parent) : QObject(parent)
 {
+    DEBUG_BLOCK;
+
+    QDir localDir(localCollectionPath());
+
+    QFileInfoList fileList = localDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+    for (const QFileInfo fileInfo : fileList) {
+        QString documentPath = fileInfo.canonicalFilePath();
+        m_recentlyUsedPaths.append(documentPath);
+
+        QFile metadataFile(documentPath + ".metadata");
+        if (!metadataFile.open(QIODevice::ReadOnly)) {
+            continue;
+        }
+
+        m_documentsLastPage[documentPath] = metadataFile.readLine().trimmed().toInt();
+        m_documentsPageCount[documentPath] = metadataFile.readLine().trimmed().toInt();
+    }
 }
 
 Collection::~Collection()
@@ -33,6 +54,11 @@ QString Collection::collectionPath()
 #endif// Q_PROCESSOR_ARM
 }
 
+QString Collection::localCollectionPath()
+{
+    return collectionPath() + "/Local/";
+}
+
 QStringList Collection::folderEntries(QString path) const
 {
     if (path.isEmpty()) {
@@ -44,11 +70,11 @@ QStringList Collection::folderEntries(QString path) const
     QStringList paths;
     for (const QFileInfo &file : files) {
         if (file.isFile() && file.suffix() == "pdf") {
-            paths.append(file.absoluteFilePath());
+            paths.append(file.canonicalFilePath());
         }
 
         if (file.isDir()) {
-            paths.append(file.absoluteFilePath());
+            paths.append(file.canonicalFilePath());
         }
     }
 
@@ -57,11 +83,15 @@ QStringList Collection::folderEntries(QString path) const
 
 bool Collection::isFolder(const QString &path) const
 {
+    DEBUG_BLOCK;
+
     return !QFile::exists(path + ".metadata");
 }
 
 QObject *Collection::getDocument(const QString &path)
 {
+    DEBUG_BLOCK;
+
     QFileInfo pathInfo(path);
 
     QObject *document = nullptr;
@@ -83,6 +113,8 @@ QObject *Collection::getDocument(const QString &path)
 
 QObject *Collection::createDocument(const QString &defaultTemplate)
 {
+    DEBUG_BLOCK;
+
     if (defaultTemplate.isEmpty()) {
         return nullptr;
     }
@@ -106,45 +138,42 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
     }
 
     NativeDocument *document = new NativeDocument(path, defaultTemplate);
+    document->addPage();
     document->preload();
 
     QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
+
+    m_documentsLastPage.insert(path, 0);
+    m_documentsPageCount.insert(path, 1);
+    m_recentlyUsedPaths.append(path);
+
+    emit recentlyUsedChanged();
 
     return document;
 }
 
 QStringList Collection::recentlyUsedPaths(int count, int offset) const
 {
-    QSettings settings;
-    QStringList recentlyUsed = settings.value(RECENTLY_USED_KEY).toStringList();
+    DEBUG_BLOCK;
 
-    if (!recentlyUsed.isEmpty()) {
-        return recentlyUsed;
-    }
-
-    QDir dir(collectionPath() + "/Local/");
-
-    QFileInfoList fileList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Time);
-
-    QStringList paths;
-    for (int i=offset; i<qMin(fileList.count(), count + offset); i++) {
-        paths.append(fileList[i].canonicalFilePath());
-    }
-
-    return paths;
+    return m_recentlyUsedPaths.mid(offset, count);
 }
 
 int Collection::localDocumentCount()
 {
+    DEBUG_BLOCK;
+
     QDir dir(collectionPath() + "/Local/");
     return dir.entryList(QDir::Dirs).count();
 }
 
 QStringList Collection::recentlyImportedPaths(int count) const
 {
+    DEBUG_BLOCK;
+
     QDir dir(collectionPath() + "/Dropbox/");
 
-    QFileInfoList fileList = dir.entryInfoList(QDir::Files, QDir::Time);
+    QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.pdf", QDir::Files, QDir::Time);
 
     QStringList paths;
     for (int i=0; i<qMin(fileList.count(), count); i++) {
@@ -156,6 +185,8 @@ QStringList Collection::recentlyImportedPaths(int count) const
 
 QString Collection::thumbnailPath(const QString &documentPath) const
 {
+    DEBUG_BLOCK;
+
     QString cachedPath(documentPath + ".thumbnail.jpg");
     if (QFile::exists(cachedPath)) {
         return "file://" + cachedPath;
@@ -173,13 +204,52 @@ QString Collection::thumbnailPath(const QString &documentPath) const
 
 QString Collection::title(const QString &documentPath) const
 {
-    //QDir dir(documentPath);
-    //QString title = dir.dirName();
-    //
-    return QFileInfo(documentPath).fileName();
+    DEBUG_BLOCK;
+
+    return QFileInfo(documentPath).completeBaseName();
 }
 
 int Collection::pageCount(const QString documentPath) const
 {
-    return documentPath.length() % 13;
+    DEBUG_BLOCK;
+
+    return m_documentsPageCount.value(documentPath);
+}
+
+void Collection::deleteDocument(const QString documentPath)
+{
+    if (!documentPath.startsWith(collectionPath())) {
+        qWarning() << Q_FUNC_INFO << "Asked to delete invalid path" << documentPath;
+        return;
+    }
+
+    QStringList filesToDelete;
+    filesToDelete << documentPath + ".thumbnail.jpg"
+                  << documentPath + ".metadata"
+                  << documentPath + ".pagedata";
+
+    for (int i=0; i<m_documentsPageCount.value(documentPath); i++) {
+        QString thumbnailFile(documentPath + '-' + QString::number(i) + ".thumbnail.jpg");
+        filesToDelete.append(thumbnailFile);
+    }
+
+    for (const QString filePath : filesToDelete) {
+        if (!filePath.startsWith(collectionPath())) {
+            qWarning() << Q_FUNC_INFO << "Trying to delete invalid path" << filePath;
+            continue;
+        }
+        if (!QFile::remove(filePath)) {
+            qWarning() << Q_FUNC_INFO << "Unable to delete" << filePath;
+        }
+    }
+
+    if (!QDir(documentPath).rmdir(documentPath)) {
+        qWarning() << Q_FUNC_INFO << "Unable to delete directory" << documentPath;
+    }
+
+    m_documentsLastPage.remove(documentPath);
+    m_documentsPageCount.remove(documentPath);
+    m_recentlyUsedPaths.removeAll(documentPath);
+
+    emit recentlyUsedChanged();
 }

@@ -2,6 +2,7 @@
 #define COLLECTION_H
 
 #include <QObject>
+#include <QMap>
 
 class Collection : public QObject
 {
@@ -12,6 +13,7 @@ public:
     ~Collection();
 
     static QString collectionPath();
+    static QString localCollectionPath();
 
 public slots:
     QStringList folderEntries(QString path = QString()) const;
@@ -24,10 +26,15 @@ public slots:
     QString thumbnailPath(const QString &documentPath) const;
     QString title(const QString &documentPath) const;
     int pageCount(const QString documentPath) const;
+    void deleteDocument(const QString documentPath);
 
 signals:
+    void recentlyUsedChanged();
 
 private:
+    QMap<QString, int> m_documentsPageCount;
+    QMap<QString, int> m_documentsLastPage;
+    QStringList m_recentlyUsedPaths;
 };
 
 #endif // COLLECTION_H
