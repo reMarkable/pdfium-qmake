@@ -21,9 +21,20 @@ Item {
 
         property int pageItemCount: columns * rows
         
+        function reloadDocuments() {
+            documentRepeater.model = Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, mainArchive.currentPage * mainArchiveGrid.pageItemCount)
+        }
+
+        Component.onCompleted: reloadDocuments()
+        Connections {
+            target: Collection
+            onRecentlyUsedChanged: {
+                mainArchiveGrid.reloadDocuments()
+            }
+        }
+
         Repeater {
-            model: Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, mainArchive.currentPage * mainArchiveGrid.pageItemCount)
-            
+            id: documentRepeater
             delegate: Item {
                 id: bookItem
                 width: 320
