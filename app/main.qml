@@ -31,19 +31,35 @@ Window {
             Settings.setValue(Settings.Rotation, rotation)
         }
 
+        function endsWith(string, suffix) {
+            return string.indexOf(suffix, string.length - suffix.length) !== -1
+        }
+
         function openDocument(path) {
             var name = Collection.title(path)
             var index = tabBar.tabModel.indexOf(name)
 
             if (index === -1) {
                 var newIndex = tabBar.tabModel.length + 1
-                var createdObject = documentComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                var createdObject;
+                if (endsWith(name, ".pdf")) {
+                    createdObject = documentComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                    createdObject.documentPath = path
+                } else {
+                    if (name.lastIndexOf("Sketch", 0) === 0) {
+                        createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                    } else {
+                        createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                    }
+
+                    createdObject.document = Collection.getDocument(path)
+                }
+
                 var tabModel = tabBar.tabModel
                 tabModel.push(name)
                 tabBar.tabModel = tabModel
                 tabBar.currentTab = newIndex
                 tabBar.objectList.push(createdObject)
-                createdObject.documentPath = path
             } else {
                 tabBar.currentTab = index + 1
             }
