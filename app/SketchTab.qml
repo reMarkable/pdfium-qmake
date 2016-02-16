@@ -138,7 +138,18 @@ Rectangle {
             icon: "qrc:/icons/focus+.svg"
             onClicked: rootItem.focusMode = true
         }
+    }
 
+    Column {
+        width: 64
+        visible: !rootItem.focusMode
+        spacing: 5
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+            leftMargin: iconMargin
+            bottomMargin: 20
+        }
 
         ToolButton {
             icon: "qrc:/icons/Charge.svg"
