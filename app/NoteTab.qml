@@ -184,6 +184,24 @@ Rectangle {
         }
 
         ToolButton {
+            icon: "qrc:/icons/Index.svg"
+            active: thumbnailGrid.visible
+            onClicked: thumbnailGrid.visible = true
+        }
+    }
+
+    Column {
+        width: 64
+        visible: !rootItem.focusMode
+        spacing: 5
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+            leftMargin: iconMargin
+            bottomMargin: 20
+        }
+
+        ToolButton {
             icon: "qrc:/icons/Charge.svg"
             active: drawingArea.predictionEnabled
             onClicked: {
@@ -293,5 +311,13 @@ Rectangle {
                 }
             }
         }
+    }
+
+    ThumbnailGrid {
+        id: thumbnailGrid
+        currentThumbnailPage: noteTab.currentPage / maxDisplayItems
+        thumbnailPageCount: Math.ceil(noteTab.pageCount / maxDisplayItems)
+        documentPath: noteTab.documentPath
+        pageCount: noteTab.pageCount
     }
 }
