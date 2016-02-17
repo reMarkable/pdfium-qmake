@@ -13,7 +13,8 @@ Item {
     property int documentPreviewHeight: 380
     property int documentPreviewWidth: 300
 
-    property bool selectionModeActive: editActionsRow.visible
+    property bool selectionModeActive: false
+
     onSelectionModeActiveChanged: {
         selectedBooks = []
     }
@@ -299,11 +300,7 @@ Item {
                 Collection.deleteDocument(archiveMain.selectedBooks[i])
             }
 
-            archiveMain.selectedBooks = []
-
-
-
-            editActionsRow.visible = false
+            archiveMain.selectionModeActive = false
         }
     }
 }
