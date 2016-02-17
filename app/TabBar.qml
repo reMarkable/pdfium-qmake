@@ -3,7 +3,6 @@ import com.magmacompany 1.0
 
 Rectangle {
     id: tabBar
-    //color: "white"
 
     property var objectList: []
     property var tabModel: []
@@ -36,7 +35,6 @@ Rectangle {
             border.width: tabBorderSize
             border.color: tabBar.currentTab === 0 ? "black" : "lightGray"
             radius: tabRadius
-            //color: "black"
             color: tabBar.currentTab === 0 ? "white" : "lightGray"
             Image {
                 anchors.top: parent.top
@@ -56,10 +54,7 @@ Rectangle {
                 }
                 width: tabBar.currentTab === 0 ?  parent.width - tabBorderSize * 2 - 2 : parent.width + tabBorderSize * 2
                 height: tabBorderSize
-                //visible: tabBar.currentTab === 0
-                //color: tabBar.currentTab === 0 ? "darkGray" : "gray"
                 color: tabBar.currentTab === 0 ? "white" : "black"
-                //color: "gray"
             }
 
             Rectangle {
@@ -86,7 +81,6 @@ Rectangle {
                 width: 175
                 visible: tabBar.height > 0
                 height: tabBar.height - marginTop
-                //border.width: tabBar.currentTab === index + 1 ? 3 : 1
                 border.width: tabBorderSize
                 border.color: tabBar.currentTab === index + 1 ? "black" : "gray"
                 radius: tabRadius
@@ -95,7 +89,6 @@ Rectangle {
                     anchors.fill: parent
                     anchors.leftMargin: 20
                     anchors.topMargin: 20
-                    //verticalAlignment: Text.AlignVCenter
                     font.pointSize: 14
                     horizontalAlignment: Text.AlignLeft
                     color: tabBar.currentTab === index + 1 ? "black" : "gray"
@@ -109,15 +102,9 @@ Rectangle {
                         topMargin: parent.height - tabRadius - marginTop - tabBorderSize
                         horizontalCenter: parent.horizontalCenter
                     }
-                    //width: parent.width - tabBorderSize * 2
                     width: tabBar.currentTab === index + 1 ? parent.width - tabBorderSize * 2 - 2 : parent.width + tabBorderSize * 2
                     height: tabBorderSize
-                    //height: tabBar.currentTab === index + 1 ? parent.radius : 1
-                    //color: tabBar.currentTab === index + 1 ? "darkGray" : "gray"
                     color: tabBar.currentTab === index + 1 ? "white" : "black"
-                    //color: "red"
-                    //opacity: 0.9
-                    //visible: tabBar.currentTab === index + 1
                 }
                 MouseArea {
                     id: tabMouseArea
@@ -129,13 +116,10 @@ Rectangle {
                 }
 
                 Rectangle {
-                    //anchors.left: parent.left
-                    //anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     height: tabRadius + marginTop
                     color: "white"
-                    //opacity: 0.5
                     width: parent.width// - (tabRepeater.count) * 175 - 96
                 }
 
@@ -182,9 +166,7 @@ Rectangle {
         id: batteryIcon
 
         width: 45
-        height: 45//parent.height - (tabRadius + marginTop + 1)
-        //visible: width > 0
-        //color: "red"
+        height: 45
         anchors {
             right: rotateButton.left
             rightMargin: 10
