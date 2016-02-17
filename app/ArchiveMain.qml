@@ -6,11 +6,17 @@ Item {
     visible: archiveView.currentBook === ""
     
     property int currentPage: 0
+    onCurrentPageChanged: mainArchiveGrid.reloadDocuments()
 
     property int smallIconSize: 75
     property int mediumIconSize: 200
     property int documentPreviewHeight: 380
     property int documentPreviewWidth: 300
+
+    property bool selectionModeActive: editActionsRow.visible
+    onSelectionModeActiveChanged: {
+        selectedBooks = []
+    }
 
     function deleteBook(path) {
         if (path === "") {
@@ -20,6 +26,8 @@ Item {
         deleteDialog.documentPath = path
         deleteDialog.show("Are you sure you want to delete " + Collection.title(deleteDialog.documentPath) + "?")
     }
+
+    property var selectedBooks: []
     
     Grid {
         id: mainArchiveGrid
@@ -53,7 +61,7 @@ Item {
                 id: bookItem
                 width: 320
                 height: 400
-                property bool selected: false
+                property bool selected: (mainArchive.selectedBooks.indexOf(modelData) !== -1)
                 
                 Repeater {
                     id: bgPageRepeater
@@ -95,8 +103,14 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (editActionsRow.visible) {
-                                    bookItem.selected = !bookItem.selected
+                                if (mainArchive.selectionModeActive) {
+                                    var selectedBooks = mainArchive.selectedBooks
+                                    if (bookItem.selected) {
+                                        selectedBooks.splice(selectedBooks.indexOf(modelData), 1)
+                                    } else {
+                                        selectedBooks.push(modelData)
+                                    }
+                                    mainArchive.selectedBooks = selectedBooks
                                 } else {
                                     archiveView.openBook(modelData)
                                 }
@@ -109,7 +123,7 @@ Item {
                                 bottom: parent.bottom
                                 right: parent.right
                             }
-                            visible: !editActionsRow.visible
+                            visible: !mainArchive.selectionModeActive
                             icon: "qrc:///icons/forward_white.svg"
                             onClicked: archiveView.currentBook = modelData
                         }
@@ -139,7 +153,7 @@ Item {
                                 left: parent.left
                             }
 
-                            visible: !editActionsRow.visible
+                            visible: !mainArchive.selectionModeActive
 
                             onVisibleChanged: {
                                 if (!visible) {
@@ -155,7 +169,7 @@ Item {
                             id: bookSelectionOverlay
                             anchors.fill: parent
                             color: "#7f000000"
-                            visible: editActionsRow.visible && !bookItem.selected
+                            visible: mainArchive.selectionModeActive && !bookItem.selected
                         }
                         
                         Image {
@@ -166,7 +180,7 @@ Item {
 
                             sourceSize.width: width
                             sourceSize.height: width
-                            visible: editActionsRow.visible
+                            visible: mainArchive.selectionModeActive
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                         }
                     }
@@ -247,64 +261,28 @@ Item {
             }
         }
     }
-    
-    Rectangle {
+
+    ArchiveButton {
         anchors {
             right: parent.right
             bottom: parent.bottom
             margins: 50
         }
-        width: height
-        height: 75
-        color: "#a0000000"
-        radius: 5
+
         visible: mainArchive.currentPage < pageRowRepeater.count - 1
-        
-        Image {
-            anchors.fill: parent
-            anchors.margins: 5
-            source: "qrc:///icons/forward_white.svg"
-            sourceSize.width: width
-            sourceSize.height: height
-        }
-        
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                mainArchive.currentPage++
-                mainArchiveGrid.reloadDocuments()
-            }
-        }
+        icon: "qrc:///icons/forward_white.svg"
+        onClicked: mainArchive.currentPage++
     }
     
-    Rectangle {
+    ArchiveButton {
         anchors {
             left: parent.left
             bottom: parent.bottom
             margins: 50
         }
-        
-        width: height
-        height: 75
-        color: "#a0000000"
-        radius: 5
         visible: mainArchive.currentPage > 0
-        
-        Image {
-            anchors.fill: parent
-            anchors.margins: 5
-            source: "qrc:///icons/back_white.svg"
-            sourceSize.width: width
-            sourceSize.height: height
-        }
-        
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                mainArchive.currentPage--
-                mainArchiveGrid.reloadDocuments()
-            }
-        }
+        icon: "qrc:///icons/back_white.svg"
+        onClicked: mainArchive.currentPage--
     }
 
     Dialog {
