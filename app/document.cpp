@@ -201,6 +201,9 @@ void Document::setCurrentBackground(QImage background)
     if (m_cachedBackgrounds.contains(m_currentIndex)) {
         m_cachedBackgrounds.remove(m_currentIndex);
     }
+    if (m_pageContents.contains(m_currentIndex)) {
+        m_pageContents.remove(m_currentIndex);
+    }
     m_cachedBackgrounds[m_currentIndex] = background;
     locker.unlock();
     emit backgroundChanged();
