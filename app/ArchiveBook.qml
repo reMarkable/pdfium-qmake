@@ -6,7 +6,14 @@ Item {
     
     visible: archiveView.currentBook != ""
     property QtObject document
-    
+
+    property bool selectionModeActive: false
+    onSelectionModeActiveChanged: {
+        selectedPages = []
+    }
+
+    property var selectedPages: []
+
     onVisibleChanged: {
         if (!visible) {
             document = null
@@ -16,6 +23,29 @@ Item {
             document.preload()
             pageRepeater.model = Math.min(document.pageCount, 9)
         }
+    }
+
+
+    function deletePages() {
+        if (selectedPages.count === 0) {
+            return
+        }
+
+        if (selectedPages.count > 1) {
+            deleteDialog.show("Are you sure you want to delete pages " + selectedPages.join(", ") + "?")
+        } else {
+            deleteDialog.show("Are you sure you want to delete page " + selectedPages[0] + "?")
+        }
+    }
+
+    function deletePage(index) {
+        console.log(index)
+        if (index < 0 || index > archiveBook.document.pageCount) {
+            return
+        }
+
+        selectedPages = [index]
+        deleteDialog.show("Are you sure you want to delete page " + (index + 1) + "?")
     }
     
     Grid {
@@ -35,7 +65,7 @@ Item {
                 id: bookItem
                 width: 320
                 height: 450
-                property bool selected: false
+                property bool selected: (archiveBook.selectedPages.indexOf(modelData) !== -1)
                 
                 Rectangle {
                     anchors {
@@ -62,14 +92,14 @@ Item {
                         Rectangle {
                             anchors.fill: parent
                             color: "#7f000000"
-                            visible: editActionsRow.visible && !bookItem.selected
+                            visible: archiveBook.selectionModeActive && !bookItem.selected
                         }
                         
                         Image {
                             anchors.centerIn: parent
                             width: parent.width / 2
                             height: width
-                            visible: editActionsRow.visible
+                            visible: archiveBook.selectionModeActive
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                             sourceSize.width: width
                             sourceSize.height: height
@@ -78,12 +108,24 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                archiveView.openBookAt(archiveView.currentBook, index)
+                                if (!archiveBook.selectionModeActive) {
+                                    archiveView.openBookAt(archiveView.currentBook, index)
+                                    return
+                                }
+
+                                var selectedPages = archiveBook.selectedPages
+                                if (bookItem.selected) {
+                                    selectedPages.splice(selectedPages.indexOf(index), 1)
+                                } else {
+                                    selectedPages.push(index)
+                                }
+                                archiveBook.selectedPages = selectedPages
                             }
                         }
                     }
                     
                     Rectangle {
+                        id: pageNumberLabel
                         anchors {
                             top: parent.top
                             right: parent.right
@@ -99,129 +141,32 @@ Item {
                         }
                     }
                     
-                    Rectangle {
+                    ArchiveButton {
+                        id: previewButton
                         anchors {
                             bottom: parent.bottom
                             right: parent.right
                         }
-                        
-                        width: parent.width / 3
-                        height: width
-                        color: "#a0000000"
-                        radius: 5
-                        
-                        Image {
-                            anchors.fill: parent
-                            anchors.margins: 10
-                            source: "qrc:///icons/xoom+_white.svg"
-                            sourceSize.width: width
-                            sourceSize.height: height
-                        }
+                        icon: "qrc:///icons/xoom+_white.svg"
+                        visible: !archiveBook.selectionModeActive
 
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                previewBackground.index = index
-                                previewBackground.visible = true
-                            }
+                        onClicked: {
+                            previewBackground.index = index
+                            previewBackground.visible = true
                         }
                     }
+
                     
-                    
-                    Grid {
-                        id: toolGrid
-                        anchors {
-                            left: parent.left
-                            bottom: moreButton.top
-                            bottomMargin: 1
-                        }
-                        rows: 2
-                        columns: 2
-                        spacing: 1
-                        visible: false
-                        
-                        Rectangle {
-                            width: moreButton.width
-                            height: width
-                            color: "#a0000000"
-                            radius: 5
-                            
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                source: "qrc:///icons/Lock_small_white.svg"
-                                sourceSize.width: width
-                                sourceSize.height: height
-                            }
-                        }
-                        Rectangle {
-                            width: moreButton.width
-                            height: width
-                            color: "#a0000000"
-                            radius: 5
-                            
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                source: "qrc:///icons/send_white.svg"
-                                sourceSize.width: width
-                                sourceSize.height: height
-                            }
-                        }
-                        Rectangle {
-                            width: moreButton.width
-                            height: width
-                            color: "#a0000000"
-                            radius: 5
-                            
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                source: "qrc:///icons/Move_white.svg"
-                                sourceSize.width: width
-                                sourceSize.height: height
-                            }
-                        }
-                        Rectangle {
-                            width: moreButton.width
-                            height: width
-                            color: "#a0000000"
-                            radius: 5
-                            
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                sourceSize.width: width
-                                sourceSize.height: height
-                                source: "qrc:///icons/Delete_white.svg"
-                            }
-                        }
-                    }
-                    
-                    Rectangle {
-                        id: moreButton
+                    ArchiveButton {
+                        id: deleteButton
                         anchors {
                             bottom: parent.bottom
                             left: parent.left
                         }
+                        visible: !archiveBook.selectionModeActive
                         
-                        width: parent.width / 3
-                        height: width
-                        color: "#a0000000"
-                        radius: 5
-                        
-                        Image {
-                            anchors.fill: parent
-                            anchors.margins: 5
-                            source: "qrc:///icons/prikkprikkprikk_white.svg"
-                            sourceSize.width: width
-                            sourceSize.height: height
-                        }
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: toolGrid.visible = !toolGrid.visible
-                        }
+                        icon: "qrc:///icons/Delete_white.svg"
+                        onClicked: archiveBook.deletePage(index)
                     }
                 }
             }
@@ -258,203 +203,57 @@ Item {
             sourceSize.width: width
             sourceSize.height: height
 
-            Rectangle {
+            ArchiveButton {
                 anchors {
                     right: parent.right
                     verticalCenter: parent.verticalCenter
                     rightMargin: 50
                 }
-                width: height
-                height: 75
-                color: "#666"
-                radius: 5
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    source: "qrc:///icons/forward_white.svg"
-                    sourceSize.width: width
-                    sourceSize.height: height
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: previewBackground.index++
-                }
+                icon: "qrc:///icons/forward_white.svg"
+                visible: (archiveBook.document !== null) ? (previewBackground.index < archiveBook.document.pageCount - 1) : false
+                onClicked: previewBackground.index++
             }
 
-            Rectangle {
+            ArchiveButton {
                 anchors {
                     left: parent.left
                     verticalCenter: parent.verticalCenter
                     leftMargin: 50
                 }
-
-                width: height
-                height: 75
-                color: "#666"
-                radius: 5
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    source: "qrc:///icons/back_white.svg"
-                    sourceSize.width: width
-                    sourceSize.height: height
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: previewBackground.index--
-                }
+                icon: "qrc:///icons/back_white.svg"
+                visible: previewBackground.index > 0
+                onClicked: previewBackground.index--
             }
 
-            Rectangle {
+            ArchiveButton {
                 anchors {
                     top: parent.top
                     left: parent.left
                 }
-
-                width: height
-                height: 75
-                color: "#a0000000"
-                radius: 5
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    source: "qrc:///icons/Delete_white.svg"
-                    sourceSize.width: width
-                    sourceSize.height: height
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: console.log("pls implement")
-                }
+                icon: "qrc:///icons/Delete_white.svg"
+                onClicked: previewBackground.visible = false
             }
 
-            Rectangle {
+            ArchiveButton {
                 anchors {
                     bottom: parent.bottom
                     right: parent.right
                 }
 
-                width: height
-                height: 75
-                color: "#a0000000"
-                radius: 5
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    source: "qrc:///icons/Open-book_white.svg"
-                    sourceSize.width: width
-                    sourceSize.height: height
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: archiveView.openBookAt(archiveView.currentBook, previewBackground.index)
-                }
+                icon: "qrc:///icons/Open-book_white.svg"
+                onClicked: archiveView.openBookAt(archiveView.currentBook, previewBackground.index)
             }
+        }
+    }
 
-
-            Grid {
-                id: previewToolGrid
-                anchors {
-                    left: parent.left
-                    bottom: previewMoreButton.top
-                    bottomMargin: 1
-                }
-                rows: 2
-                columns: 2
-                spacing: 1
-                visible: false
-
-                Rectangle {
-                    width: previewMoreButton.width
-                    height: width
-                    color: "#a0000000"
-                    radius: 5
-
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        source: "qrc:///icons/Lock_small_white.svg"
-                        sourceSize.width: width
-                        sourceSize.height: height
-                    }
-                }
-                Rectangle {
-                    width: previewMoreButton.width
-                    height: width
-                    color: "#a0000000"
-                    radius: 5
-
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        source: "qrc:///icons/send_white.svg"
-                        sourceSize.width: width
-                        sourceSize.height: height
-                    }
-                }
-                Rectangle {
-                    width: previewMoreButton.width
-                    height: width
-                    color: "#a0000000"
-                    radius: 5
-
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        source: "qrc:///icons/Move_white.svg"
-                        sourceSize.width: width
-                        sourceSize.height: height
-                    }
-                }
-                Rectangle {
-                    width: previewMoreButton.width
-                    height: width
-                    color: "#a0000000"
-                    radius: 5
-
-                    Image {
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        source: "qrc:///icons/Delete_white.svg"
-                        sourceSize.width: width
-                        sourceSize.height: height
-                    }
-                }
+    Dialog {
+        id: deleteDialog
+        onAccepted: {
+            for (var i=0; i<archiveBook.selectedPages.count; i++) {
+                console.log(archiveBook.selectedPAges[i])
+                //Collection.deleteDocument(archiveMain.selectedBooks[i])
             }
-
-            Rectangle {
-                id: previewMoreButton
-                anchors {
-                    bottom: parent.bottom
-                    left: parent.left
-                }
-
-                width: 75
-                height: width
-                color: "#a0000000"
-                radius: 5
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 10
-                    source: "qrc:///icons/prikkprikkprikk_white.svg"
-                    sourceSize.width: width
-                    sourceSize.height: height
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: previewToolGrid.visible = !previewToolGrid.visible
-                }
-            }
+            archiveBook.selectionModeActive = false
         }
     }
 }
