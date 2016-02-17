@@ -14,7 +14,6 @@ Rectangle {
             return;
         }
 
-        templateRepeater.model = document.availableTemplates()
         pageCount = Qt.binding(function() { return document.pageCount; })
         currentPage = Qt.binding(function() { return document.currentIndex; })
     }
@@ -56,13 +55,6 @@ Rectangle {
     }
 
     property string documentPath
-    onDocumentPathChanged: {
-        if (documentPath === "") {
-            return;
-        }
-
-        document = Collection.getDocument(documentPath)
-    }
 
     DrawingArea {
         id: drawingArea
@@ -71,12 +63,9 @@ Rectangle {
         document: noteTab.document
     }
 
-    Column {
+
+    ToolBox {
         id: toolBox
-        width: 64
-        height: 100
-        visible: !rootItem.focusMode
-        spacing: 5
         anchors {
             left: parent.left
             top: parent.top
@@ -84,110 +73,23 @@ Rectangle {
             topMargin: 100
         }
 
-        ToolButton {
-            icon: "qrc:/icons/clear page.svg"
-            onClicked: drawingArea.clear()
+        document: noteTab.document
+        drawingArea: drawingArea
 
-            Image {
-                anchors.centerIn: parent
-                width: 24
-                height: width
-                source: "qrc:/icons/no.svg"
-            }
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/undo.svg"
-            onClicked: drawingArea.undo()
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/redo.svg"
-            onClicked: drawingArea.redo()
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/focus+.svg"
-            onClicked: rootItem.focusMode = true
-        }
-
-        ToolButton {
-            id: templateSelectIcon
-            icon: "qrc:/icons/page-type.png"
-            onClicked: {
-                templateSelectRow.visible = !templateSelectRow.visible
-            }
+        buttons: [
+            "Pen",
+            "Clear",
+            "Undo",
+            "Redo",
+            "Focus",
+            "TemplateSelect",
+            "NewPage",
+            "Forward",
+            "Back",
+            "Index"
+        ]
 
 
-            Image {
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-                anchors.margins: 8
-                width: 24
-                height: width
-                source: "qrc:/icons/forward.svg"
-            }
-
-
-            Row {
-                id: templateSelectRow
-                visible: false
-                anchors {
-                    left: parent.right
-                    top: parent.top
-                    bottom: parent.bottom
-                }
-
-                Repeater {
-                    id: templateRepeater
-                    delegate: Rectangle {
-                        height: templateSelectIcon.height
-                        width: height * 2
-                        border.width: 2
-                        color: noteTab.document !== null ? (noteTab.document.currentTemplate === modelData ? "gray" : "white") : "white"
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData
-                        }
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                templateSelectRow.visible = false
-                                noteTab.document.currentTemplate = modelData
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/new page.svg"
-            onClicked: {
-                noteTab.document.addPage()
-                //console.log(noteTab.document.availableTemplates())
-            }
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/forward.svg"
-            onClicked: {
-                noteTab.moveForward()
-            }
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/back.svg"
-            onClicked: {
-                noteTab.moveBackward()
-            }
-        }
-
-        ToolButton {
-            icon: "qrc:/icons/Index.svg"
-            active: thumbnailGrid.visible
-            onClicked: thumbnailGrid.visible = true
-        }
     }
 
     Column {

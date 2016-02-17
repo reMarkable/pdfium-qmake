@@ -90,5 +90,6 @@
         <file>icons/Open-book_white.svg</file>
         <file>icons/page-type.png</file>
         <file>ThumbnailGrid.qml</file>
+        <file>ToolBox.qml</file>
     </qresource>
 </RCC>

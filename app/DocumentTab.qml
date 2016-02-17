@@ -49,12 +49,8 @@ Item {
         }
 
 
-        Column {
+        ToolBox {
             id: toolBox
-            width: 64
-            height: 100
-            visible: !rootItem.focusMode
-            spacing: 5
             anchors {
                 left: parent.left
                 top: parent.top
@@ -62,31 +58,9 @@ Item {
                 topMargin: 100
             }
 
-            ToolButton {
-                icon: "qrc:/icons/clear page.svg"
-                onClicked: drawingArea.clear()
-            }
-
-            ToolButton {
-                icon: "qrc:/icons/undo.svg"
-                onClicked: drawingArea.undo()
-            }
-
-            ToolButton {
-                icon: "qrc:/icons/redo.svg"
-                onClicked: drawingArea.redo()
-            }
-
-            ToolButton {
-                icon: "qrc:/icons/focus+.svg"
-                onClicked: rootItem.focusMode = true
-            }
-
-            ToolButton {
-                icon: "qrc:/icons/Index.svg"
-                active: thumbnailGrid.visible
-                onClicked: thumbnailGrid.visible = true
-            }
+            buttons: ["Pen", "Clear", "Undo", "Redo", "Focus", "Index"]
+            document: noteTab.document
+            drawingArea: drawingArea
         }
     }
 
