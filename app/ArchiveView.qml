@@ -124,21 +124,7 @@ Rectangle {
             right: editButton.left
             rightMargin: 10
         }
-        visible: false
-
-        Item {
-            height: 75
-            width: height
-            Image {
-                anchors {
-                    fill: parent
-                    margins: 10
-                }
-
-                source: "qrc:///icons/Move_white.svg"
-            }
-        }
-
+        visible: (mainArchive.visible) ? mainArchive.selectionModeActive : archiveBook.selectionModeActive
 
         ArchiveButton {
             color: "#666"
@@ -146,37 +132,14 @@ Rectangle {
             onClicked: {
                 if (mainArchive.visible) {
                     mainArchive.deleteBooks()
+                } else {
+                    archiveBook.deletePages()
                 }
-            }
-        }
-        Item {
-            height: 75
-            width: height
-            Image {
-                anchors {
-                    fill: parent
-                    margins: 10
-                }
-
-                source: "qrc:///icons/send_white.svg"
             }
         }
     }
 
-    Rectangle {
-        anchors {
-            verticalCenter: editButton.verticalCenter
-            right: editButton.left
-            rightMargin: -width/2
-        }
-        width: 15
-        height: width
-        color: "#666"
-        rotation: 45
-        visible: editActionsRow.visible
-    }
-
-    Rectangle {
+    ArchiveButton {
         id: editButton
         anchors {
             top: parent.top
@@ -184,26 +147,14 @@ Rectangle {
             topMargin: 25
             rightMargin: 10
         }
-
-        width: height
-        height: 75
         color: "#666"
-        radius: 5
-
-        Image {
-            anchors {
-                top: parent.top
-                left: parent.left
-                bottom: parent.bottom
-                margins: 10
+        icon: editActionsRow.visible ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white.svg"
+        onClicked: {
+            if (mainArchive.visible) {
+                mainArchive.selectionModeActive = !mainArchive.selectionModeActive
+            } else {
+                archiveBook.selectionModeActive = !archiveBook.selectionModeActive
             }
-            width: height
-            source: editActionsRow.visible ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white.svg"
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: editActionsRow.visible = !editActionsRow.visible
         }
     }
 
@@ -221,26 +172,22 @@ Rectangle {
         color: "#666"
         radius: 5
 
-        Image {
+        ArchiveButton {
             anchors {
-                top: parent.top
-                left: parent.left
-                bottom: parent.bottom
-                margins: 10
+                right: parent.right
+                verticalCenter: parent.verticalCenter
             }
-            width: height
-            source: "qrc:///icons/Grid 9.svg"
+            color: "#666"
+            icon: "qrc:///icons/Grid 9.svg"
         }
 
-        Image {
+        ArchiveButton {
             anchors {
-                top: parent.top
-                right: parent.right
-                bottom: parent.bottom
-                margins: 10
+                left: parent.left
+                verticalCenter: parent.verticalCenter
             }
-            width: height
-            source: "qrc:///icons/Grid 36_white.svg"
+            color: "#666"
+            icon: "qrc:///icons/Grid 36_white.svg"
         }
     }
 
