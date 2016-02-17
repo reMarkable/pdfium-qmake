@@ -345,7 +345,10 @@ Item {
         
         MouseArea {
             anchors.fill: parent
-            onClicked: mainArchive.currentPage++
+            onClicked: {
+                mainArchive.currentPage++
+                mainArchiveGrid.reloadDocuments()
+            }
         }
     }
     
@@ -372,7 +375,10 @@ Item {
         
         MouseArea {
             anchors.fill: parent
-            onClicked: mainArchive.currentPage--
+            onClicked: {
+                mainArchive.currentPage--
+                mainArchiveGrid.reloadDocuments()
+            }
         }
     }
 
@@ -451,7 +457,6 @@ Item {
                         enabled: deleteDialog.visible
                         anchors.fill: parent
                         onClicked: {
-
                             deleteDialog.documentPath = ""
                         }
                     }
