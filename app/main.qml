@@ -36,6 +36,10 @@ Window {
         }
 
         function openDocument(path) {
+            if (tabBar.tabModel.length > 4) {
+                return
+            }
+
             var name = Collection.title(path)
             var index = tabBar.tabModel.indexOf(name)
 
@@ -175,6 +179,10 @@ Window {
                 visible: (tabBar.currentTab === 0)
 
                 onNewNoteClicked: {
+                    if (tabBar.tabModel.length > 4) {
+                        return
+                    }
+
                     var newIndex = tabBar.tabModel.length + 1
                     var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.document = Collection.createDocument("Lined")
@@ -186,6 +194,10 @@ Window {
                 }
 
                 onNewSketchClicked: {
+                    if (tabBar.tabModel.length > 4) {
+                        return
+                    }
+
                     var newIndex = tabBar.tabModel.length + 1
                     var createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.document = Collection.createDocument("Sketch")
@@ -197,6 +209,10 @@ Window {
                 }
 
                 onArchiveClicked: {
+                    if (tabBar.tabModel.length > 4) {
+                        return
+                    }
+
                     console.time("archiveclicked")
                     var index = tabBar.tabModel.indexOf("ARCHIVE")
 
