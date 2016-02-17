@@ -3,7 +3,7 @@ import com.magmacompany 1.0
 
 Rectangle {
     id: toolButton
-    width: parent.width
+    width: 64
     height: width
     radius: 5
 
