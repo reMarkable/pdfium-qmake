@@ -130,6 +130,7 @@ Rectangle {
 
     Item {
         id: quickSettings
+        visible: false
 
         anchors {
             topMargin: 100
@@ -273,6 +274,7 @@ Rectangle {
 
     Item {
         id: recentlyUsed
+        visible: false
 
         anchors {
             topMargin: 100
