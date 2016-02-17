@@ -60,11 +60,10 @@ Window {
                     createdObject.document = Collection.getDocument(path)
                 }
 
-                var tabModel = tabBar.tabModel
-                tabModel.push(name)
-                tabBar.tabModel = tabModel
+                var objectList = tabBar.objectList
+                objectList.push(createdObject)
+                tabBar.objectList = objectList
                 tabBar.currentTab = newIndex
-                tabBar.objectList.push(createdObject)
             } else {
                 tabBar.currentTab = index + 1
             }
@@ -186,11 +185,10 @@ Window {
                     var newIndex = tabBar.tabModel.length + 1
                     var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.document = Collection.createDocument("Lined")
-                    var tabModel = tabBar.tabModel
-                    tabModel.push(Collection.title(createdObject.document.path()))
-                    tabBar.tabModel = tabModel
+                    var objectList = tabBar.objectList
+                    objectList.push(createdObject)
+                    tabBar.objectList = objectList
                     tabBar.currentTab = newIndex
-                    tabBar.objectList.push(createdObject)
                 }
 
                 onNewSketchClicked: {
@@ -201,11 +199,10 @@ Window {
                     var newIndex = tabBar.tabModel.length + 1
                     var createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.document = Collection.createDocument("Sketch")
-                    var tabModel = tabBar.tabModel
-                    tabModel.push(Collection.title(createdObject.document.path()))
-                    tabBar.tabModel = tabModel
+                    var objectList = tabBar.objectList
+                    objectList.push(createdObject)
+                    tabBar.objectList = objectList
                     tabBar.currentTab = newIndex
-                    tabBar.objectList.push(createdObject)
                 }
 
                 onArchiveClicked: {
@@ -214,16 +211,15 @@ Window {
                     }
 
                     console.time("archiveclicked")
-                    var index = tabBar.tabModel.indexOf("ARCHIVE")
+                    var index = tabBar.tabModel.indexOf("Archive")
 
                     if (index === -1) {
                         var newIndex = tabBar.tabModel.length + 1
                         var createdObject = archiveComponent.createObject(viewRoot, {"tabIndex": newIndex })
-                        var tabModel = tabBar.tabModel
-                        tabModel.push("ARCHIVE")
-                        tabBar.tabModel = tabModel
+                        var objectList = tabBar.objectList
+                        objectList.push(createdObject)
+                        tabBar.objectList = objectList
                         tabBar.currentTab = newIndex
-                        tabBar.objectList.push(createdObject)
                     } else {
                         tabBar.currentTab = index + 1
                     }

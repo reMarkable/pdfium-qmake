@@ -6,11 +6,14 @@ Rectangle {
     property int iconMargin: 8
 
     property string documentPath
+    property string title: ""
+
     property QtObject document
     onDocumentChanged: {
         if (!document) {
             return;
         }
+        title = Collection.title(document.path())
     }
 
     Component.onDestruction: {

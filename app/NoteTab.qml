@@ -5,8 +5,10 @@ Rectangle {
     id: noteTab
     property int iconMargin: 8
 
+    property string title: ""
     property int currentPage: 0
     property int pageCount: 0
+    property string documentPath
 
     property QtObject document
     onDocumentChanged: {
@@ -14,9 +16,12 @@ Rectangle {
             return;
         }
 
+        documentPath = document.path()
+        title = Collection.title(documentPath)
         pageCount = Qt.binding(function() { return document.pageCount; })
         currentPage = Qt.binding(function() { return document.currentIndex; })
     }
+
 
     function moveForward() {
         if (document.currentIndex < pageCount - 1) {
@@ -53,8 +58,6 @@ Rectangle {
         moveBackward()
         event.accepted = true
     }
-
-    property string documentPath
 
     DrawingArea {
         id: drawingArea

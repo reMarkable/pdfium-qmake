@@ -3,6 +3,9 @@ import com.magmacompany 1.0
 
 Item {
     id: documentTab
+
+    property string title: ""
+
     property int iconMargin: 8
 
     property int pageCount: 0
@@ -11,6 +14,7 @@ Item {
     property QtObject document
     property string documentPath
     onDocumentPathChanged: {
+        title = Collection.title(documentPath)
         document = Collection.getDocument(documentPath)
         pageCount = Qt.binding(function() { return document.pageCount; })
         currentPage = Qt.binding(function() { return document.currentIndex; })

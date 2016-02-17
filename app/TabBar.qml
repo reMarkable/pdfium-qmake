@@ -6,6 +6,13 @@ Rectangle {
 
     property var objectList: []
     property var tabModel: []
+    onObjectListChanged: {
+        tabModel = []
+        for (var i=0; i<objectList.length; i++) {
+            tabModel.push(objectList[i].title)
+        }
+    }
+
     property int currentTab: 0
     property int tabBorderSize: 4
     property int tabRadius: 10
@@ -76,7 +83,7 @@ Rectangle {
 
         Repeater {
             id: tabRepeater
-            model: tabBar.tabModel
+            model: tabBar.objectList
             Rectangle {
                 width: 175
                 visible: tabBar.height > 0
@@ -84,6 +91,7 @@ Rectangle {
                 border.width: tabBorderSize
                 border.color: tabBar.currentTab === index + 1 ? "black" : "gray"
                 radius: tabRadius
+
                 Text {
                     id: text
                     anchors.fill: parent
@@ -92,7 +100,7 @@ Rectangle {
                     font.pointSize: 14
                     horizontalAlignment: Text.AlignLeft
                     color: tabBar.currentTab === index + 1 ? "black" : "gray"
-                    text: modelData
+                    text: modelData !== null ? modelData.title : ""
                     width: parent.width
                     elide: Text.ElideRight
                 }
@@ -148,13 +156,10 @@ Rectangle {
                         anchors.fill: parent
                         onClicked: {
                             tabBar.currentTab = 0
-
-                            tabBar.objectList[index].destroy()
-                            tabBar.objectList.splice(index, 1)
-
-                            var tabModel = tabBar.tabModel
-                            tabModel.splice(index, 1)
-                            tabBar.tabModel = tabModel
+                            var objectList = tabBar.objectList
+                            objectList[index].destroy()
+                            objectList.splice(index, 1)
+                            tabBar.objectList = objectList
                         }
                     }
                 }

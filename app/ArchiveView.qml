@@ -4,6 +4,8 @@ import com.magmacompany 1.0
 Rectangle {
     id: archiveView
 
+    property string title: "Archive"
+
     signal openBook(var path)
     signal openBookAt(var path, var page)
 
