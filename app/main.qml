@@ -214,12 +214,11 @@ Window {
                     var index = tabBar.tabModel.indexOf("Archive")
 
                     if (index === -1) {
-                        var newIndex = tabBar.tabModel.length + 1
-                        var createdObject = archiveComponent.createObject(viewRoot, {"tabIndex": newIndex })
+                        var createdObject = archiveComponent.createObject(viewRoot, {"tabIndex": 1 })
                         var objectList = tabBar.objectList
-                        objectList.push(createdObject)
+                        objectList.splice(0, 0, createdObject)
                         tabBar.objectList = objectList
-                        tabBar.currentTab = newIndex
+                        tabBar.currentTab = 1
                     } else {
                         tabBar.currentTab = index + 1
                     }
