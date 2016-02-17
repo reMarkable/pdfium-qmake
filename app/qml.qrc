@@ -91,5 +91,6 @@
         <file>icons/page-type.png</file>
         <file>ThumbnailGrid.qml</file>
         <file>ToolBox.qml</file>
+        <file>ArchiveButton.qml</file>
     </qresource>
 </RCC>

@@ -88,8 +88,6 @@ Rectangle {
             "Back",
             "Index"
         ]
-
-
     }
 
     Column {

@@ -87,34 +87,26 @@ Item {
                         
                         source: Collection.thumbnailPath(modelData)
 
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                if (editActionsRow.visible) {
+                                    bookItem.selected = !bookItem.selected
+                                } else {
+                                    archiveView.openBook(modelData)
+                                }
+                            }
+                        }
 
-                        Rectangle {
+                        ArchiveButton {
                             id: showBookButton
                             anchors {
                                 bottom: parent.bottom
                                 right: parent.right
                             }
-
-                            width: mainArchive.smallIconSize
-                            height: width
-                            color: "#a0000000"
-                            radius: 5
                             visible: !editActionsRow.visible
-
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 10
-                                sourceSize.width: width
-                                sourceSize.height: width
-                                source: "qrc:///icons/forward_white.svg"
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    archiveView.currentBook = modelData
-                                }
-                            }
+                            icon: "qrc:///icons/forward_white.svg"
+                            onClicked: archiveView.currentBook = modelData
                         }
 
                         Grid {
@@ -129,81 +121,19 @@ Item {
                             spacing: 1
                             visible: false
 
-                            Rectangle {
-                                width: mainArchive.smallIconSize
-                                height: width
-                                color: "#a0000000"
-                                radius: 5
-
-                                Image {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    sourceSize.width: width
-                                    sourceSize.height: width
-                                    source: "qrc:///icons/Lock_small_white.svg"
-                                }
-                            }
-                            Rectangle {
-                                width: mainArchive.smallIconSize
-                                height: width
-                                color: "#a0000000"
-                                radius: 5
-
-                                Image {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    sourceSize.width: width
-                                    sourceSize.height: width
-                                    source: "qrc:///icons/send_white.svg"
-                                }
-                            }
-
-                            Rectangle {
-                                width: mainArchive.smallIconSize
-                                height: width
-                                color: "#a0000000"
-                                radius: 5
-
-                                Image {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    sourceSize.width: width
-                                    sourceSize.height: height
-                                    source: "qrc:///icons/Move_white.svg"
-                                }
-                            }
-                            Rectangle {
-                                width: mainArchive.smallIconSize
-                                height: width
-                                color: "#a0000000"
-                                radius: 5
-
-                                Image {
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    sourceSize.width: width
-                                    sourceSize.height: width
-                                    source: "qrc:///icons/Delete_white.svg"
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: mainArchive.deleteBook(modelData)
-                                }
+                            ArchiveButton {
+                                icon: "qrc:///icons/Delete_white.svg"
+                                onClicked: mainArchive.deleteBook(modelData)
                             }
                         }
 
-                        Rectangle {
+                        ArchiveButton {
                             id: moreButton
                             anchors {
                                 bottom: parent.bottom
                                 left: parent.left
                             }
 
-                            width: mainArchive.smallIconSize
-                            height: width
-                            color: "#a0000000"
-                            radius: 5
                             visible: !editActionsRow.visible
 
                             onVisibleChanged: {
@@ -212,28 +142,19 @@ Item {
                                 }
                             }
 
-                            Image {
-                                anchors.centerIn: parent
-                                width: mainArchive.smallIconSize
-                                height: width
-                                sourceSize.width: width
-                                sourceSize.height: width
-                                source: "qrc:///icons/prikkprikkprikk_white.svg"
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: toolGrid.visible = !toolGrid.visible
-                            }
+                            icon: "qrc:///icons/prikkprikkprikk_white.svg"
+                            onClicked: toolGrid.visible = !toolGrid.visible
                         }
                         
                         Rectangle {
+                            id: bookSelectionOverlay
                             anchors.fill: parent
                             color: "#7f000000"
                             visible: editActionsRow.visible && !bookItem.selected
                         }
                         
                         Image {
+                            id: bookSelectedIcon
                             anchors.centerIn: parent
                             width: mainArchive.mediumIconSize
                             height: width
@@ -243,21 +164,10 @@ Item {
                             visible: editActionsRow.visible
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                         }
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                if (editActionsRow.visible) {
-                                    bookItem.selected = !bookItem.selected
-                                } else {
-                                    archiveView.openBook(modelData)
-                                }
-                            }
-                        }
                     }
                     
                     Rectangle {
-                        id: iconLabel
+                        id: bookHeader
                         anchors {
                             top: parent.top
                             left: parent.left
@@ -394,6 +304,7 @@ Item {
 
 
     Rectangle {
+        id: dialogBackgroundOverlay
         width: rootItem.width
         height: rootItem.height
         x: - (viewRoot.x + mainArchive.x)
