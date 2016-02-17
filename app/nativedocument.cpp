@@ -71,6 +71,7 @@ void NativeDocument::setTemplate(QString backgroundTemplate)
 
     m_templates[currentIndex()] = backgroundTemplate;
     setCurrentBackground(s_templateLoader.templates[backgroundTemplate]);
+    m_defaultTemplate = backgroundTemplate;
 
     emit templateChanged();
 }

@@ -307,7 +307,6 @@ Item {
         }
     }
 
-
     Dialog {
         id: deleteDialog
         property string documentPath
