@@ -2,7 +2,7 @@ import QtQuick 2.0
 import com.magmacompany 1.0
 
 Item {
-    id: mainArchive
+    id: archiveMain
     visible: archiveView.currentBook === ""
     
     property int currentPage: 0
@@ -18,12 +18,19 @@ Item {
         selectedBooks = []
     }
 
+    function deleteBooks() {
+        if (selectedBooks.count === 0) {
+            return
+        }
+        deleteDialog.show("Are you sure you want to delete these books?")
+    }
+
     function deleteBook(path) {
         if (path === "") {
             return
         }
 
-        deleteDialog.documentPath = path
+        selectedBooks = [path]
         deleteDialog.show("Are you sure you want to delete " + Collection.title(deleteDialog.documentPath) + "?")
     }
 
@@ -44,7 +51,7 @@ Item {
         property int pageItemCount: columns * rows
         
         function reloadDocuments() {
-            documentRepeater.model = Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, mainArchive.currentPage * mainArchiveGrid.pageItemCount)
+            documentRepeater.model = Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, archiveMain.currentPage * mainArchiveGrid.pageItemCount)
         }
 
         Component.onCompleted: reloadDocuments()
@@ -61,7 +68,7 @@ Item {
                 id: bookItem
                 width: 320
                 height: 400
-                property bool selected: (mainArchive.selectedBooks.indexOf(modelData) !== -1)
+                property bool selected: (archiveMain.selectedBooks.indexOf(modelData) !== -1)
                 
                 Repeater {
                     id: bgPageRepeater
@@ -69,8 +76,8 @@ Item {
                     property int spacing: Math.max(20 / count, 3)
                     Rectangle {
                         border.width: 1
-                        width: mainArchive.documentPreviewWidth
-                        height: mainArchive.documentPreviewHeight
+                        width: archiveMain.documentPreviewWidth
+                        height: archiveMain.documentPreviewHeight
                         x: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
                         y: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
                     }
@@ -81,8 +88,8 @@ Item {
                         top: parent.top
                         left: parent.left
                     }
-                    width: mainArchive.documentPreviewWidth + 2
-                    height: mainArchive.documentPreviewHeight + 2
+                    width: archiveMain.documentPreviewWidth + 2
+                    height: archiveMain.documentPreviewHeight + 2
 
                     border.width: 1
 
@@ -93,8 +100,8 @@ Item {
                             centerIn: parent
                         }
                         asynchronous: true
-                        width: mainArchive.documentPreviewWidth
-                        height: mainArchive.documentPreviewHeight
+                        width: archiveMain.documentPreviewWidth
+                        height: archiveMain.documentPreviewHeight
                         sourceSize.width: width
                         sourceSize.height: height
                         
@@ -103,14 +110,14 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (mainArchive.selectionModeActive) {
-                                    var selectedBooks = mainArchive.selectedBooks
+                                if (archiveMain.selectionModeActive) {
+                                    var selectedBooks = archiveMain.selectedBooks
                                     if (bookItem.selected) {
                                         selectedBooks.splice(selectedBooks.indexOf(modelData), 1)
                                     } else {
                                         selectedBooks.push(modelData)
                                     }
-                                    mainArchive.selectedBooks = selectedBooks
+                                    archiveMain.selectedBooks = selectedBooks
                                 } else {
                                     archiveView.openBook(modelData)
                                 }
@@ -123,7 +130,7 @@ Item {
                                 bottom: parent.bottom
                                 right: parent.right
                             }
-                            visible: !mainArchive.selectionModeActive
+                            visible: !archiveMain.selectionModeActive
                             icon: "qrc:///icons/forward_white.svg"
                             onClicked: archiveView.currentBook = modelData
                         }
@@ -142,7 +149,7 @@ Item {
 
                             ArchiveButton {
                                 icon: "qrc:///icons/Delete_white.svg"
-                                onClicked: mainArchive.deleteBook(modelData)
+                                onClicked: archiveMain.deleteBook(modelData)
                             }
                         }
 
@@ -153,7 +160,7 @@ Item {
                                 left: parent.left
                             }
 
-                            visible: !mainArchive.selectionModeActive
+                            visible: !archiveMain.selectionModeActive
 
                             onVisibleChanged: {
                                 if (!visible) {
@@ -169,18 +176,18 @@ Item {
                             id: bookSelectionOverlay
                             anchors.fill: parent
                             color: "#7f000000"
-                            visible: mainArchive.selectionModeActive && !bookItem.selected
+                            visible: archiveMain.selectionModeActive && !bookItem.selected
                         }
                         
                         Image {
                             id: bookSelectedIcon
                             anchors.centerIn: parent
-                            width: mainArchive.mediumIconSize
+                            width: archiveMain.mediumIconSize
                             height: width
 
                             sourceSize.width: width
                             sourceSize.height: width
-                            visible: mainArchive.selectionModeActive
+                            visible: archiveMain.selectionModeActive
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                         }
                     }
@@ -257,7 +264,7 @@ Item {
                 width: 20
                 height: width
                 radius: 2
-                color: mainArchive.currentPage === index ? "black" : "gray"
+                color: archiveMain.currentPage === index ? "black" : "gray"
             }
         }
     }
@@ -269,9 +276,9 @@ Item {
             margins: 50
         }
 
-        visible: mainArchive.currentPage < pageRowRepeater.count - 1
+        visible: archiveMain.currentPage < pageRowRepeater.count - 1
         icon: "qrc:///icons/forward_white.svg"
-        onClicked: mainArchive.currentPage++
+        onClicked: archiveMain.currentPage++
     }
     
     ArchiveButton {
@@ -280,17 +287,23 @@ Item {
             bottom: parent.bottom
             margins: 50
         }
-        visible: mainArchive.currentPage > 0
+        visible: archiveMain.currentPage > 0
         icon: "qrc:///icons/back_white.svg"
-        onClicked: mainArchive.currentPage--
+        onClicked: archiveMain.currentPage--
     }
 
     Dialog {
         id: deleteDialog
-        property string documentPath
         onAccepted: {
-            Collection.deleteDocument(deleteDialog.documentPath)
-            deleteDialog.documentPath = ""
+            for (var i=0; i<archiveMain.selectedBooks.count; i++) {
+                Collection.deleteDocument(archiveMain.selectedBooks[i])
+            }
+
+            archiveMain.selectedBooks = []
+
+
+
+            editActionsRow.visible = false
         }
     }
 }

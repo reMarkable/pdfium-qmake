@@ -5,8 +5,8 @@ Rectangle {
     id: dialog
     width: rootItem.width
     height: rootItem.height
-    x: - (viewRoot.x + mainArchive.x)
-    y: - (viewRoot.y + mainArchive.y)
+    x: - (viewRoot.x + parent.x)
+    y: - (viewRoot.y + parent.y)
     visible: false
 
     function show(question) {
@@ -18,6 +18,16 @@ Rectangle {
     signal accepted
     
     color: "#7f000000"
+
+    function dismiss() {
+        dialog.question = ""
+        dialog.visible = false
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: dialog.dismiss()
+    }
     
     Rectangle {
         id: dialogContent
@@ -82,8 +92,7 @@ Rectangle {
                     enabled: dialogContent.visible
                     anchors.fill: parent
                     onClicked: {
-                        dialog.question = ""
-                        dialog.visible = false
+                        dialog.dismiss()
                     }
                 }
             }

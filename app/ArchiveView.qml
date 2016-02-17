@@ -139,16 +139,14 @@ Rectangle {
             }
         }
 
-        Item {
-            height: 75
-            width: height
-            Image {
-                anchors {
-                    fill: parent
-                    margins: 10
-                }
 
-                source: "qrc:///icons/Delete_white.svg"
+        ArchiveButton {
+            color: "#666"
+            icon: "qrc:///icons/Delete_white.svg"
+            onClicked: {
+                if (mainArchive.visible) {
+                    mainArchive.deleteBooks()
+                }
             }
         }
         Item {
