@@ -13,7 +13,12 @@ Item {
     property int documentPreviewWidth: 300
 
     function deleteBook(path) {
+        if (path === "") {
+            return
+        }
+
         deleteDialog.documentPath = path
+        deleteDialog.show("Are you sure you want to delete " + Collection.title(deleteDialog.documentPath) + "?")
     }
     
     Grid {
@@ -303,86 +308,12 @@ Item {
     }
 
 
-    Rectangle {
-        id: dialogBackgroundOverlay
-        width: rootItem.width
-        height: rootItem.height
-        x: - (viewRoot.x + mainArchive.x)
-        y: - (viewRoot.y + mainArchive.y)
-        visible: deleteDialog.documentPath !== ""
-
-        color: "#7f000000"
-
-        Rectangle {
-            id: deleteDialog
-            anchors.centerIn: parent
-            width: 750
-            height: 400
-            border.width: 5
-            radius: 10
-            color: "white"
-
-            property string documentPath: ""
-
-            Text {
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    margins: 75
-                    bottom: parent.verticalCenter
-                }
-
-                text: "Are you sure you want to delete " + Collection.title(deleteDialog.documentPath) + "?"
-                font.pointSize: 18
-                wrapMode: Text.Wrap
-            }
-
-            Item {
-                anchors {
-                    right: parent.horizontalCenter
-                    left: parent.left
-                    bottom: parent.bottom
-                    top: parent.verticalCenter
-                }
-
-                Image {
-                    anchors.centerIn: parent
-                    source: "qrc:/icons/yes.svg"
-                    height: 100
-                    width: height
-                    MouseArea {
-                        enabled: deleteDialog.visible
-                        anchors.fill: parent
-                        onClicked: {
-                            Collection.deleteDocument(deleteDialog.documentPath)
-                            deleteDialog.documentPath = ""
-                        }
-                    }
-                }
-            }
-
-            Item {
-                anchors {
-                    left: parent.horizontalCenter
-                    right: parent.right
-                    bottom: parent.bottom
-                    top: parent.verticalCenter
-                }
-
-                Image {
-                    anchors.centerIn: parent
-                    source: "qrc:/icons/no.svg"
-                    height: 100
-                    width: height
-                    MouseArea {
-                        enabled: deleteDialog.visible
-                        anchors.fill: parent
-                        onClicked: {
-                            deleteDialog.documentPath = ""
-                        }
-                    }
-                }
-            }
+    Dialog {
+        id: deleteDialog
+        property string documentPath
+        onAccepted: {
+            Collection.deleteDocument(deleteDialog.documentPath)
+            deleteDialog.documentPath = ""
         }
     }
 }

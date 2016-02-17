@@ -92,5 +92,6 @@
         <file>ThumbnailGrid.qml</file>
         <file>ToolBox.qml</file>
         <file>ArchiveButton.qml</file>
+        <file>Dialog.qml</file>
     </qresource>
 </RCC>
