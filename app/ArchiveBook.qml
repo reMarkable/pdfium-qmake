@@ -36,31 +36,6 @@ Item {
                 width: 320
                 height: 450
                 property bool selected: false
-
-                Rectangle {
-                    anchors {
-                        top: parent.top
-                        left: parent.left
-                        right: parent.right
-                        rightMargin: index % 2 == 0 ? -10 : 20
-                    }
-                    height: 150
-                    radius: 5
-                    color: "gray"
-
-                    Text {
-                        anchors {
-                            top: parent.top
-                            topMargin: 5
-                            left: parent.left
-                            leftMargin: 10
-                        }
-                        visible: index % 2 == 0
-
-                        text: "Header lol"
-                        color: "white"
-                    }
-                }
                 
                 Rectangle {
                     anchors {
