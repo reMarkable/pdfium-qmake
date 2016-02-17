@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     document.cpp \
     pdfdocument.cpp \
     imagedocument.cpp \
-    nativedocument.cpp
+    nativedocument.cpp \
+    messagehandler.cpp
 
 RESOURCES += qml.qrc
 
@@ -39,7 +40,8 @@ HEADERS += \
     imagedocument.h \
     penpoint.h \
     debug.h \
-    nativedocument.h
+    nativedocument.h \
+    messagehandler.h
 
 contains(QT_ARCH, arm) {
    CONFIG += android_app
