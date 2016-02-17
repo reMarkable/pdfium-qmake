@@ -11,6 +11,7 @@
 #include "systemmonitor.h"
 #include "collection.h"
 #include "settings.h"
+#include "messagehandler.h"
 
 #ifdef Q_PROCESSOR_ARM
 #include "digitizer.h"
@@ -62,6 +63,8 @@ static void s_crashHandler(int sig)
 
 int main(int argc, char *argv[])
 {
+    //MessageHandler::enableDebugOutput(false);
+
 #ifdef Q_PROCESSOR_ARM
     qDebug() << "we're running on an epaper device";
     QCoreApplication::addLibraryPath("/data/lib/");
@@ -69,9 +72,6 @@ int main(int argc, char *argv[])
     qputenv("QT_QPA_PLATFORM", "minimal:enable_fonts");
     qputenv("QT_QPA_FONTDIR", "/data/fonts/");
     qputenv("QT_QPA_EVDEV_KEYBOARD_PARAMETERS", "/dev/input/event0");
-    qputenv("QT_MESSAGE_PATTERN", "%{function}: %{message}");
-#else
-    qputenv("QT_MESSAGE_PATTERN", "\033[34m%{function}\033[0m: %{message}");
 #endif
 
     QApplication app(argc, argv);
