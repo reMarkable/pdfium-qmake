@@ -20,7 +20,7 @@ Item {
     }
 
     function deleteBooks() {
-        if (selectedBooks.count === 0) {
+        if (selectedBooks.length === 0) {
             return
         }
         deleteDialog.show("Are you sure you want to delete these books?")
@@ -52,6 +52,7 @@ Item {
         property int pageItemCount: columns * rows
         
         function reloadDocuments() {
+            pageRowRepeater.reloadModel()
             documentRepeater.model = Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, archiveMain.currentPage * mainArchiveGrid.pageItemCount)
         }
 
@@ -214,12 +215,26 @@ Item {
         
         Repeater {
             id: pageRowRepeater
-            model: Math.ceil(Collection.localDocumentCount() / mainArchiveGrid.pageItemCount)
+            function reloadModel() {
+                model = Collection.localDocumentCount() > mainArchiveGrid.pageItemCount ? Math.ceil(Collection.localDocumentCount() / mainArchiveGrid.pageItemCount) : 0
+            }
+
+            onCountChanged: {
+                if (archiveMain.currentPage >= count) {
+                    archiveMain.currentPage = count
+                }
+            }
+
             delegate: Rectangle {
-                width: 20
+                width: 40
                 height: width
                 radius: 2
                 color: archiveMain.currentPage === index ? "black" : "gray"
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: archiveMain.currentPage = index
+                }
             }
         }
     }
@@ -252,11 +267,12 @@ Item {
     Dialog {
         id: deleteDialog
         onAccepted: {
-            for (var i=0; i<archiveMain.selectedBooks.count; i++) {
+            for (var i=0; i<archiveMain.selectedBooks.length; i++) {
                 Collection.deleteDocument(archiveMain.selectedBooks[i])
             }
 
             archiveMain.selectionModeActive = false
+            mainArchiveGrid.reloadDocuments()
         }
     }
 }
