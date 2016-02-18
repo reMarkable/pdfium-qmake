@@ -76,12 +76,12 @@ void NativeDocument::setTemplate(QString backgroundTemplate)
     emit templateChanged();
 }
 
-QStringList NativeDocument::availableTemplates()
+QStringList NativeDocument::availableTemplates() const
 {
     return s_templateLoader.templates.keys();
 }
 
-QString NativeDocument::currentTemplate()
+QString NativeDocument::currentTemplate() const
 {
     if (!m_templates.contains(currentIndex())) {
         return m_defaultTemplate;

@@ -78,19 +78,6 @@ Rectangle {
 
         document: noteTab.document
         drawingArea: drawingArea
-
-        buttons: [
-            "Pen",
-            "Clear",
-            "Undo",
-            "Redo",
-            "Focus",
-            "TemplateSelect",
-            "NewPage",
-            "Forward",
-            "Back",
-            "Index"
-        ]
     }
 
     Column {
@@ -134,7 +121,7 @@ Rectangle {
 
         Rectangle {
             width: 64
-            height: 500
+            height: 100
             border.width: 4
             radius: 5
 

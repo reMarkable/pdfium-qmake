@@ -62,8 +62,7 @@ Item {
                 topMargin: 100
             }
 
-            buttons: ["Pen", "Clear", "Undo", "Redo", "Focus", "Index"]
-            document: noteTab.document
+            document: documentTab.document
             drawingArea: drawingArea
         }
     }

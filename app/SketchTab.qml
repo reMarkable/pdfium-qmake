@@ -38,7 +38,6 @@ Rectangle {
             topMargin: 100
         }
 
-        buttons: ["Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus"]
         document: sketchTab.document
         drawingArea: drawingArea
     }
@@ -84,7 +83,7 @@ Rectangle {
 
         Rectangle {
             width: 64
-            height: 400
+            height: 100
             border.width: 4
             radius: 5
 

@@ -50,11 +50,7 @@ Window {
                     createdObject = documentComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.documentPath = path
                 } else {
-                    if (name.lastIndexOf("Sketch", 0) === 0) {
-                        createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    } else {
-                        createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    }
+                    createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.documentPath = path
 
                     createdObject.document = Collection.getDocument(path)
@@ -197,7 +193,7 @@ Window {
                     }
 
                     var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = sketchComponent.createObject(viewRoot, {"tabIndex": newIndex})
+                    var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
                     createdObject.document = Collection.createDocument("Sketch")
                     var objectList = tabBar.objectList
                     objectList.push(createdObject)

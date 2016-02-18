@@ -14,16 +14,16 @@ public:
     ~NativeDocument();
 
 public slots:
-    void setTemplate(QString backgroundTemplate);
-    static QStringList availableTemplates();
-    QString currentTemplate();
+    void setTemplate(QString backgroundTemplate) override;
+    QStringList availableTemplates() const override;
+    QString currentTemplate() const override;
     void addPage();
 
 signals:
     void templateChanged();
 
 protected slots:
-    QImage loadOriginalPage(int index, QSize dimensions);
+    QImage loadOriginalPage(int index, QSize dimensions) override;
 
 private:
     QHash<int, QString> m_templates;

@@ -26,14 +26,27 @@ Column {
         "Index": indexComponent
     }
 
-    property var buttons: []
+    //property var buttons: []
     property QtObject document
     property QtObject drawingArea
+    property string currentTemplate: (document === undefined || document === null) ? "" : document.currentTemplate
 
-    Component.onCompleted: buttonRepeater.model = buttons
+    onCurrentTemplateChanged: {
+        if (!document) {
+            return
+        }
+
+        if (currentTemplate === "Sketch") {
+            buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus", "Forward", "Back", "Index", "TemplateSelect", "NewPage" ]
+        } else if (currentTemplate === "Document") {
+            buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index" ]
+        } else {
+            buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Forward", "Back", "Index", "TemplateSelect", "NewPage" ]
+        }
+    }
+
     Repeater {
         id: buttonRepeater
-//        model: buttons
 
         delegate: Loader {
             sourceComponent: toolBox.availableButtons[modelData]

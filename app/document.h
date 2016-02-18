@@ -17,6 +17,7 @@ class Document : public QObject
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
 
+
 public:
     explicit Document(QString path, QObject *parent = 0);
     virtual ~Document();
@@ -39,8 +40,12 @@ public slots:
     /// We should clear our cache
     void clearCache();
 
-    int currentIndex() { return m_currentIndex; }
+    int currentIndex() const { return m_currentIndex; }
     QString path() { return m_path; }
+
+    virtual void setTemplate(QString backgroundTemplate) = 0;
+    virtual QStringList availableTemplates() const = 0;
+    virtual QString currentTemplate() const = 0;
 
 signals:
     void currentIndexChanged();
@@ -48,6 +53,7 @@ signals:
     void backgroundChanged();
     void pageRequested(int index);
     void storingRequested(QImage image, int index);
+    void templateChanged();
 
 protected slots:
     virtual QImage loadOriginalPage(int index, QSize dimensions) = 0;
