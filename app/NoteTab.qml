@@ -151,56 +151,12 @@ Rectangle {
     }
 
 
-    Item {
+    DocumentPositionBar {
         id: positionBar
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-            rightMargin: 100
-            left: parent.left
-            leftMargin: 100
-        }
 
-
-        height: 7
-
-        Rectangle {
-            anchors.fill: parent
-            color: "#999"
-            radius: 2
-
-            visible: noteTab.pageCount >= 100
-
-            Rectangle {
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    bottom: parent.bottom
-                }
-                width: noteTab.pageCount > 0 ? parent.width * (noteTab.currentPage / noteTab.pageCount) : 0
-                color: "#333"
-                radius: 2
-            }
-        }
-
-        Row {
-            id: positionRow
-            anchors.centerIn: parent
-            spacing: 2
-
-            visible: noteTab.pageCount < 100
-
-            Repeater {
-                id: positionRepeater
-                model: visible ? noteTab.pageCount : 0
-                delegate: Rectangle {
-                    height: positionBar.height
-                    width: Math.min(positionBar.width / positionRepeater.count - positionRow.spacing, 50)
-                    color: noteTab.currentPage < index ? "#999" : "#333"
-                    radius: 2
-                }
-            }
-        }
+        pageCount: noteTab.pageCount
+        currentPage: noteTab.currentPage
+        document: noteTab.document
     }
 
     ThumbnailGrid {

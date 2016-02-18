@@ -75,55 +75,11 @@ Item {
         pageCount: documentTab.pageCount
     }
 
-    Item {
+    DocumentPositionBar {
         id: positionBar
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-            rightMargin: 100
-            left: parent.left
-            leftMargin: 100
-        }
 
-
-        height: 7
-
-        Rectangle {
-            anchors.fill: parent
-            color: "#999"
-            radius: 2
-
-            visible: documentTab.pageCount >= 100
-
-            Rectangle {
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    bottom: parent.bottom
-                }
-                width: documentTab.pageCount > 0 ? parent.width * (documentTab.currentPage / documentTab.pageCount) : 0
-                color: "#333"
-                radius: 2
-            }
-        }
-
-        Row {
-            id: positionRow
-            anchors.centerIn: parent
-            spacing: 2
-
-            visible: documentTab.pageCount < 100
-
-            Repeater {
-                id: positionRepeater
-                model: visible ? documentTab.pageCount : 0
-                delegate: Rectangle {
-                    height: positionBar.height
-                    width: Math.min(positionBar.width / positionRepeater.count - positionRow.spacing, 50)
-                    color: documentTab.currentPage < index ? "#999" : "#333"
-                    radius: 2
-                }
-            }
-        }
+        pageCount: documentTab.pageCount
+        currentPage: documentTab.currentPage
+        document: documentTab.document
     }
 }

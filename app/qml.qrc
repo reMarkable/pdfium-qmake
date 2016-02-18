@@ -92,5 +92,6 @@
         <file>ArchiveButton.qml</file>
         <file>Dialog.qml</file>
         <file>icons/Template.svg</file>
+        <file>DocumentPositionBar.qml</file>
     </qresource>
 </RCC>
