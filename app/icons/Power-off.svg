@@ -3,11 +3,11 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 500 500" style="enable-background:new 0 0 500 500;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:none;stroke:#000000;stroke-width:25;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+	.st0{fill:none;stroke:#000000;stroke-width:40;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
 </style>
 <g>
-	<path class="st0" d="M313.4,99.3c79.6,25.2,134.8,98.7,134.8,185.6C448.3,392.6,359.5,480,250,480c-109.5,0-198.3-87.4-198.3-195.1
-		c0-86.9,55.2-160.4,134.8-185.6"/>
-	<line class="st0" x1="250" y1="20" x2="250" y2="178.6"/>
+	<path class="st0" d="M312,102.6c77.9,24.7,131.9,96.6,131.9,181.6C444,389.5,357.1,475,250,475S56,389.5,56,284.1
+		c0-85,54-156.9,131.9-181.6"/>
+	<line class="st0" x1="250" y1="25" x2="250" y2="180.2"/>
 </g>
 </svg>
