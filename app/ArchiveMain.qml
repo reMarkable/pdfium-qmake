@@ -233,6 +233,7 @@ Item {
 
         visible: archiveMain.currentPage < pageRowRepeater.count - 1
         icon: "qrc:///icons/forward_white.svg"
+        color: "#666"
         onClicked: archiveMain.currentPage++
     }
     
@@ -244,6 +245,7 @@ Item {
         }
         visible: archiveMain.currentPage > 0
         icon: "qrc:///icons/back_white.svg"
+        color: "#666"
         onClicked: archiveMain.currentPage--
     }
 
