@@ -47,16 +47,12 @@ void MessageHandler::messageHandler(QtMsgType type, const QMessageLogContext &co
         s_messageHandler.logFile.write(text.toUtf8() + '\n');
     }
 
-    if (type == QtDebugMsg) {
-        if (s_messageHandler.debugEnabled) {
-            std::cout << msg.toStdString() << std::endl;
-        }
-
+    if (type == QtDebugMsg && !s_messageHandler.debugEnabled) {
         return;
     }
 
     { // Print to stdout
-        QString text(QStringLiteral("%1%2\033[0m: %3 (%4:%5, %6)").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function));
+        QString text(QStringLiteral("%1%2\033[01;37m : %3 \033[00;37m (%4:%5, %6)\033[0m").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function));
         std::cout << text.toStdString() << std::endl;
     }
 }
