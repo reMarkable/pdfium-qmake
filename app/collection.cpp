@@ -163,8 +163,7 @@ int Collection::localDocumentCount()
 {
     DEBUG_BLOCK;
 
-    QDir dir(collectionPath() + "/Local/");
-    return dir.entryList(QDir::Dirs).count();
+    return m_recentlyUsedPaths.count();
 }
 
 QStringList Collection::recentlyImportedPaths(int count) const
