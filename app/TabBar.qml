@@ -203,6 +203,7 @@ Rectangle {
         }
         height: 40
         width: height
+        visible: false
 
         MouseArea {
             anchors.fill: parent
