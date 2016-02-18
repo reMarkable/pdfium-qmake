@@ -105,7 +105,7 @@ Rectangle {
                 color: "white"
                 property int pageNumber: modelData + thumbnailGrid.currentThumbnailPage * thumbnailGrid.maxDisplayItems
                 border.color: "black"
-                border.width: thumbnailGrid.currentPage === pageNumber ? 8 : 2
+                border.width: thumbnailGrid.currentThumbnailPage === pageNumber ? 8 : 0
                 
                 Image {
                     anchors.fill: parent
@@ -135,7 +135,6 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.log(thumbnailDelegate.pageNumber)
                         document.currentIndex = thumbnailDelegate.pageNumber
                         thumbnailGrid.visible = false
                     }
