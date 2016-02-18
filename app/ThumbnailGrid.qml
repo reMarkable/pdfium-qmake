@@ -119,8 +119,8 @@ Rectangle {
                             top: parent.top
                             right: parent.right
                         }
-                        width: 75
-                        height: 75
+                        width: 50
+                        height: 50
                         color: "#a0000000"
                         radius: 5
                         
