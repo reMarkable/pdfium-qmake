@@ -132,7 +132,7 @@ Item {
                                 right: parent.right
                             }
                             visible: !archiveMain.selectionModeActive
-                            icon: "qrc:///icons/forward_white.svg"
+                            icon: "qrc:///icons/Open-book_white.svg"
                             onClicked: archiveView.currentBook = modelData
                         }
 
