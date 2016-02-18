@@ -148,16 +148,6 @@ Window {
             }
         }
 
-        Component {
-            id: sketchComponent
-
-            SketchTab {
-                visible: tabBar.currentTab === tabIndex
-                anchors.fill: parent
-                property int tabIndex
-            }
-        }
-
         Item {
             id: viewRoot
 

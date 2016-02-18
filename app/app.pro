@@ -55,7 +55,6 @@ OTHER_FILES += \
     MainScreenHeader.qml \
     MainScreen.qml \
     NoteTab.qml \
-    SketchTab.qml \
     TabBar.qml \
     ThumbnailGrid.qml \
     ToolBox.qml \

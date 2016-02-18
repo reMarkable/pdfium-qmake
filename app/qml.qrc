@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>dragon.png</file>
-        <file>SketchTab.qml</file>
         <file>MainScreen.qml</file>
         <file>NoteTab.qml</file>
         <file>DocumentTab.qml</file>
