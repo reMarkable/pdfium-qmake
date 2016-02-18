@@ -14,25 +14,49 @@ Item {
 
     property var selectedPages: []
 
+    property int currentPage: 0
+    property int pageCount: 0
+
+    property int maxDisplayItems: 9
+
     onVisibleChanged: {
         if (!visible) {
             document = null
+            pageCount = 0
             pageRepeater.model = 0
         } else {
             document = Collection.getDocument(archiveView.currentBook)
             document.preload()
-            pageRepeater.model = Math.min(document.pageCount, 9)
+            pageCount = Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns))
+            currentPage = 0
+            pageRepeater.model = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
         }
     }
 
+    onCurrentPageChanged: {
+        if (!document) {
+            return
+        }
+        var visiblePages = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
+        if (visiblePages != pageRepeater.count) {
+            pageRepeater.model = visiblePages
+        }
+    }
 
     function deletePages() {
-        if (selectedPages.count === 0) {
+        if (selectedPages.length === 0) {
             return
         }
 
-        if (selectedPages.count > 1) {
-            deleteDialog.show("Are you sure you want to delete pages " + selectedPages.join(", ") + "?")
+        if (selectedPages.length > 5) {
+            deleteDialog.show("Are you sure you want to delete these pages?")
+        } else if (selectedPages.length > 1) {
+            var pageNumbers = []
+            for (var pageNumber in selectedPages) {
+                pageNumbers.push(selectedPages[pageNumber] + 1)
+            }
+
+            deleteDialog.show("Are you sure you want to delete pages " + pageNumbers.join(", ") + "?")
         } else {
             deleteDialog.show("Are you sure you want to delete page " + selectedPages[0] + "?")
         }
@@ -49,6 +73,7 @@ Item {
     }
     
     Grid {
+        id: thumbnailGrid
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -64,9 +89,10 @@ Item {
             delegate: Item {
                 id: bookItem
                 width: 320
-                height: 450
-                property bool selected: (archiveBook.selectedPages.indexOf(modelData) !== -1)
-                
+                height: 400
+                property int pageNumber: index + archiveBook.currentPage * archiveBook.maxDisplayItems
+                property bool selected: (archiveBook.selectedPages.indexOf(pageNumber) !== -1)
+
                 Rectangle {
                     anchors {
                         fill: parent
@@ -85,7 +111,7 @@ Item {
                         }
                         asynchronous: true
                         
-                        source: "file://" + archiveView.currentBook + "-" + index + ".thumbnail.jpg"
+                        source: "file://" + archiveView.currentBook + "-" + bookItem.pageNumber + ".thumbnail.jpg"
                         sourceSize.width: width
                         sourceSize.height: height
                         
@@ -109,16 +135,17 @@ Item {
                             anchors.fill: parent
                             onClicked: {
                                 if (!archiveBook.selectionModeActive) {
-                                    archiveView.openBookAt(archiveView.currentBook, index)
+                                    archiveView.openBookAt(archiveView.currentBook, bookItem.pageNumber)
                                     return
                                 }
 
                                 var selectedPages = archiveBook.selectedPages
                                 if (bookItem.selected) {
-                                    selectedPages.splice(selectedPages.indexOf(index), 1)
+                                    selectedPages.splice(selectedPages.indexOf(bookItem.pageNumber), 1)
                                 } else {
-                                    selectedPages.push(index)
+                                    selectedPages.push(bookItem.pageNumber)
                                 }
+                                console.log(selectedPages)
                                 archiveBook.selectedPages = selectedPages
                             }
                         }
@@ -137,7 +164,7 @@ Item {
                         
                         Text {
                             anchors.centerIn: parent
-                            text: (index + 1)
+                            text: (bookItem.pageNumber + 1)
                         }
                     }
                     
@@ -151,7 +178,7 @@ Item {
                         visible: !archiveBook.selectionModeActive
 
                         onClicked: {
-                            previewBackground.index = index
+                            previewBackground.index = pageNumber
                             previewBackground.visible = true
                         }
                     }
@@ -166,12 +193,60 @@ Item {
                         visible: !archiveBook.selectionModeActive
                         
                         icon: "qrc:///icons/Delete_white.svg"
-                        onClicked: archiveBook.deletePage(index)
+                        onClicked: archiveBook.deletePage(pageNumber)
                     }
                 }
             }
         }
     }
+
+    ArchiveButton {
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+            margins: 50
+        }
+
+        visible: archiveBook.currentPage < pageRowRepeater.count - 1
+        icon: "qrc:///icons/forward_white.svg"
+        color: "#666"
+        onClicked: archiveBook.currentPage++
+    }
+
+    ArchiveButton {
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+            margins: 50
+        }
+        visible: archiveBook.currentPage > 0
+        icon: "qrc:///icons/back_white.svg"
+        color: "#666"
+        onClicked: archiveBook.currentPage--
+    }
+
+    Row {
+        id: pageRow
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 80
+            horizontalCenter: parent.horizontalCenter
+        }
+
+        spacing: 10
+
+        Repeater {
+            id: pageRowRepeater
+            model: archiveBook.pageCount
+            delegate: Rectangle {
+                width: 20
+                height: width
+                radius: 2
+                color: archiveBook.currentPage === index ? "black" : "gray"
+            }
+        }
+    }
+
 
 
     Rectangle {
@@ -249,8 +324,8 @@ Item {
     Dialog {
         id: deleteDialog
         onAccepted: {
-            for (var i=0; i<archiveBook.selectedPages.count; i++) {
-                console.log(archiveBook.selectedPAges[i])
+            for (var i=0; i<archiveBook.selectedPages.length; i++) {
+                console.log(archiveBook.selectedPages[i])
                 //Collection.deleteDocument(archiveMain.selectedBooks[i])
             }
             archiveBook.selectionModeActive = false
