@@ -88,10 +88,10 @@
         <file>icons/xoom+_white.svg</file>
         <file>icons/Lock_small_white.svg</file>
         <file>icons/Open-book_white.svg</file>
-        <file>icons/page-type.png</file>
         <file>ThumbnailGrid.qml</file>
         <file>ToolBox.qml</file>
         <file>ArchiveButton.qml</file>
         <file>Dialog.qml</file>
+        <file>icons/Template.svg</file>
     </qresource>
 </RCC>

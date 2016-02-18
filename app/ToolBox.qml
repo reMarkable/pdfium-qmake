@@ -188,20 +188,10 @@ Column {
 
         ToolButton {
             id: templateSelectIcon
-            icon: "qrc:/icons/page-type.png"
+            icon: "qrc:/icons/Template.svg"
             onClicked: {
                 templateSelectRow.visible = !templateSelectRow.visible
             }
-
-            Image {
-                anchors.bottom: parent.bottom
-                anchors.right: parent.right
-                anchors.margins: 8
-                width: 24
-                height: width
-                source: "qrc:/icons/forward.svg"
-            }
-
 
             Row {
                 id: templateSelectRow
