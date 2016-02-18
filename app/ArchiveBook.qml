@@ -239,10 +239,15 @@ Item {
             id: pageRowRepeater
             model: archiveBook.pageCount
             delegate: Rectangle {
-                width: 20
+                width: 40
                 height: width
                 radius: 2
                 color: archiveBook.currentPage === index ? "black" : "gray"
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: archiveBook.currentPage = index
+                }
             }
         }
     }
