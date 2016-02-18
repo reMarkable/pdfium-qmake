@@ -136,43 +136,6 @@ Item {
                             onClicked: archiveView.currentBook = modelData
                         }
 
-                        Grid {
-                            id: toolGrid
-                            anchors {
-                                left: parent.left
-                                bottom: moreButton.top
-                                bottomMargin: 1
-                            }
-                            rows: 2
-                            columns: 2
-                            spacing: 1
-                            visible: false
-
-                            ArchiveButton {
-                                icon: "qrc:///icons/Delete_white.svg"
-                                onClicked: archiveMain.deleteBook(modelData)
-                            }
-                        }
-
-                        ArchiveButton {
-                            id: moreButton
-                            anchors {
-                                bottom: parent.bottom
-                                left: parent.left
-                            }
-
-                            visible: !archiveMain.selectionModeActive
-
-                            onVisibleChanged: {
-                                if (!visible) {
-                                    toolGrid.visible = false
-                                }
-                            }
-
-                            icon: "qrc:///icons/prikkprikkprikk_white.svg"
-                            onClicked: toolGrid.visible = !toolGrid.visible
-                        }
-                        
                         Rectangle {
                             id: bookSelectionOverlay
                             anchors.fill: parent
