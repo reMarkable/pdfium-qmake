@@ -162,11 +162,9 @@ Item {
                             top: parent.top
                             left: parent.left
                             right: parent.right
-                            rightMargin: 60
                         }
                         height: 50
                         color: "#b0ffffff"
-                        border.width: 1
                         Image {
                             anchors {
                                 top: parent.top
@@ -188,21 +186,14 @@ Item {
                                 text: Collection.title(modelData)
                             }
                         }
-                    }
-                    
-                    Rectangle {
-                        id: pageCountLabel
-                        anchors {
-                            top: parent.top
-                            right: parent.right
-                        }
-                        width: 50
-                        height: 50
-                        color: "#b0ffffff"
-                        border.width: 1
-                        
+
                         Text {
-                            anchors.centerIn: parent
+                            anchors {
+                                right: parent.right
+                                rightMargin: 10
+                                verticalCenter: parent.verticalCenter
+                            }
+
                             text: Collection.pageCount(modelData)
                         }
                     }
