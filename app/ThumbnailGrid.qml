@@ -26,7 +26,7 @@ Rectangle {
     Rectangle {
         anchors {
             top: parent.top
-            right: modeSelect.left
+            right: grid9Select.left
             topMargin: 75
             rightMargin: 10
         }
@@ -48,50 +48,40 @@ Rectangle {
         }
     }
     
-    Rectangle {
-        id: modeSelect
+    Image {
+        id: grid9Select
+        anchors {
+            top: parent.top
+            right: grid36Select.left
+            topMargin: 75
+            rightMargin: 5
+        }
+
+        height: 75
+        width: height
+        source: thumbnailGrid.maxDisplayItems === 9 ? "qrc:///icons/Grid 9.svg" : "qrc:///icons/Grid 9_white.svg"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: thumbnailGrid.maxDisplayItems = 9
+        }
+    }
+
+    Image {
+        id: grid36Select
         anchors {
             top: parent.top
             right: parent.right
             topMargin: 75
-            rightMargin: 50
+            rightMargin: 5
         }
-        
-        width: 150
         height: 75
-        color: "#7f000000"
-        radius: 5
-        
-        Image {
-            anchors {
-                top: parent.top
-                left: parent.left
-                bottom: parent.bottom
-                margins: 5
-            }
-            width: height
-            source: thumbnailGrid.maxDisplayItems === 9 ? "qrc:///icons/Grid 9.svg" : "qrc:///icons/Grid 9_white.svg"
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: thumbnailGrid.maxDisplayItems = 9
-            }
-        }
-        
-        Image {
-            anchors {
-                top: parent.top
-                right: parent.right
-                bottom: parent.bottom
-                margins: 5
-            }
-            width: height
-            source: thumbnailGrid.maxDisplayItems === 36 ? "qrc:///icons/Grid 36.svg" : "qrc:///icons/Grid 36_white.svg"
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: thumbnailGrid.maxDisplayItems = 36
-            }
+        width: height
+        source: thumbnailGrid.maxDisplayItems === 36 ? "qrc:///icons/Grid 36.svg" : "qrc:///icons/Grid 36_white.svg"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: thumbnailGrid.maxDisplayItems = 36
         }
     }
     
@@ -102,8 +92,6 @@ Rectangle {
         }
         columns: (thumbnailGrid.maxDisplayItems === 9 ) ? 3 : 6
         rows: (thumbnailGrid.maxDisplayItems === 9 ) ? 3 : 6
-        //            columns: (rootItem.rotation === 0) ? 4 : 3
-        //            rows: (rootItem.rotation === 0) ? 2 : 3
         
         spacing: (thumbnailGrid.maxDisplayItems === 9) ? 50 : 10
         
