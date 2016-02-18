@@ -43,6 +43,24 @@ HEADERS += \
     nativedocument.h \
     messagehandler.h
 
+OTHER_FILES += \
+    ArchiveBook.qml \
+    ArchiveButton.qml \
+    ArchiveMain.qml \
+    ArchiveView.qml \
+    ColorButton.qml \
+    Dialog.qml \
+    DocumentTab.qml \
+    main.qml \
+    MainScreenHeader.qml \
+    MainScreen.qml \
+    NoteTab.qml \
+    SketchTab.qml \
+    TabBar.qml \
+    ThumbnailGrid.qml \
+    ToolBox.qml \
+    ToolButton.qml
+
 contains(QT_ARCH, arm) {
    CONFIG += android_app
    QMAKE_LFLAGS_APP -= -shared
