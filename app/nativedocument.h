@@ -10,7 +10,7 @@ class NativeDocument : public Document
     Q_PROPERTY(QString currentTemplate READ currentTemplate WRITE setTemplate NOTIFY templateChanged)
 
 public:
-    NativeDocument(QString path, QString defaultTemplate = QStringLiteral("Blank"), QObject *parent = nullptr);
+    NativeDocument(QString path, QString defaultTemplate = QString(), QObject *parent = nullptr);
     ~NativeDocument();
 
 public slots:
@@ -18,6 +18,7 @@ public slots:
     QStringList availableTemplates() const override;
     QString currentTemplate() const override;
     void addPage();
+    void deletePages(QList<int> pagesToRemove) override;
 
 signals:
     void templateChanged();
@@ -26,7 +27,7 @@ protected slots:
     QImage loadOriginalPage(int index, QSize dimensions) override;
 
 private:
-    QHash<int, QString> m_templates;
+    QVector<QString> m_templates;
     QString m_defaultTemplate;
 };
 
