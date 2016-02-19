@@ -117,23 +117,6 @@ void NativeDocument::deletePages(QList<int> pagesToRemove)
 
     m_templates = newTemplates;
 
-#if 0
-    QList<int> keys = m_templates.keys();
-    qSort(keys);
-    for (int page : pages) {
-        int toRemove = page + removed;
-        m_templates.remove(toRemove);
-        keys = m_templates.keys();
-        qSort(keys);
-        removed++;
-        for (int i=toRemove; i<pageCount(); i++) {
-            m_templates[i - removed] = m_templates.take(i);
-        }
-    }
-    keys = m_templates.keys();
-    qSort(keys);
-#endif
-
     Document::deletePages(pagesToRemove);
 }
 
