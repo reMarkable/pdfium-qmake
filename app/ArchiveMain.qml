@@ -163,6 +163,7 @@ Item {
                             top: parent.top
                             left: parent.left
                             right: parent.right
+                            margins: 1
                         }
                         height: 50
                         color: "#b0ffffff"
