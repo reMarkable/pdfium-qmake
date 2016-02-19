@@ -61,7 +61,7 @@ Item {
         
         spacing: 2
         
-        visible: positionBar.pageCount < 100
+        visible: positionBar.pageCount < 100 && positionBar.pageCount > 1
         
         Repeater {
             id: positionRepeater
@@ -77,7 +77,7 @@ Item {
                         bottom: parent.bottom
                     }
                     
-                    height: 7
+                    height: positionBar.currentPage == index ? 14 : 7
                     color: positionBar.currentPage < index ? "#999" : "#333"
                     radius: 2
                 }
