@@ -62,6 +62,7 @@ MessageHandler::MessageHandler() :
     debugEnabled(true)
 {
     if (!logFile.open(QIODevice::WriteOnly)) {
+        qWarning() << "messagehandler: unable to open log.txt!";
         return;
     }
 
