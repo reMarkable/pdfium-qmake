@@ -517,6 +517,7 @@ void DrawingArea::redrawBackbuffer(QRectF part)
 void DrawingArea::onBackgroundChanged()
 {
     redrawBackbuffer();
+    m_document->setDrawnPage(m_contents);
     update();
 }
 
