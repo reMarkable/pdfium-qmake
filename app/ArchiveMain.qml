@@ -211,7 +211,7 @@ Item {
             horizontalCenter: parent.horizontalCenter
         }
         
-        spacing: 10
+        spacing: 20
         visible: pageRowRepeater.count > 1
         
         Repeater {
@@ -227,7 +227,7 @@ Item {
             }
 
             delegate: Rectangle {
-                width: 40
+                width: 30
                 height: width
                 radius: 2
                 color: archiveMain.currentPage === index ? "black" : "gray"

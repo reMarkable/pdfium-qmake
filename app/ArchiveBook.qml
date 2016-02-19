@@ -241,14 +241,14 @@ Item {
             horizontalCenter: parent.horizontalCenter
         }
 
-        spacing: 10
+        spacing: 20
         visible: pageRowRepeater.count > 1
 
         Repeater {
             id: pageRowRepeater
             model: archiveBook.pageCount
             delegate: Rectangle {
-                width: 40
+                width: 30
                 height: width
                 radius: 2
                 color: archiveBook.currentPage === index ? "black" : "gray"
