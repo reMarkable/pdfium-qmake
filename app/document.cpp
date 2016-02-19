@@ -60,6 +60,8 @@ Document::~Document()
     } else if (m_cachedBackgrounds.contains(m_currentIndex)){
         m_cachedBackgrounds[m_currentIndex].save(m_path + ".thumbnail.jpg");
     }
+
+    qDebug() << "document nuked";
 }
 
 QImage Document::background()
@@ -193,6 +195,11 @@ void Document::setPageCount(int pageCount)
 
     m_pageCount = pageCount;
     emit pageCountChanged();
+
+    if (m_currentIndex >= m_pageCount) {
+        setCurrentIndex(m_pageCount - 1);
+        qDebug() << "current index" << m_currentIndex;
+    }
 }
 
 void Document::setCurrentBackground(QImage background)
@@ -252,7 +259,7 @@ void Document::deletePages(QList<int> pagesToRemove)
 
     m_lines = newLines;
 
-    setPageCount(pagesTaken.count());
+    setPageCount(pagesTaken);
 }
 
 void Document::loadPage(int index)
