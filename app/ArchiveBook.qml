@@ -16,6 +16,7 @@ Item {
 
     property int currentPage: 0
     property int pageCount: 0
+    property int documentPageCount: document === null ? 0 : document.pageCount
 
     property int maxDisplayItems: 9
 
@@ -27,20 +28,27 @@ Item {
         } else {
             document = Collection.getDocument(archiveView.currentBook)
             document.preload()
-            pageCount = Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns))
+            pageCount = Qt.binding(function() { return Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
             currentPage = 0
             pageRepeater.model = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
         }
     }
 
-    onCurrentPageChanged: {
+    function reloadModel() {
         if (!document) {
             return
         }
         var visiblePages = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
         if (visiblePages != pageRepeater.count) {
+            pageRepeater.model = 0
             pageRepeater.model = visiblePages
         }
+    }
+
+    onDocumentPageCountChanged: reloadModel()
+
+    onCurrentPageChanged: {
+        reloadModel()
     }
 
     function deletePages() {
@@ -112,6 +120,7 @@ Item {
                         asynchronous: true
                         
                         source: "file://" + archiveView.currentBook + "-" + bookItem.pageNumber + ".thumbnail.jpg"
+                        cache: false
                         sourceSize.width: width
                         sourceSize.height: height
                         
@@ -145,7 +154,6 @@ Item {
                                 } else {
                                     selectedPages.push(bookItem.pageNumber)
                                 }
-                                console.log(selectedPages)
                                 archiveBook.selectedPages = selectedPages
                             }
                         }
@@ -329,10 +337,7 @@ Item {
     Dialog {
         id: deleteDialog
         onAccepted: {
-            for (var i=0; i<archiveBook.selectedPages.length; i++) {
-                console.log(archiveBook.selectedPages[i])
-                //Collection.deleteDocument(archiveMain.selectedBooks[i])
-            }
+            archiveBook.document.deletePages(selectedPages)
             archiveBook.selectionModeActive = false
         }
     }
