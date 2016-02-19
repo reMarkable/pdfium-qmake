@@ -3,6 +3,7 @@
 #include <QMutexLocker>
 #include <QDebug>
 #include <QFile>
+#include <QDataStream>
 
 #define CACHE_COUNT 5 // Cache up to 5 page before and after
 
@@ -37,6 +38,12 @@ Document::Document(QString path, QObject *parent)
     if (QFile::exists(cachedBackgroundPath)) {
         m_pageContents[m_currentIndex] = QImage(cachedBackgroundPath);
     }
+
+    QFile lineFile(m_path + ".lines");
+    if (lineFile.open(QIODevice::ReadOnly)) {
+        QDataStream dataStream(&lineFile);
+        dataStream >> m_lines;
+    }
 }
 
 Document::~Document()
@@ -59,6 +66,12 @@ Document::~Document()
         m_pageContents[m_currentIndex].save(m_path + ".thumbnail.jpg");
     } else if (m_cachedBackgrounds.contains(m_currentIndex)){
         m_cachedBackgrounds[m_currentIndex].save(m_path + ".thumbnail.jpg");
+    }
+
+    QFile lineFile(m_path + ".lines");
+    if (lineFile.open(QIODevice::WriteOnly)) {
+        QDataStream dataStream(&lineFile);
+        dataStream << m_lines;
     }
 
     qDebug() << "document nuked";

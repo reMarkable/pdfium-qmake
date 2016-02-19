@@ -16,7 +16,8 @@ SOURCES += main.cpp \
     pdfdocument.cpp \
     imagedocument.cpp \
     nativedocument.cpp \
-    messagehandler.cpp
+    messagehandler.cpp \
+    line.cpp
 
 RESOURCES += qml.qrc
 
