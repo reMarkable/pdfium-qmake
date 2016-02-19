@@ -141,8 +141,8 @@ int main(int argc, char *argv[])
 
 #ifdef Q_PROCESSOR_ARM
     app.exec();
-    EPFrameBuffer::instance()->clearScreen();
     QImage *fb = EPFrameBuffer::instance()->framebuffer();
+    fb->fill(Qt::white);
     QPainter painter(fb);
     QImage splashScreen("/data/shutdown.jpg");
     painter.drawImage(0, 0, splashScreen);
