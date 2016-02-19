@@ -52,7 +52,7 @@ void MessageHandler::messageHandler(QtMsgType type, const QMessageLogContext &co
     }
 
     { // Print to stdout
-        QString text(QStringLiteral("%1%2\033[01;37m : %3 \033[00;37m (%4:%5, %6)\033[0m").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function));
+        QString text(QStringLiteral("%1%2\033[01;37m:\t%3 \033[00;37m (%4:%5, %6)\033[0m").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function));
         std::cout << text.toStdString() << std::endl;
     }
 }
@@ -62,7 +62,7 @@ MessageHandler::MessageHandler() :
     debugEnabled(true)
 {
     if (!logFile.open(QIODevice::WriteOnly)) {
-        qWarning() << "messagehandler: unable to open log.txt!";
+        std::cerr << "messagehandler: unable to open log.txt!" << std::endl;
         return;
     }
 
