@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QDebug>
 
+#include <algorithm>
+
 namespace { // Local to this file
 struct TemplateLoader {
     TemplateLoader() {
@@ -26,12 +28,21 @@ NativeDocument::NativeDocument(QString documentPath, QString defaultTemplate, QO
     Document(documentPath, parent),
     m_defaultTemplate(defaultTemplate)
 {
-    if (!s_templateLoader.templates.isEmpty() && !s_templateLoader.templates.contains(defaultTemplate)) {
-        m_defaultTemplate = s_templateLoader.templates.keys().first();
+    if (s_templateLoader.templates.isEmpty()) {
+        qWarning() << "No templates available!";
+        return;
     }
+
+    if (!s_templateLoader.templates.contains(m_defaultTemplate)) {
+        m_defaultTemplate = s_templateLoader.templates.keys().first();
+        qWarning() << "setting default to" << m_defaultTemplate;
+    }
+
+    m_templates.fill(m_defaultTemplate, pageCount());
 
     QFile metadataFile(path() + ".pagedata");
     if (!metadataFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Unable to open" << metadataFile.fileName();
         return;
     }
 
@@ -50,15 +61,12 @@ NativeDocument::~NativeDocument()
 {
     QFile metadataFile(path() + ".pagedata");
     if (!metadataFile.open(QIODevice::WriteOnly)) {
+        qWarning() << "Unable to open" << metadataFile.fileName();
         return;
     }
 
-    for (int i=0; i<pageCount(); i++) {
-        if (!m_templates.contains(i)) {
-            metadataFile.write(m_defaultTemplate.toUtf8() + "\n");
-        } else {
-            metadataFile.write(m_templates.value(i).toUtf8() + "\n");
-        }
+    for(const QString &pageTemplate : m_templates) {
+        metadataFile.write(pageTemplate.toUtf8() + "\n");
     }
 }
 
@@ -83,24 +91,56 @@ QStringList NativeDocument::availableTemplates() const
 
 QString NativeDocument::currentTemplate() const
 {
-    if (!m_templates.contains(currentIndex())) {
-        return m_defaultTemplate;
-    }
-
     return m_templates.value(currentIndex());
 }
 
 void NativeDocument::addPage()
 {
-    m_templates[pageCount() - 1] = m_defaultTemplate;
+    m_templates.append(m_defaultTemplate);
+    m_templates[pageCount() - 1] = m_templates.value(currentIndex());
     setPageCount(pageCount() + 1);
     setCurrentIndex(pageCount() - 1);
     setCurrentBackground(s_templateLoader.templates[m_defaultTemplate]);
 }
 
+void NativeDocument::deletePages(QList<int> pagesToRemove)
+{
+    std::sort(pagesToRemove.begin(), pagesToRemove.end());
+
+    QVector<QString> newTemplates;
+    for (int i=0; i<m_templates.count(); i++) {
+        if (pagesToRemove.contains(i)) {
+            continue;
+        }
+        newTemplates.append(m_templates[i]);
+    }
+
+    m_templates = newTemplates;
+
+#if 0
+    QList<int> keys = m_templates.keys();
+    qSort(keys);
+    for (int page : pages) {
+        int toRemove = page + removed;
+        m_templates.remove(toRemove);
+        keys = m_templates.keys();
+        qSort(keys);
+        removed++;
+        for (int i=toRemove; i<pageCount(); i++) {
+            m_templates[i - removed] = m_templates.take(i);
+        }
+    }
+    keys = m_templates.keys();
+    qSort(keys);
+#endif
+
+    Document::deletePages(pagesToRemove);
+}
+
 QImage NativeDocument::loadOriginalPage(int index, QSize dimensions)
 {
-    if (index < 0 || !m_templates.contains(index)) {
+    if (index < 0 || index > m_templates.count()) {
+        qWarning() << "index" << index << "out of range" << m_templates;
         return QImage();
     }
 
