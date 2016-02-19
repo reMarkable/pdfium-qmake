@@ -6,7 +6,6 @@
 #include <unistd.h>
 #endif
 #include <QFile>
-#include <QTimer>
 #include <QDebug>
 
 SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
@@ -15,12 +14,10 @@ SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
     // Get initial values
     doPoll();
 
-    QTimer *timer = new QTimer(this);
-    timer->setInterval(1000); // every second
-    timer->setSingleShot(false);
+    m_timer.setInterval(1000); // every second
+    m_timer.setSingleShot(false);
 
-    connect(timer, SIGNAL(timeout()), SLOT(doPoll()));
-    timer->start();
+    connect(&m_timer, SIGNAL(timeout()), SLOT(doPoll()));
 }
 
 void SystemMonitor::doPoll()

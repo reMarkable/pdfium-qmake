@@ -228,6 +228,13 @@ Window {
             }
             width: 150
             height: 20
+            onVisibleChanged: {
+                if (visible) {
+                    SystemMonitor.start()
+                } else {
+                    SystemMonitor.stop()
+                }
+            }
 
             Text {
                 anchors.fill: parent
