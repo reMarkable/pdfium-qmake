@@ -21,8 +21,6 @@ Column {
         "Focus": focusComponent,
         "TemplateSelect": templateSelectComponent,
         "NewPage": newPageComponent,
-        "Forward": forwardComponent,
-        "Back": backComponent,
         "Index": indexComponent
     }
 
@@ -37,11 +35,11 @@ Column {
         }
 
         if (currentTemplate === "Sketch") {
-            buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus", "Forward", "Back", "Index", "TemplateSelect", "NewPage" ]
+            buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
         } else if (currentTemplate === "Document") {
             buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index" ]
         } else {
-            buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Forward", "Back", "Index", "TemplateSelect", "NewPage" ]
+            buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index", "TemplateSelect", "NewPage" ]
         }
     }
 
