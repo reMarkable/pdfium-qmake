@@ -192,7 +192,7 @@ Rectangle {
         width: 45
         height: 45
         anchors {
-            right: rotateButton.left
+            right: parent.right
             rightMargin: 10
             verticalCenter: parent.verticalCenter
             verticalCenterOffset: - (tabRadius + marginTop) / 2
