@@ -167,7 +167,7 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
     }
 
     m_zoomRect = QRectF(x, y, width, height);
-    m_zoomFactor = qMax(1600/width, 1200/height);
+    m_zoomFactor = qMax(1.0/width, 1.0/height);
     emit zoomFactorChanged();
     redrawBackbuffer();
     update();
@@ -484,14 +484,8 @@ void DrawingArea::redrawBackbuffer(QRectF part)
 
         const QVector<PenPoint> &points = drawnLine.points;
         for (int i=1; i<points.count(); i++) {
-
-            QPointF point((points[i].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                       (points[i].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
-            QPointF prevPoint((points[i-1].x - m_zoomRect.x()) / m_zoomRect.width() * 1600,
-                    (points[i-1].y - m_zoomRect.y()) / m_zoomRect.height() * 1200);
-
-            point = mapFromScene(point);
-            prevPoint = mapFromScene(prevPoint);
+            QPointF point = mapFromScene(QPointF(points[i].x, points[i].y));
+            QPointF prevPoint = mapFromScene(QPointF(points[i-1].x, points[i-1].y));
 
             if (!part.contains(point) && !part.contains(prevPoint)) {
                 continue;
@@ -593,7 +587,7 @@ void DrawingArea::doZoom()
     digitizer->releaseLock();
 
     QRectF boundingRect = drawnLine.boundingRect();
-    setZoom(boundingRect.x(), boundingRect.y(), boundingRect.width(), boundingRect.height());
+    setZoom(boundingRect.x() / 1600, boundingRect.y() / 1200, boundingRect.width() / 1600, boundingRect.height() / 1200);
 #endif//Q_PROCESSOR_ARM
 }
 
@@ -704,7 +698,6 @@ QRectF DrawingArea::drawLine(QPainter *painter, const Line::Brush brush, const L
     const QLineF line(point, prevPoint);
 
     QPen pen;
-    pen.setCapStyle(Qt::RoundCap);
     switch(brush) {
     case Line::Paintbrush: {
         qreal pointsize = pressure * pressure * 10.0;
@@ -733,9 +726,9 @@ QRectF DrawingArea::drawLine(QPainter *painter, const Line::Brush brush, const L
 
     case Line::Pen: {
         if (pressure > 0.9) {
-            pen.setWidth(4 * m_zoomFactor);
+            pen.setWidth(4);
         } else {
-            pen.setWidthF(3.7 * m_zoomFactor);
+            pen.setWidthF(3.7);
         }
         painter->setPen(pen);
         break;

@@ -35,7 +35,7 @@ Column {
         }
 
         if (currentTemplate === "Sketch") {
-            buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Zoom", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
+            buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
         } else if (currentTemplate === "Document") {
             buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index" ]
         } else {
