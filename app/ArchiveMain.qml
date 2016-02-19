@@ -111,6 +111,17 @@ Item {
 
                         MouseArea {
                             anchors.fill: parent
+                            onClicked: archiveView.currentBook = modelData
+                        }
+
+                        ArchiveButton {
+                            id: showBookButton
+                            anchors {
+                                bottom: parent.bottom
+                                right: parent.right
+                            }
+                            visible: !archiveMain.selectionModeActive
+                            icon: "qrc:///icons/Open-book_white.svg"
                             onClicked: {
                                 if (archiveMain.selectionModeActive) {
                                     var selectedBooks = archiveMain.selectedBooks
@@ -124,17 +135,6 @@ Item {
                                     archiveView.openBook(modelData)
                                 }
                             }
-                        }
-
-                        ArchiveButton {
-                            id: showBookButton
-                            anchors {
-                                bottom: parent.bottom
-                                right: parent.right
-                            }
-                            visible: !archiveMain.selectionModeActive
-                            icon: "qrc:///icons/Open-book_white.svg"
-                            onClicked: archiveView.currentBook = modelData
                         }
 
                         Rectangle {
