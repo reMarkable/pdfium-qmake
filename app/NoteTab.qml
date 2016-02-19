@@ -133,12 +133,6 @@ Rectangle {
                 radius: 5
             }
 
-            Text {
-                anchors.centerIn: parent
-                rotation: 90
-                text: "smoothing"
-            }
-
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
