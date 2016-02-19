@@ -13,6 +13,29 @@ Rectangle {
         }
     }
 
+    function closeDocument(documentPath) {
+        console.log("closing " + documentPath)
+        for (var i=0; i<objectList.length; i++) {
+            console.log("object path: " + objectList[i].documentPath)
+            if (objectList[i].documentPath === documentPath) {
+                closePage(i)
+            }
+        }
+    }
+
+    function closePage(index) {
+        if (index === tabBar.currentTab - 1) {
+            if (tabBar.currentTab > 0) {
+                tabBar.currentTab = tabBar.currentTab - 1
+            }
+        }
+
+        var objectList = tabBar.objectList
+        objectList[index].destroy()
+        objectList.splice(index, 1)
+        tabBar.objectList = objectList
+    }
+
     property int currentTab: 0
     property int tabBorderSize: 4
     property int tabRadius: 10
@@ -155,11 +178,7 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            tabBar.currentTab = 0
-                            var objectList = tabBar.objectList
-                            objectList[index].destroy()
-                            objectList.splice(index, 1)
-                            tabBar.objectList = objectList
+                            tabBar.closePage(index)
                         }
                     }
                 }
