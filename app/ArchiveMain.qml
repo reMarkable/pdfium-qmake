@@ -269,6 +269,7 @@ Item {
         onAccepted: {
             for (var i=0; i<archiveMain.selectedBooks.length; i++) {
                 Collection.deleteDocument(archiveMain.selectedBooks[i])
+                tabBar.closeDocument(archiveMain.selectedBooks[i])
             }
 
             archiveMain.selectionModeActive = false
