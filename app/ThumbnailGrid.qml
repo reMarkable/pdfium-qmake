@@ -23,30 +23,17 @@ Rectangle {
         onClicked: thumbnailGrid.visible = false
     }
     
-    Rectangle {
-        anchors {
-            top: parent.top
-            right: grid9Select.left
-            topMargin: 75
-            rightMargin: 10
-        }
-        
-        width: height
-        height: 75
-        color: "#a0000000"
-        radius: 5
-        
         Image {
             anchors {
                 top: parent.top
-                left: parent.left
-                bottom: parent.bottom
-                margins: 10
+                right: grid9Select.left
+                topMargin: 75
+                rightMargin: 10
             }
+            height: 75
             width: height
             source: "qrc:///icons/yes_white.svg"
         }
-    }
     
     Image {
         id: grid9Select
@@ -88,7 +75,10 @@ Rectangle {
     Grid {
         id: thumbGrid
         anchors {
-            centerIn: parent
+            left: parent.left
+            leftMargin: 150
+            top: parent.top
+            topMargin: 200
         }
         columns: (thumbnailGrid.maxDisplayItems === 9 ) ? 3 : 6
         rows: (thumbnailGrid.maxDisplayItems === 9 ) ? 3 : 6
