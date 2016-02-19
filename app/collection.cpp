@@ -196,7 +196,7 @@ QString Collection::thumbnailPath(const QString &documentPath) const
 {
     DEBUG_BLOCK;
 
-    QString cachedPath(documentPath + ".thumbnail.jpg");
+    QString cachedPath(documentPath + '-' + QString::number(m_documentsLastPage.value(documentPath)) + ".thumbnail.jpg");
     if (QFile::exists(cachedPath)) {
         return "file://" + cachedPath;
     }
