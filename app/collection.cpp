@@ -25,7 +25,7 @@ Collection::Collection(QObject *parent) : QObject(parent)
 
     QDir localDir(localCollectionPath());
 
-    QFileInfoList fileList = localDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    QFileInfoList fileList = localDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 
     for (const QFileInfo fileInfo : fileList) {
         QString documentPath = fileInfo.canonicalFilePath();
