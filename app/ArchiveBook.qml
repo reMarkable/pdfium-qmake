@@ -242,6 +242,7 @@ Item {
         }
 
         spacing: 10
+        visible: pageRowRepeater.count > 1
 
         Repeater {
             id: pageRowRepeater
