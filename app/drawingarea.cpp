@@ -478,6 +478,8 @@ void DrawingArea::redrawBackbuffer(QRectF part)
     QPainter painter(&m_contents);
     if (!part.isEmpty()) {
         painter.setClipRect(part);
+    } else {
+        part = m_contents.rect();
     }
 
     painter.setRenderHint(QPainter::Antialiasing);
