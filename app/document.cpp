@@ -209,6 +209,52 @@ void Document::setCurrentBackground(QImage background)
     emit backgroundChanged();
 }
 
+void Document::deletePages(QList<int> pagesToRemove)
+{
+    if (m_pageCount < pagesToRemove.count()) {
+        return;
+    }
+
+    // If we have drawn on the current page, we need to store it
+    if (m_pageDirty) {
+        emit storingRequested(m_pageContents.value(m_currentIndex), m_currentIndex);
+        m_pageDirty = false;
+    }
+
+    // So we avoid having to move everything around
+    m_cacheLock.lock();
+    m_cachedBackgrounds.clear();
+    m_pageContents.clear();
+    m_cacheLock.unlock();
+
+    QMap<int, int> oldPages;
+    for (int i=0; i<m_pageCount; i++) {
+        oldPages[i] = i;
+    }
+
+    QHash<int, QVector<Line>> newLines;
+    int pagesTaken = 0;
+    for (int oldPage : oldPages.keys()) {
+        if (pagesToRemove.contains(oldPage)) {
+            //qDebug() << "removing" << oldPage;
+            QFile::remove(getThumbnailPath(oldPage));
+            continue;
+        }
+
+        qDebug() << "moving" << oldPages[oldPage] << "to" << pagesTaken;
+        QString oldPath(getThumbnailPath(oldPages[oldPage]));
+        QString newPath(getThumbnailPath(pagesTaken));
+        QFile::rename(oldPath, newPath);
+        newLines.insert(pagesTaken, m_lines[oldPage]);
+
+        pagesTaken++;
+    }
+
+    m_lines = newLines;
+
+    setPageCount(pagesTaken.count());
+}
+
 void Document::loadPage(int index)
 {
     QMutexLocker locker(&m_cacheLock);

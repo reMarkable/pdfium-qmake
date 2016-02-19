@@ -59,6 +59,7 @@ protected slots:
     virtual QImage loadOriginalPage(int index, QSize dimensions) = 0;
     void setPageCount(int pageCount);
     void setCurrentBackground(QImage background);
+    virtual void deletePages(QList<int> pagesToRemove);
 
 private:
     friend class DocumentWorker;
