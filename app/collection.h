@@ -1,8 +1,11 @@
 #ifndef COLLECTION_H
 #define COLLECTION_H
 
+#include "document.h"
+
 #include <QObject>
 #include <QMap>
+#include <QPointer>
 
 class Collection : public QObject
 {
@@ -32,6 +35,7 @@ signals:
     void recentlyUsedChanged();
 
 private:
+    QMap<QString, QPointer<Document>> m_openDocuments;
     QMap<QString, int> m_documentsPageCount;
     QMap<QString, int> m_documentsLastPage;
     QStringList m_recentlyUsedPaths;

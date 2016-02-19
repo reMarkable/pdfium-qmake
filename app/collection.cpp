@@ -92,9 +92,18 @@ QObject *Collection::getDocument(const QString &path)
 {
     DEBUG_BLOCK;
 
+    if (m_openDocuments.contains(path)) {
+        Document *document = m_openDocuments.value(path).data();
+        if (document) {
+            return document;
+        } else {
+            m_openDocuments.remove(path);
+        }
+    }
+
     QFileInfo pathInfo(path);
 
-    QObject *document = nullptr;
+    Document *document = nullptr;
 
     if (!pathInfo.exists(path)) {
         return document;
@@ -108,6 +117,7 @@ QObject *Collection::getDocument(const QString &path)
 
     QTimer::singleShot(10, document, SLOT(preload()));
     QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
+    m_openDocuments.insert(path, QPointer<Document>(document));
     return document;
 }
 
@@ -138,7 +148,6 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
     }
 
     NativeDocument *document = new NativeDocument(path, defaultTemplate);
-    document->addPage();
     document->preload();
 
     QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
@@ -146,6 +155,7 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
     m_documentsLastPage.insert(path, 0);
     m_documentsPageCount.insert(path, 1);
     m_recentlyUsedPaths.append(path);
+    m_openDocuments.insert(path, QPointer<Document>(document));
 
     emit recentlyUsedChanged();
 
