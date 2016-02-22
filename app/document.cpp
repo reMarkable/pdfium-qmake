@@ -5,7 +5,7 @@
 #include <QFile>
 #include <QDataStream>
 
-#define CACHE_COUNT 5 // Cache up to 5 page before and after
+#define CACHE_COUNT 2 // Cache this many before and after
 
 #define DEBUG_THIS
 #include "debug.h"
@@ -143,7 +143,7 @@ void Document::setCurrentIndex(int newIndex)
 
     QMutexLocker locker(&m_cacheLock);
     foreach(int index, m_cachedBackgrounds.keys()) {
-        if (index > cacheMin || index < cacheMax) {
+        if (index > cacheMin && index < cacheMax) {
             continue;
         }
 
@@ -198,6 +198,17 @@ void Document::clearCache()
             m_pageContents.remove(index);
         }
     }
+
+#if 0
+    size_t totalSize = 0;
+    for(const int key : m_cachedBackgrounds.keys()) {
+        totalSize += m_cachedBackgrounds.value(key).byteCount();
+    }
+    for(const int key : m_pageContents.keys()) {
+        totalSize += m_pageContents.value(key).byteCount();
+    }
+    qDebug() << m_path << "bytes used:" << (totalSize / (1024 * 1024)) << "mb";
+#endif
 }
 
 void Document::setPageCount(int pageCount)
@@ -211,7 +222,6 @@ void Document::setPageCount(int pageCount)
 
     if (m_currentIndex >= m_pageCount) {
         setCurrentIndex(m_pageCount - 1);
-        qDebug() << "current index" << m_currentIndex;
     }
 }
 
@@ -256,12 +266,10 @@ void Document::deletePages(QList<int> pagesToRemove)
     int pagesTaken = 0;
     for (int oldPage : oldPages.keys()) {
         if (pagesToRemove.contains(oldPage)) {
-            //qDebug() << "removing" << oldPage;
             QFile::remove(getThumbnailPath(oldPage));
             continue;
         }
 
-        qDebug() << "moving" << oldPages[oldPage] << "to" << pagesTaken;
         QString oldPath(getThumbnailPath(oldPages[oldPage]));
         QString newPath(getThumbnailPath(pagesTaken));
         QFile::rename(oldPath, newPath);
@@ -315,6 +323,17 @@ void Document::loadPage(int index)
             emit backgroundChanged();
         }
     }
+
+#if 0
+    size_t totalSize = 0;
+    for(const int key : m_cachedBackgrounds.keys()) {
+        totalSize += m_cachedBackgrounds.value(key).byteCount();
+    }
+    for(const int key : m_pageContents.keys()) {
+        totalSize += m_pageContents.value(key).byteCount();
+    }
+    qDebug() << m_path << "bytes used:" << (totalSize / (1024 * 1024)) << "mb";
+#endif
 }
 
 void Document::storePage(QImage image, int index)
