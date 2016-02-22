@@ -9,9 +9,12 @@ Item {
     property alias columns: previewsGrid.columns
     property alias title: headerText.text
 
+    property int thumbnailHeight: 300
+    property int thumbnailWidth: 220
+
     signal openClicked()
 
-    height: previewsGrid.anchors.bottomMargin + rows * hugeIconSize + headerText.height + headerText.anchors.topMargin + header.height + 50
+    height: previewsGrid.anchors.bottomMargin + previewsGrid.anchors.topMargin + previewsGrid.rowSpacing + rows * thumbnailHeight + headerText.height + headerText.anchors.topMargin + header.height
 
     Text {
         id: headerText
@@ -48,7 +51,7 @@ Item {
             top: header.bottom
             bottom: parent.bottom
             right: parent.right
-            rightMargin: 50
+            rightMargin: 45
         }
         width: mediumIconSize
 
@@ -78,54 +81,21 @@ Item {
             right: parent.right
             rightMargin: 100
             top: header.bottom
-            topMargin: 0
+            topMargin: 20
             bottom: parent.bottom
-            bottomMargin: 30
+            bottomMargin: 0
         }
         horizontalItemAlignment: Grid.AlignHCenter
-        verticalItemAlignment: Grid.AlignTop
-        columnSpacing: (width / columns) - bigIconSize
-        //height: bigIconSize * rows
+        verticalItemAlignment: Grid.AlignVCenter
+        columnSpacing: ((width - openButton.width) / columns) - bigIconSize
+        rowSpacing: 20
 
         Repeater {
             id: frequentlyUsedRepeater
-            
-            Rectangle {
-                width: bigIconSize
-                height: previewsGrid.height / previewsGrid.rows
-                border.width: 0
 
-                Image {
-                    anchors.centerIn: parent
-                    height: bigIconSize - 2
-                    width: height
-                    source: Collection.thumbnailPath(modelData)
-                    fillMode: Image.PreserveAspectCrop
-                    
-                    Image {
-                        anchors.fill: parent
-                        source: "qrc:/icons/clear page-thumb.svg"
-                    }
-                }
-                
-                Text {
-                    anchors.bottom: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    text: Collection.title(modelData)
-                    color: window.fontColor
-                    font.pointSize: 18
-                    elide: Text.ElideLeft
-                    width: parent.width
-                }
-                
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        mainScreen.openBook(modelData)
-                    }
-                }
+            BookThumbnail {
+                width: mainScreenPreviews.thumbnailWidth
+                height: mainScreenPreviews.thumbnailHeight
             }
         }
     }

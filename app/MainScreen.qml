@@ -157,7 +157,6 @@ Rectangle {
             left: parent.left
             right: parent.right
             bottom: logoText.top
-            bottomMargin: 20
         }
 
         rows: 1

@@ -6,16 +6,22 @@ Item {
     width: 320
     height: 400
 
-    property bool showTools: false
-    
+    signal clicked()
+
+    MouseArea {
+        id: selectionMouseArea
+        anchors.fill: parent
+        onClicked: bookItem.clicked()
+    }
+
     Repeater {
         id: bgPageRepeater
         model: Math.min(Collection.pageCount(modelData), 5) - 1
-        property int spacing: Math.max(20 / count, 3)
+        property real spacing: Math.max(20 / count, 3)
         Rectangle {
             border.width: 1
-            width: archiveMain.documentPreviewWidth
-            height: archiveMain.documentPreviewHeight
+            width: bookItem.width - 20
+            height: bookItem.height - 20
             x: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
             y: bgPageRepeater.count * bgPageRepeater.spacing - modelData * bgPageRepeater.spacing
         }
@@ -26,8 +32,8 @@ Item {
             top: parent.top
             left: parent.left
         }
-        width: archiveMain.documentPreviewWidth + 2
-        height: archiveMain.documentPreviewHeight + 2
+        width: parent.width - 20
+        height: parent.height - 20
         
         border.width: 1
         
@@ -36,23 +42,12 @@ Item {
             anchors.centerIn: parent
 
             asynchronous: true
-            width: archiveMain.documentPreviewWidth
-            height: archiveMain.documentPreviewHeight
+            width: parent.width - 2
+            height: parent.height - 2
             sourceSize.width: width
             sourceSize.height: height
             
             source: Collection.thumbnailPath(modelData)
-            
-            ArchiveButton {
-                id: showBookButton
-                anchors {
-                    bottom: parent.bottom
-                    right: parent.right
-                }
-                visible: bookItem.showTools
-                icon: "qrc:///icons/Open-book_white.svg"
-                onClicked: archiveView.openBook(modelData)
-            }
         }
         
         Rectangle {
@@ -66,6 +61,7 @@ Item {
             height: 50
             color: "#b0ffffff"
             Image {
+                id: bookIcon
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -76,18 +72,21 @@ Item {
                 source: "qrc:///icons/Notebook.svg"
                 sourceSize.width: width
                 sourceSize.height: height
-                
-                Text {
-                    anchors {
-                        left: parent.right
-                        leftMargin: 10
-                        verticalCenter: parent.verticalCenter
-                    }
-                    text: Collection.title(modelData)
-                }
             }
-            
+
             Text {
+                anchors {
+                    left: bookIcon.right
+                    leftMargin: 10
+                    verticalCenter: parent.verticalCenter
+                    right: pageCountLabel.left
+                }
+                elide: Text.ElideRight
+                text: Collection.title(modelData)
+            }
+
+            Text {
+                id: pageCountLabel
                 anchors {
                     right: parent.right
                     rightMargin: 10

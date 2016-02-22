@@ -8,9 +8,6 @@ Item {
     property int currentPage: 0
     onCurrentPageChanged: mainArchiveGrid.reloadDocuments()
 
-    property int documentPreviewHeight: 380
-    property int documentPreviewWidth: 300
-
     property bool selectionModeActive: false
 
     onSelectionModeActiveChanged: {
@@ -68,23 +65,18 @@ Item {
                 id: bookItem
 
                 property bool selected: (archiveMain.selectedBooks.indexOf(modelData) !== -1)
-                showTools: !archiveMain.selectionModeActive
 
-                MouseArea {
-                    id: selectionMouseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        if (archiveMain.selectionModeActive) {
-                            var selectedBooks = archiveMain.selectedBooks
-                            if (bookItem.selected) {
-                                selectedBooks.splice(selectedBooks.indexOf(modelData), 1)
-                            } else {
-                                selectedBooks.push(modelData)
-                            }
-                            archiveMain.selectedBooks = selectedBooks
+                onClicked: {
+                    if (archiveMain.selectionModeActive) {
+                        var selectedBooks = archiveMain.selectedBooks
+                        if (bookItem.selected) {
+                            selectedBooks.splice(selectedBooks.indexOf(modelData), 1)
                         } else {
-                            archiveView.currentBook = modelData
+                            selectedBooks.push(modelData)
                         }
+                        archiveMain.selectedBooks = selectedBooks
+                    } else {
+                        archiveView.currentBook = modelData
                     }
                 }
 
@@ -111,6 +103,19 @@ Item {
                     sourceSize.height: width
                     visible: archiveMain.selectionModeActive
                     source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
+                }
+
+                ArchiveButton {
+                    id: showBookButton
+                    anchors {
+                        bottom: parent.bottom
+                        bottomMargin: 20
+                        right: parent.right
+                        rightMargin: 20
+                    }
+                    visible: !archiveMain.selectionModeActive
+                    icon: "qrc:///icons/Open-book_white.svg"
+                    onClicked: archiveView.openBook(modelData)
                 }
             }
         }
