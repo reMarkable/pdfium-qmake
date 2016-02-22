@@ -67,23 +67,6 @@ Rectangle {
         }
     }
 
-    ArchiveMain {
-        id: mainArchive
-
-        anchors.fill: parent
-    }
-
-    ArchiveBook {
-        id: archiveBook
-
-        anchors {
-            top: archiveHeader.bottom
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
-        }
-    }
-
     Rectangle {
         id: archiveHeader
         anchors {
@@ -127,5 +110,17 @@ Rectangle {
             anchors.fill: parent
             onClicked: archiveView.currentBook = ""
         }
+    }
+
+    ArchiveMain {
+        id: mainArchive
+
+        anchors.fill: parent
+    }
+
+    ArchiveBook {
+        id: archiveBook
+
+        anchors.fill: parent
     }
 }

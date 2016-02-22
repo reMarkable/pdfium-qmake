@@ -18,15 +18,16 @@ Item {
         }
     }
 
-    property bool selectionModeActive: false
-    onSelectionModeActiveChanged: {
-        selectedPages = []
-    }
-
     property var selectedPages: []
 
     property int currentPage: 0
     property int pageCount: 0
+    onPageCountChanged: {
+        if (currentPage >= pageCount) {
+            currentPage--
+        }
+    }
+
     property int documentPageCount: document === null ? 0 : document.pageCount
 
     property int maxDisplayItems: 9
@@ -47,6 +48,7 @@ Item {
         if (!document) {
             return
         }
+
         var visiblePages = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
         if (visiblePages != pageRepeater.count) {
             pageRepeater.model = 0
@@ -100,11 +102,28 @@ Item {
         selectedPages = [index]
         deleteDialog.show("Are you sure you want to delete page " + (index + 1) + "?")
     }
-    
+
+    EditActions {
+        id: editActionsItem
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            topMargin: 25
+            rightMargin: 50
+        }
+        onSelectionModeActiveChanged: {
+            selectedPages = []
+        }
+        onDeleteItems: {
+            deletePages()
+        }
+    }
+
     Grid {
         id: thumbnailGrid
         anchors {
-            top: parent.top
+            top: editActionsItem.bottom
             bottom: parent.bottom
             topMargin: 25
             horizontalCenter: parent.horizontalCenter
@@ -148,14 +167,14 @@ Item {
                         Rectangle {
                             anchors.fill: parent
                             color: "#7f000000"
-                            visible: archiveBook.selectionModeActive && !bookItem.selected
+                            visible: editActionsItem.selectionModeActive && !bookItem.selected
                         }
                         
                         Image {
                             anchors.centerIn: parent
                             width: parent.width / 2
                             height: width
-                            visible: archiveBook.selectionModeActive
+                            visible: editActionsItem.selectionModeActive
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                             sourceSize.width: width
                             sourceSize.height: height
@@ -164,7 +183,7 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (!archiveBook.selectionModeActive) {
+                                if (!editActionsItem.selectionModeActive) {
                                     archiveView.openBookAt(archiveView.currentBook, bookItem.pageNumber)
                                     return
                                 }
@@ -204,7 +223,7 @@ Item {
                             right: parent.right
                         }
                         icon: "qrc:///icons/xoom+_white.svg"
-                        visible: !archiveBook.selectionModeActive
+                        visible: !editActionsItem.selectionModeActive
 
                         onClicked: {
                             previewBackground.index = pageNumber
@@ -219,7 +238,7 @@ Item {
                             bottom: parent.bottom
                             left: parent.left
                         }
-                        visible: !archiveBook.selectionModeActive
+                        visible: !editActionsItem.selectionModeActive
                         
                         icon: "qrc:///icons/Delete_white.svg"
                         onClicked: archiveBook.deletePage(pageNumber)
@@ -359,8 +378,10 @@ Item {
     Dialog {
         id: deleteDialog
         onAccepted: {
+            console.log(selectedPages)
             archiveBook.document.deletePages(selectedPages)
-            archiveBook.selectionModeActive = false
+            console.log("eplepung")
+            editActionsItem.selectionModeActive = false
         }
     }
 }
