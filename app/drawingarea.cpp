@@ -502,6 +502,15 @@ void DrawingArea::redrawBackbuffer(QRectF part)
 
 void DrawingArea::onBackgroundChanged()
 {
+    if (Q_UNLIKELY(!m_document)) {
+        qWarning() << "No document set";
+        return;
+    }
+
+    if (m_document->background().isNull()) {
+        return;
+    }
+
     redrawBackbuffer();
     m_document->setDrawnPage(m_contents);
     update();
