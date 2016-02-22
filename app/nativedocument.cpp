@@ -123,7 +123,6 @@ void NativeDocument::deletePages(QList<int> pagesToRemove)
 QImage NativeDocument::loadOriginalPage(int index, QSize dimensions)
 {
     if (index < 0 || index > m_templates.count()) {
-        qWarning() << "index" << index << "out of range" << m_templates;
         return QImage();
     }
 
