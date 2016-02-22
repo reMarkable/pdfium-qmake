@@ -35,6 +35,8 @@ Rectangle {
         }
     }
 
+    Component.onCompleted: forceActiveFocus()
+
     onVisibleChanged: {
         if (visible) {
             forceActiveFocus()

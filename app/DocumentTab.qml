@@ -20,11 +20,15 @@ Item {
         currentPage = Qt.binding(function() { return document.currentIndex; })
     }
 
+    Component.onCompleted: forceActiveFocus()
+
     onVisibleChanged: {
         if (visible) {
             forceActiveFocus()
         } else {
-            rootItem.forceActiveFocus()
+            if (document) {
+                document.clearCache()
+            }
         }
     }
 
