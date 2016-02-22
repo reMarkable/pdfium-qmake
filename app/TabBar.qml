@@ -177,6 +177,7 @@ Rectangle {
 
 
                 Rectangle {
+                    id: closeButton
                     height: 30
                     width: 30
                     radius: height / 2
@@ -195,12 +196,18 @@ Rectangle {
                         font.pointSize: 14
                         color: tabBar.currentTab === index + 1 ? "black" : "gray"
                     }
+                }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            tabBar.closePage(index)
-                        }
+                MouseArea {
+                    anchors {
+                        top: parent.top
+                        bottom: parent.bottom
+                        right: parent.right
+                        left: closeButton.left
+                    }
+
+                    onClicked: {
+                        tabBar.closePage(index)
                     }
                 }
             }
