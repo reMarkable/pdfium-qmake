@@ -35,7 +35,7 @@ Window {
             return string.indexOf(suffix, string.length - suffix.length) !== -1
         }
 
-        function openDocument(path) {
+        function openDocument(path, pageToOpen) {
             var name = Collection.title(path)
             var index = tabBar.tabModel.indexOf(name)
 
@@ -55,6 +55,10 @@ Window {
 
                     createdObject.document = Collection.getDocument(path)
                 }
+                if (pageToOpen !== -1) {
+                    console.log(pageToOpen)
+                    createdObject.document.currentIndex = pageToOpen
+                }
 
                 var objectList = tabBar.objectList
                 objectList.push(createdObject)
@@ -62,6 +66,9 @@ Window {
                 tabBar.setCurrentTab(newIndex)
             } else {
                 tabBar.setCurrentTab(index + 1)
+                if (pageToOpen !== -1) {
+                    tabBar.objectList[index].document.currentIndex = pageToOpen
+                }
             }
         }
 
@@ -140,7 +147,10 @@ Window {
                 property int tabIndex
 
                 onOpenBook: {
-                    rootItem.openDocument(path)
+                    rootItem.openDocument(path, -1)
+                }
+                onOpenBookAt: {
+                    rootItem.openDocument(path, page)
                 }
             }
         }
