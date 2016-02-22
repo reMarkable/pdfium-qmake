@@ -33,6 +33,9 @@ Item {
 
     onVisibleChanged: {
         if (!visible) {
+            if (document) {
+                document.clearCache()
+            }
             document = null
         } else {
             document = Collection.getDocument(archiveView.currentBook)
