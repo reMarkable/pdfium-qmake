@@ -8,12 +8,6 @@ Item {
     property int currentPage: 0
     onCurrentPageChanged: mainArchiveGrid.reloadDocuments()
 
-    property bool selectionModeActive: false
-
-    onSelectionModeActiveChanged: {
-        selectedBooks = []
-    }
-
     function deleteBooks() {
         if (selectedBooks.length === 0) {
             return
@@ -50,10 +44,27 @@ Item {
         }
     }
 
+    EditActions {
+        id: editActionsItem
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            topMargin: 25
+            rightMargin: 50
+        }
+        onSelectionModeActiveChanged: {
+            selectedBooks = []
+        }
+        onDeleteItems: {
+            deleteBooks()
+        }
+    }
+
     Grid {
         id: mainArchiveGrid
         anchors {
-            top: parent.top
+            top: editActionsItem.bottom
             bottom: parent.bottom
             topMargin: 25
             horizontalCenter: parent.horizontalCenter
@@ -85,7 +96,7 @@ Item {
                 property bool selected: (archiveMain.selectedBooks.indexOf(modelData) !== -1)
 
                 onClicked: {
-                    if (archiveMain.selectionModeActive) {
+                    if (editActionsItem.selectionModeActive) {
                         var selectedBooks = archiveMain.selectedBooks
                         if (bookItem.selected) {
                             selectedBooks.splice(selectedBooks.indexOf(modelData), 1)
@@ -106,11 +117,12 @@ Item {
                     }
 
                     color: "#7f000000"
-                    visible: archiveMain.selectionModeActive && !bookItem.selected
+                    visible: editActionsItem.selectionModeActive && !bookItem.selected
                     width: parent.width - 20
                     height: parent.height - 20
 
                 }
+
                 Image {
                     id: bookSelectedIcon
                     anchors.centerIn: bookSelectionOverlay
@@ -119,7 +131,7 @@ Item {
 
                     sourceSize.width: width
                     sourceSize.height: width
-                    visible: archiveMain.selectionModeActive
+                    visible: editActionsItem.selectionModeActive
                     source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                 }
 
@@ -132,7 +144,7 @@ Item {
                         right: parent.right
                         rightMargin: 20
                     }
-                    visible: !archiveMain.selectionModeActive
+                    visible: !editActionsItem.selectionModeActive
                     icon: "qrc:///icons/Open-book_white.svg"
                     onClicked: archiveView.openBook(modelData)
                 }
@@ -210,7 +222,7 @@ Item {
                 tabBar.closeDocument(archiveMain.selectedBooks[i])
             }
 
-            archiveMain.selectionModeActive = false
+            editActionsItem.selectionModeActive = false
             mainArchiveGrid.reloadDocuments()
         }
     }

@@ -74,4 +74,5 @@ contains(QT_ARCH, arm) {
 }
 
 DISTFILES += \
-    BookThumbnail.qml
+    BookThumbnail.qml \
+    EditActions.qml

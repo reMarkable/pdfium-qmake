@@ -145,7 +145,7 @@ Rectangle {
         Connections {
             target: Collection
             onRecentlyUsedChanged: {
-                frequentlyUsedGrid.reloadModel()
+                frequentlyUsed.reloadModel()
             }
         }
     }
@@ -171,7 +171,7 @@ Rectangle {
         Connections {
             target: Collection
             onRecentlyUsedChanged: {
-                frequentlyUsedGrid.reloadModel()
+                recentlyImported.reloadModel()
             }
         }
     }
