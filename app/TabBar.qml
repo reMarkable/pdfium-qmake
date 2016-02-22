@@ -24,12 +24,18 @@ Rectangle {
     }
 
     function closePage(index) {
-        if (index === tabBar.currentTab - 1) {
-            if (tabBar.currentTab > 0) {
-                setCurrentTab(tabBar.currentTab - 1)
+        if (tabBar.tabModel.length == 1) {
+            currentTab = 0
+            mainScreen.visible = true
+        } else if (index + 1 === tabBar.currentTab) {
+            currentTab--
+            if (currentTab === 0) {
+                mainScreen.visible = true
+            } else {
+                tabBar.objectList[currentTab - 1].visible = true
             }
-        } else if (tabBar.tabModel.length < 2) {
-            setCurrentTab(0)
+        } else if (index < tabBar.currentTab) {
+            currentTab--
         }
 
         var objectList = tabBar.objectList
