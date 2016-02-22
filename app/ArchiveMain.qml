@@ -8,8 +8,6 @@ Item {
     property int currentPage: 0
     onCurrentPageChanged: mainArchiveGrid.reloadDocuments()
 
-    property int smallIconSize: 75
-    property int mediumIconSize: 200
     property int documentPreviewHeight: 380
     property int documentPreviewWidth: 300
 
@@ -147,7 +145,7 @@ Item {
                         Image {
                             id: bookSelectedIcon
                             anchors.centerIn: parent
-                            width: archiveMain.mediumIconSize
+                            width: archiveMain.bigIconSize
                             height: width
 
                             sourceSize.width: width

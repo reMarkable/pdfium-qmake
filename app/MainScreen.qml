@@ -9,8 +9,9 @@ Rectangle {
     signal openBook(var path)
 
     property int smallIconSize: 40
-    property int mediumIconSize: 200
-    property int bigIconSize: 250
+    property int mediumIconSize: 100
+    property int bigIconSize: 200
+    property int hugeIconSize: 250
 
     Item {
         id: quickActions
@@ -20,10 +21,6 @@ Rectangle {
             left: parent.left
             topMargin: 100
             leftMargin: 30
-        }
-
-        MainScreenHeader {
-            text: "Quick actions"
         }
 
         height: 300
@@ -42,7 +39,7 @@ Rectangle {
             Image {
                 source: "qrc:/icons/new note-large.svg"
                 anchors.centerIn: parent
-                height: bigIconSize
+                height: hugeIconSize
                 width: height
                 smooth: true
 
@@ -72,7 +69,7 @@ Rectangle {
             Image {
                 source: "qrc:/icons/new sketch-large.svg"
                 anchors.centerIn: parent
-                height: bigIconSize
+                height: hugeIconSize
                 width: height
                 smooth: true
 
@@ -104,7 +101,7 @@ Rectangle {
             Image {
                 source: "qrc:/icons/Archive-large.svg"
                 anchors.centerIn: parent
-                height: bigIconSize
+                height: hugeIconSize
                 width: height
                 smooth: true
 
@@ -127,329 +124,70 @@ Rectangle {
     }
 
 
-
-    Item {
-        id: quickSettings
-        visible: false
-
-        anchors {
-            topMargin: 100
-            leftMargin: 30
-            rightMargin: 30
-        }
-
-        width: mainScreen.width
-
-        MainScreenHeader {
-            text: "Quick settings"
-        }
-
-        Grid {
-            columns: (rootItem.rotation === 0) ? 1 : 4
-            rows: (rootItem.rotation === 0) ? 4 : 1
-            id: settingsRow
-            height: 100
-            anchors.fill: parent
-            Repeater {
-                id: settingsRepeater
-                model: [ {"title": "Lock Device", "icon": "qrc:/icons/Lock_small.svg"},
-                    {"title": "Wi-Fi Settings", "icon": "qrc:/icons/Wi-Fi_small.svg"},
-                    {"title": "Settings", "icon": "qrc:/icons/settings_small.svg"},
-                    {"title": "Setup Guide", "icon": "qrc:/icons/Help_small.svg"},
-                ]
-
-                Item {
-                    width: settingsRow.width / 5
-                    height: 50
-
-                    Image {
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            left: parent.left
-                        }
-                        id: icon
-                        height: smallIconSize
-                        width: height
-                        source: modelData.icon
-                    }
-
-                    Text {
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            right: parent.right
-                            leftMargin: 10
-                            left: icon.right
-                        }
-
-                        text: modelData.title
-                    }
-                }
-            }
-        }
-    }
-
-
-    Item {
+    MainScreenPreviews {
         id: frequentlyUsed
-        height: (mediumIconSize + 60) * frequentlyUsedGrid.rows
-        width: quickActions.width
 
         anchors {
-            topMargin: 100
-            leftMargin: 30
+            left: parent.left
+            right: parent.right
+            bottom: recentlyImported.top
         }
 
-        MainScreenHeader {
-            text: "Frequently used"
+        rows: 2
+        columns: 4
+        title: "Frequently used"
+
+        function reloadModel() {
+            model = Collection.recentlyUsedPaths(rows * columns)
         }
 
-        Grid {
-            id: frequentlyUsedGrid
-
-            anchors.fill: parent
-            anchors.topMargin: 10
-
-            columns: 5
-            columnSpacing: (parent.width / columns) - mediumIconSize
-
-
-
-            function reloadModel() {
-                frequentlyUsedRepeater.model = Collection.recentlyUsedPaths(rows * columns)
-            }
-
-            onRowsChanged: reloadModel()
-            Component.onCompleted: reloadModel()
-            Connections {
-                target: Collection
-
-                ignoreUnknownSignals: false
-                onRecentlyUsedChanged: {
-                    frequentlyUsedGrid.reloadModel()
-                }
-            }
-            Repeater {
-                id: frequentlyUsedRepeater
-
-
-                Item {
-                    width: mediumIconSize
-                    height: frequentlyUsedGrid.height / frequentlyUsedGrid.rows
-                    Image {
-                        anchors.centerIn: parent
-                        height: mediumIconSize
-                        width: height
-                        source: Collection.thumbnailPath(modelData)
-                        fillMode: Image.PreserveAspectCrop
-
-                        Image {
-                            anchors.fill: parent
-                            source: "qrc:/icons/clear page-thumb.svg"
-                        }
-                    }
-
-                    Text {
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        text: Collection.title(modelData)
-                        color: window.fontColor
-                        font.pointSize: 18
-                        elide: Text.ElideLeft
-                        width: parent.width
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            mainScreen.openBook(modelData)
-                        }
-                    }
-                }
+        Component.onCompleted: reloadModel()
+        Connections {
+            target: Collection
+            onRecentlyUsedChanged: {
+                frequentlyUsedGrid.reloadModel()
             }
         }
     }
 
-
-    Item {
-        id: recentlyUsed
-        visible: false
-
-        anchors {
-            topMargin: 100
-            leftMargin: 30
-            rightMargin: 30
-        }
-
-        MainScreenHeader {
-            text: "Recently used"
-        }
-
-        Column {
-            id: recentlyUsedColumn
-            anchors.fill: parent
-
-            Repeater {
-                model: [
-                    {"title": "Master thesis.pdf", "icon": "qrc:/icons/book.svg"},
-                    {"title": "Master notebook.rm", "icon": "qrc:/icons/new note.svg"},
-                    {"title": "Master sketchbook.rm", "icon": "qrc:/icons/new sketch.svg"},
-                    {"title": "Doodling sketchbook", "icon": "qrc:/icons/new sketch.svg"},
-                ]
-
-                Item {
-                    width: recentlyUsedColumn.width - 30
-                    height: 60
-
-                    Image {
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            left: parent.left
-                        }
-                        id: recentIcon
-                        height: smallIconSize
-                        width: height
-                        source: modelData.icon
-                    }
-
-                    Text {
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            right: parent.right
-                            leftMargin: 10
-                            left: recentIcon.right
-                        }
-
-                        text: modelData.title
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 2
-                        color: "gray"
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                }
-            }
-        }
-    }
-
-
-
-    Item {
+    MainScreenPreviews {
         id: recentlyImported
 
         anchors {
-            topMargin: 100
-            leftMargin: 30
-            rightMargin: 30
+            left: parent.left
+            right: parent.right
+            bottom: logoText.top
+            bottomMargin: 20
         }
 
-        MainScreenHeader {
-            text: "Recently imported"
+        rows: 1
+        columns: 4
+        title: "Recently imported"
+
+        function reloadModel() {
+            model = Collection.recentlyImportedPaths(rows * columns)
         }
 
-        Column {
-            id: recentlyImportedColumn
-
-            Repeater {
-                model: Collection.recentlyImportedPaths(4)
-
-                Item {
-                    width: recentlyUsedColumn.width - 30
-                    height: 60
-
-                    Image {
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            left: parent.left
-                        }
-                        id: recentImportIcon
-                        height: smallIconSize
-                        width: height
-                        source: "qrc:/icons/book.svg"//modelData.icon
-                    }
-
-                    Text {
-                        anchors {
-                            verticalCenter: parent.verticalCenter
-                            right: parent.right
-                            leftMargin: 10
-                            left: recentImportIcon.right
-                        }
-
-                        text: Collection.title(modelData)
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: 2
-                        color: "gray"
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            mainScreen.openBook(modelData)
-                        }
-                    }
-                }
+        Component.onCompleted: reloadModel()
+        Connections {
+            target: Collection
+            onRecentlyUsedChanged: {
+                frequentlyUsedGrid.reloadModel()
             }
         }
     }
 
-    state: (rootItem.rotation === 0) ? "LANDSCAPE" : "PORTRAIT"
-    states: [
-        State {
-            name: "PORTRAIT"
-            PropertyChanges { target: quickActions; width: mainScreen.width - 60 }
-            PropertyChanges { target: quickSettings; height: smallIconSize }
-            PropertyChanges { target: recentlyUsed; height: mainScreen.height / 4}
-            PropertyChanges { target: recentlyImported; height: mainScreen.height / 4}
-            PropertyChanges { target: frequentlyUsedGrid; rows: 2 }
-
-            AnchorChanges { target: quickSettings; anchors.top: quickActions.bottom }
-            AnchorChanges { target: quickSettings; anchors.right: parent.right }
-            AnchorChanges { target: quickSettings; anchors.left: parent.left }
-
-            AnchorChanges { target: frequentlyUsed; anchors.top: quickSettings.bottom }
-            AnchorChanges { target: frequentlyUsed; anchors.left: parent.left }
-
-            AnchorChanges { target: recentlyUsed; anchors.left: parent.left }
-            AnchorChanges { target: recentlyUsed; anchors.right: parent.horizontalCenter }
-            AnchorChanges { target: recentlyUsed; anchors.top: frequentlyUsed.bottom }
-
-            AnchorChanges { target: recentlyImported; anchors.right: parent.right }
-            AnchorChanges { target: recentlyImported; anchors.left: parent.horizontalCenter }
-            AnchorChanges { target: recentlyImported; anchors.top: frequentlyUsed.bottom }
-        },
-        State {
-            name: "LANDSCAPE"
-            PropertyChanges { target: quickActions; width: mainScreen.width * 2/3 }
-            PropertyChanges { target: quickSettings; height: 200 }
-            PropertyChanges { target: recentlyUsed; height: mainScreen.height / 3 }
-            PropertyChanges { target: frequentlyUsedGrid; rows: 2 }
-            PropertyChanges { target: recentlyImported; height: mainScreen.height / 3 }
-
-            AnchorChanges { target: quickSettings; anchors.top: parent.top }
-            AnchorChanges { target: quickSettings; anchors.right: parent.right }
-            AnchorChanges { target: quickSettings; anchors.left: quickActions.right }
-
-            AnchorChanges { target: frequentlyUsed; anchors.top: quickActions.bottom }
-            AnchorChanges { target: frequentlyUsed; anchors.left: parent.left }
-
-            AnchorChanges { target: recentlyUsed; anchors.left: quickActions.right }
-            AnchorChanges { target: recentlyUsed; anchors.right: parent.right }
-            AnchorChanges { target: recentlyUsed; anchors.top: quickActions.bottom }
-
-            AnchorChanges { target: recentlyImported; anchors.right: parent.right }
-            AnchorChanges { target: recentlyImported; anchors.left: quickActions.right }
-            AnchorChanges { target: recentlyImported; anchors.top: frequentlyUsed.verticalCenter }
+    Text {
+        id: logoText
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: 20
+            left: parent.left
+            right: parent.right
         }
-    ]
+        horizontalAlignment: Text.AlignHCenter
+        font.pixelSize: 24
+        text: "reMarkable"
+    }
 }
 

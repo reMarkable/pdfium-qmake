@@ -53,8 +53,8 @@ OTHER_FILES += \
     Dialog.qml \
     DocumentTab.qml \
     main.qml \
-    MainScreenHeader.qml \
     MainScreen.qml \
+    MainScreenPreviews.qml \
     NoteTab.qml \
     TabBar.qml \
     ThumbnailGrid.qml \

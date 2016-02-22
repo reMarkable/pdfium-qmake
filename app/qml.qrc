@@ -63,7 +63,6 @@
         <file>icons/yes.svg</file>
         <file>icons/no.svg</file>
         <file>icons/Power-off.svg</file>
-        <file>MainScreenHeader.qml</file>
         <file>icons/Index.svg</file>
         <file>icons/back_white.svg</file>
         <file>icons/forward_white.svg</file>
@@ -93,5 +92,6 @@
         <file>Dialog.qml</file>
         <file>icons/Template.svg</file>
         <file>DocumentPositionBar.qml</file>
+        <file>MainScreenPreviews.qml</file>
     </qresource>
 </RCC>
