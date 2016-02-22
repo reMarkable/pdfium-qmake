@@ -48,11 +48,25 @@ Rectangle {
     }
 
     Keys.onRightPressed: {
+        if (thumbnailGrid.visible) {
+            if (thumbnailGrid.currentThumbnailPage < thumbnailGrid.thumbnailPageCount - 1) {
+                thumbnailGrid.currentThumbnailPage++
+            }
+            return
+        }
+
         moveForward()
         event.accepted = true
     }
 
     Keys.onLeftPressed: {
+        if (thumbnailGrid.visible) {
+            if (thumbnailGrid.currentThumbnailPage > 0) {
+                thumbnailGrid.currentThumbnailPage--
+            }
+            return
+        }
+
         moveBackward()
         event.accepted = true
     }

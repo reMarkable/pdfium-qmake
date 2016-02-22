@@ -16,24 +16,24 @@ Rectangle {
     property int thumbnailPageCount
     property int pageCount
     property string documentPath
-    
+
     MouseArea {
         anchors.fill: parent
         enabled: thumbnailGrid.visible
         onClicked: thumbnailGrid.visible = false
     }
     
-        Image {
-            anchors {
-                top: parent.top
-                right: grid9Select.left
-                topMargin: 75
-                rightMargin: 10
-            }
-            height: 75
-            width: height
-            source: "qrc:///icons/yes_white.svg"
+    Image {
+        anchors {
+            top: parent.top
+            right: grid9Select.left
+            topMargin: 75
+            rightMargin: 10
         }
+        height: 75
+        width: height
+        source: "qrc:///icons/yes_white.svg"
+    }
     
     Image {
         id: grid9Select

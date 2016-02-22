@@ -33,6 +33,13 @@ Item {
     }
 
     Keys.onRightPressed: {
+        if (thumbnailGrid.visible) {
+            if (thumbnailGrid.currentThumbnailPage < thumbnailGrid.thumbnailPageCount - 1) {
+                thumbnailGrid.currentThumbnailPage++
+            }
+            return
+        }
+
         if (document.currentIndex < pageCount - 1) {
             document.currentIndex++
             event.accepted = true
@@ -40,6 +47,13 @@ Item {
     }
 
     Keys.onLeftPressed: {
+        if (thumbnailGrid.visible) {
+            if (thumbnailGrid.currentThumbnailPage > 0) {
+                thumbnailGrid.currentThumbnailPage--
+            }
+            return
+        }
+
         if (document.currentIndex > 0) {
             document.currentIndex--
             event.accepted = true
