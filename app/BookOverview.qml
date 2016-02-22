@@ -78,7 +78,7 @@ Item {
 
             deleteDialog.show("Are you sure you want to delete pages " + pageNumbers.join(", ") + "?")
         } else {
-            deleteDialog.show("Are you sure you want to delete page " + selectedPages[0] + "?")
+            deleteDialog.show("Are you sure you want to delete page " + pageNumbers[0] + "?")
         }
     }
 
