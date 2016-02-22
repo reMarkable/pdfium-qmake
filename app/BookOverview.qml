@@ -291,8 +291,6 @@ Item {
         }
     }
 
-
-
     Rectangle {
         id: previewBackground
         width: rootItem.width

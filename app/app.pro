@@ -45,7 +45,6 @@ HEADERS += \
     messagehandler.h
 
 OTHER_FILES += \
-    ArchiveBook.qml \
     ArchiveButton.qml \
     ArchiveMain.qml \
     ArchiveView.qml \
@@ -75,4 +74,5 @@ contains(QT_ARCH, arm) {
 
 DISTFILES += \
     BookThumbnail.qml \
-    EditActions.qml
+    EditActions.qml \
+    BookOverview.qml

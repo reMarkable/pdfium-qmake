@@ -8,9 +8,9 @@ Rectangle {
     x: -viewRoot.x
     y: -viewRoot.y
     visible: false
-    
+
     color: "#7f000000"
-    
+
     property int maxDisplayItems: 9
     property int currentThumbnailPage
     property int thumbnailPageCount
@@ -22,19 +22,19 @@ Rectangle {
         enabled: thumbnailGrid.visible
         onClicked: thumbnailGrid.visible = false
     }
-    
-    Image {
-        anchors {
-            top: parent.top
-            right: grid9Select.left
-            topMargin: 75
-            rightMargin: 10
+
+        Image {
+            anchors {
+                top: parent.top
+                right: grid9Select.left
+                topMargin: 75
+                rightMargin: 10
+            }
+            height: 75
+            width: height
+            source: "qrc:///icons/yes_white.svg"
         }
-        height: 75
-        width: height
-        source: "qrc:///icons/yes_white.svg"
-    }
-    
+
     Image {
         id: grid9Select
         anchors {
@@ -71,7 +71,7 @@ Rectangle {
             onClicked: thumbnailGrid.maxDisplayItems = 36
         }
     }
-    
+
     Grid {
         id: thumbGrid
         anchors {
@@ -82,12 +82,12 @@ Rectangle {
         }
         columns: (thumbnailGrid.maxDisplayItems === 9 ) ? 3 : 6
         rows: (thumbnailGrid.maxDisplayItems === 9 ) ? 3 : 6
-        
+
         spacing: (thumbnailGrid.maxDisplayItems === 9) ? 50 : 10
-        
+
         Repeater {
             model: thumbnailGrid.visible ? Math.min(thumbnailGrid.maxDisplayItems, thumbnailGrid.pageCount - thumbnailGrid.currentThumbnailPage * thumbnailGrid.maxDisplayItems) : 0
-            
+
             delegate: Rectangle {
                 id: thumbnailDelegate
                 width: (thumbnailGrid.maxDisplayItems === 9 ) ? 270 : 150
@@ -96,14 +96,14 @@ Rectangle {
                 property int pageNumber: modelData + thumbnailGrid.currentThumbnailPage * thumbnailGrid.maxDisplayItems
                 border.color: "black"
                 border.width: thumbnailGrid.currentThumbnailPage === pageNumber ? 8 : 0
-                
+
                 Image {
                     anchors.fill: parent
                     anchors.margins: 8
                     source: "file://" + thumbnailGrid.documentPath + "-" + thumbnailDelegate.pageNumber + ".thumbnail.jpg"
                     smooth: false
                     asynchronous: true
-                    
+
                     Rectangle {
                         anchors {
                             top: parent.top
@@ -113,7 +113,7 @@ Rectangle {
                         height: 50
                         color: "#a0000000"
                         radius: 5
-                        
+
                         Text {
                             anchors.centerIn: parent
                             color: "white"
@@ -121,7 +121,7 @@ Rectangle {
                         }
                     }
                 }
-                
+
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
@@ -132,8 +132,8 @@ Rectangle {
             }
         }
     }
-    
-    
+
+
     Item {
         anchors {
             bottom: parent.bottom
@@ -146,13 +146,13 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
         }
-        
+
         Row {
             id: pageRow
             anchors.centerIn: parent
-            
+
             spacing: 10
-            
+
             Repeater {
                 model: thumbnailGrid.thumbnailPageCount
                 delegate: Rectangle {
@@ -162,7 +162,7 @@ Rectangle {
                     color: thumbnailGrid.currentThumbnailPage === index ? "black" : "transparent"
                     border.width: 2
                     border.color: "white"
-                    
+
                     MouseArea {
                         anchors.fill: parent
                         onClicked: thumbnailGrid.currentThumbnailPage = index
@@ -170,8 +170,8 @@ Rectangle {
                 }
             }
         }
-        
-        
+
+
         Image {
             anchors.right: parent.right
             width: height
@@ -180,7 +180,7 @@ Rectangle {
             anchors.margins: 5
             source: "qrc:///icons/forward_white.svg"
             visible: (thumbnailGrid.currentThumbnailPage < thumbnailGrid.thumbnailPageCount - 1)
-            
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
@@ -190,7 +190,7 @@ Rectangle {
                 }
             }
         }
-        
+
         Image {
             anchors.left: parent.left
             width: height
@@ -199,7 +199,7 @@ Rectangle {
             anchors.margins: 5
             source: "qrc:///icons/back_white.svg"
             visible: (thumbnailGrid.currentThumbnailPage > 0)
-            
+
             MouseArea {
                 anchors.fill: parent
                 onClicked: {

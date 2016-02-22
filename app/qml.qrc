@@ -82,7 +82,6 @@
         <file>icons/Grid 36_white.svg</file>
         <file>icons/Grid 36.svg</file>
         <file>ArchiveMain.qml</file>
-        <file>ArchiveBook.qml</file>
         <file>icons/xoom+_white.svg</file>
         <file>icons/Lock_small_white.svg</file>
         <file>icons/Open-book_white.svg</file>
@@ -95,5 +94,6 @@
         <file>MainScreenPreviews.qml</file>
         <file>BookThumbnail.qml</file>
         <file>EditActions.qml</file>
+        <file>BookOverview.qml</file>
     </qresource>
 </RCC>

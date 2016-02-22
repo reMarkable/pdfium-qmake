@@ -182,7 +182,7 @@ Rectangle {
             onClicked: thumbnailGrid.visible = false
         }
 
-        ArchiveBook {
+        BookOverview {
             document: noteTab.document
             anchors.fill: parent
             onPageClicked:{

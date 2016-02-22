@@ -10,6 +10,13 @@ Rectangle {
     signal openBookAt(var path, var page)
 
     property string currentBook: ""
+    onCurrentBookChanged: {
+        if (currentBook === "") {
+            archiveBook.document = null
+        } else {
+            archiveBook.document = Collection.getDocument(archiveView.currentBook)
+        }
+    }
 
     Rectangle {
         anchors {
@@ -118,7 +125,7 @@ Rectangle {
         anchors.fill: parent
     }
 
-    ArchiveBook {
+    BookOverview {
         id: archiveBook
 
         visible: archiveView.currentBook != ""
@@ -128,10 +135,8 @@ Rectangle {
                 if (document) {
                     document.clearCache()
                 }
-                document = null
             } else {
                 forceActiveFocus()
-                document = Collection.getDocument(archiveView.currentBook)
             }
         }
         onPageClicked: archiveView.openBookAt(archiveView.currentBook, index)
