@@ -36,7 +36,6 @@ Window {
         }
 
         function openDocument(path) {
-
             var name = Collection.title(path)
             var index = tabBar.tabModel.indexOf(name)
 
@@ -60,9 +59,9 @@ Window {
                 var objectList = tabBar.objectList
                 objectList.push(createdObject)
                 tabBar.objectList = objectList
-                tabBar.currentTab = newIndex
+                tabBar.setCurrentTab(newIndex)
             } else {
-                tabBar.currentTab = index + 1
+                tabBar.setCurrentTab(index + 1)
             }
         }
 
@@ -70,7 +69,7 @@ Window {
         Timer {
             id: homeButtonTimer
             onTriggered: {
-                tabBar.currentTab = 0
+                tabBar.setCurrentTab(0)
                 rootItem.homeRecentlyClicked = false
             }
             interval: 200
@@ -117,7 +116,6 @@ Window {
             id: documentComponent
 
             DocumentTab {
-                visible: tabBar.currentTab === tabIndex
                 anchors.fill: parent
 
                 property int tabIndex
@@ -128,7 +126,6 @@ Window {
             id: noteComponent
 
             NoteTab {
-                visible: tabBar.currentTab === tabIndex
                 anchors.fill: parent
                 property int tabIndex
             }
@@ -139,7 +136,6 @@ Window {
 
             ArchiveView {
                 id: archiveView
-                visible: (tabBar.currentTab === tabIndex)
                 anchors.fill: parent
                 property int tabIndex
 
@@ -162,7 +158,6 @@ Window {
             MainScreen {
                 id: mainScreen
                 anchors.fill: parent
-                visible: (tabBar.currentTab === 0)
 
                 onNewNoteClicked: {
                     if (tabBar.tabModel.length > 4) {
@@ -175,7 +170,7 @@ Window {
                     var objectList = tabBar.objectList
                     objectList.push(createdObject)
                     tabBar.objectList = objectList
-                    tabBar.currentTab = newIndex
+                    tabBar.setCurrentTab(newIndex)
                 }
 
                 onNewSketchClicked: {
@@ -189,7 +184,7 @@ Window {
                     var objectList = tabBar.objectList
                     objectList.push(createdObject)
                     tabBar.objectList = objectList
-                    tabBar.currentTab = newIndex
+                    tabBar.setCurrentTab(newIndex)
                 }
 
                 onArchiveClicked: {
@@ -205,9 +200,9 @@ Window {
                         var objectList = tabBar.objectList
                         objectList.splice(0, 0, createdObject)
                         tabBar.objectList = objectList
-                        tabBar.currentTab = 1
+                        tabBar.setCurrentTab(1)
                     } else {
-                        tabBar.currentTab = index + 1
+                        tabBar.setCurrentTab(index + 1)
                     }
                     console.timeEnd("archiveclicked")
                 }

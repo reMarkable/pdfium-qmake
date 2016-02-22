@@ -26,7 +26,7 @@ Rectangle {
     function closePage(index) {
         if (index === tabBar.currentTab - 1) {
             if (tabBar.currentTab > 0) {
-                tabBar.currentTab = tabBar.currentTab - 1
+                setCurrentTab(tabBar.currentTab - 1)
             }
         }
 
@@ -34,6 +34,25 @@ Rectangle {
         objectList[index].destroy()
         objectList.splice(index, 1)
         tabBar.objectList = objectList
+    }
+
+    function setCurrentTab(index) {
+        if (index === currentTab) {
+            return
+        }
+
+        if (currentTab === 0) {
+            mainScreen.visible = false
+        } else {
+            objectList[currentTab - 1].visible = false
+        }
+
+        currentTab = index
+        if (index === 0) {
+            mainScreen.visible = true
+        } else {
+            objectList[index - 1].visible = true
+        }
     }
 
     property int currentTab: 0
@@ -99,7 +118,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    tabBar.currentTab = 0
+                    tabBar.setCurrentTab(0)
                 }
             }
         }
@@ -141,7 +160,7 @@ Rectangle {
                     id: tabMouseArea
                     anchors.fill: parent
                     onClicked: {
-                        tabBar.currentTab = index + 1
+                        tabBar.setCurrentTab(index + 1)
                     }
                     hoverEnabled: true
                 }
