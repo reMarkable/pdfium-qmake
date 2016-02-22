@@ -96,6 +96,7 @@ Item {
             BookThumbnail {
                 width: mainScreenPreviews.thumbnailWidth
                 height: mainScreenPreviews.thumbnailHeight
+                onClicked: mainScreen.openBook(modelData)
             }
         }
     }
