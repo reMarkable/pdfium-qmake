@@ -38,6 +38,7 @@ Item {
             }
             document = null
         } else {
+            forceActiveFocus()
             document = Collection.getDocument(archiveView.currentBook)
         }
     }
@@ -57,6 +58,18 @@ Item {
 
     onCurrentPageChanged: {
         reloadModel()
+    }
+
+    /// Key handling
+    Keys.onRightPressed: {
+        if (currentPage < pageCount - 1) {
+            currentPage++
+        }
+    }
+    Keys.onLeftPressed: {
+        if (currentPage > 0) {
+            currentPage--
+        }
     }
 
     function deletePages() {

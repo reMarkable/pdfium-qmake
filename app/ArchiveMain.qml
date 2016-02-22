@@ -31,7 +31,25 @@ Item {
     }
 
     property var selectedBooks: []
-    
+
+    /// Key handling
+    Component.onCompleted: forceActiveFocus()
+    onVisibleChanged: {
+        if (visible) {
+            forceActiveFocus()
+        }
+    }
+    Keys.onRightPressed: {
+        if (currentPage < pageRowRepeater.count - 1) {
+            currentPage++
+        }
+    }
+    Keys.onLeftPressed: {
+        if (currentPage > 0) {
+            currentPage--
+        }
+    }
+
     Grid {
         id: mainArchiveGrid
         anchors {

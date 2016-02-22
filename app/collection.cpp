@@ -97,6 +97,7 @@ QObject *Collection::getDocument(const QString &path)
         if (document) {
             return document;
         } else {
+            qDebug() << "removing" << path;
             m_openDocuments.remove(path);
         }
     }
