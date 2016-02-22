@@ -27,7 +27,7 @@ Column {
     //property var buttons: []
     property QtObject document
     property QtObject drawingArea
-    property string currentTemplate: (document === undefined || document === null) ? "" : document.currentTemplate
+    property string currentTemplate: (document === undefined || document === null) ? "None" : document.currentTemplate
 
     onCurrentTemplateChanged: {
         if (!document) {
