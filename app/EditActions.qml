@@ -8,6 +8,7 @@ Item {
 
     property bool selectionModeActive: false
     signal deleteItems()
+    property int maxDisplayItemCount: 9
     
     Rectangle {
         id: modeSelect
@@ -28,6 +29,8 @@ Item {
             }
             color: "#666"
             icon: "qrc:///icons/Grid 9.svg"
+
+            onClicked: editActionsItem.maxDisplayItemCount = 9
         }
         
         ArchiveButton {
@@ -37,6 +40,7 @@ Item {
             }
             color: "#666"
             icon: "qrc:///icons/Grid 36_white.svg"
+            onClicked: editActionsItem.maxDisplayItemCount = 36
         }
     }
     

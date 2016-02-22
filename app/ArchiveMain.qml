@@ -69,8 +69,9 @@ Item {
             topMargin: 25
             horizontalCenter: parent.horizontalCenter
         }
-        columns: 3
-        rows: 3
+
+        columns: (editActionsItem.maxDisplayItemCount === 9 ) ? 3 : 6
+        rows: (editActionsItem.maxDisplayItemCount === 9 ) ? 3 : 6
         spacing: 30
 
         property int pageItemCount: columns * rows
@@ -92,6 +93,9 @@ Item {
             id: documentRepeater
             delegate: BookThumbnail {
                 id: bookItem
+
+                width: (editActionsItem.maxDisplayItemCount === 9 ) ? 320 : 150
+                height: (editActionsItem.maxDisplayItemCount === 9 ) ? 400 : 200
 
                 property bool selected: (archiveMain.selectedBooks.indexOf(modelData) !== -1)
 

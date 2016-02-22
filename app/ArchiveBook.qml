@@ -128,9 +128,10 @@ Item {
             topMargin: 25
             horizontalCenter: parent.horizontalCenter
         }
-        columns: 3
-        rows: 3
-        
+
+        columns: (editActionsItem.maxDisplayItemCount === 9 ) ? 3 : 6
+        rows: (editActionsItem.maxDisplayItemCount === 9 ) ? 3 : 6
+
         Repeater {
             id: pageRepeater
             
