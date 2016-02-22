@@ -28,6 +28,8 @@ Rectangle {
             if (tabBar.currentTab > 0) {
                 setCurrentTab(tabBar.currentTab - 1)
             }
+        } else if (tabBar.tabModel.length < 2) {
+            setCurrentTab(0)
         }
 
         var objectList = tabBar.objectList
