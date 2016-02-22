@@ -6,6 +6,17 @@ Item {
     
     visible: archiveView.currentBook != ""
     property QtObject document
+    onDocumentChanged: {
+        if (!document) {
+            pageCount = 0
+            pageRepeater.model = 0
+        } else {
+            document.preload()
+            pageCount = Qt.binding(function() { return Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
+            currentPage = 0
+            pageRepeater.model = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
+        }
+    }
 
     property bool selectionModeActive: false
     onSelectionModeActiveChanged: {
@@ -23,14 +34,8 @@ Item {
     onVisibleChanged: {
         if (!visible) {
             document = null
-            pageCount = 0
-            pageRepeater.model = 0
         } else {
             document = Collection.getDocument(archiveView.currentBook)
-            document.preload()
-            pageCount = Qt.binding(function() { return Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
-            currentPage = 0
-            pageRepeater.model = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
         }
     }
 

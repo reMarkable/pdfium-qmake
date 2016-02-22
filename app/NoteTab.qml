@@ -35,12 +35,6 @@ Rectangle {
         }
     }
 
-    Component.onDestruction: {
-        if (document) {
-            document.destroy()
-        }
-    }
-
     onVisibleChanged: {
         if (visible) {
             forceActiveFocus()
