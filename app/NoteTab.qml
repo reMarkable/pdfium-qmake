@@ -39,7 +39,9 @@ Rectangle {
         if (visible) {
             forceActiveFocus()
         } else {
-            rootItem.forceActiveFocus()
+            if (document) {
+                document.clearCache()
+            }
         }
     }
 
