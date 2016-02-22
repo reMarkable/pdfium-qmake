@@ -93,5 +93,6 @@
         <file>icons/Template.svg</file>
         <file>DocumentPositionBar.qml</file>
         <file>MainScreenPreviews.qml</file>
+        <file>BookThumbnail.qml</file>
     </qresource>
 </RCC>

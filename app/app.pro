@@ -72,3 +72,6 @@ contains(QT_ARCH, arm) {
    SOURCES += digitizer.cpp
    HEADERS += digitizer.h
 }
+
+DISTFILES += \
+    BookThumbnail.qml
