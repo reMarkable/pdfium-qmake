@@ -107,13 +107,13 @@ Item {
 
                     color: "#7f000000"
                     visible: archiveMain.selectionModeActive && !bookItem.selected
-                    width: archiveMain.documentPreviewWidth + 2
-                    height: archiveMain.documentPreviewHeight + 2
-                }
+                    width: parent.width - 20
+                    height: parent.height - 20
 
+                }
                 Image {
                     id: bookSelectedIcon
-                    anchors.centerIn: parent
+                    anchors.centerIn: bookSelectionOverlay
                     width: mainScreen.bigIconSize
                     height: width
 
@@ -122,6 +122,7 @@ Item {
                     visible: archiveMain.selectionModeActive
                     source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                 }
+
 
                 ArchiveButton {
                     id: showBookButton
