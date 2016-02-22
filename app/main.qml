@@ -218,7 +218,7 @@ Window {
                 }
 
                 onOpenBook: {
-                    rootItem.openDocument(path)
+                    rootItem.openDocument(path, -1)
                 }
             }
 
