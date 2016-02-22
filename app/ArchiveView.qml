@@ -121,6 +121,21 @@ Rectangle {
     ArchiveBook {
         id: archiveBook
 
+        visible: archiveView.currentBook != ""
+
+        onVisibleChanged: {
+            if (!visible) {
+                if (document) {
+                    document.clearCache()
+                }
+                document = null
+            } else {
+                forceActiveFocus()
+                document = Collection.getDocument(archiveView.currentBook)
+            }
+        }
+        onPageClicked: archiveView.openBookAt(archiveView.currentBook, index)
+
         anchors.fill: parent
     }
 }

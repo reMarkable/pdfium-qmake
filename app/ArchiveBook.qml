@@ -4,7 +4,8 @@ import com.magmacompany 1.0
 Item {
     id: archiveBook
     
-    visible: archiveView.currentBook != ""
+    signal pageClicked(var index)
+
     property QtObject document
     onDocumentChanged: {
         if (!document) {
@@ -31,18 +32,6 @@ Item {
     property int documentPageCount: document === null ? 0 : document.pageCount
 
     property int maxDisplayItems: 9
-
-    onVisibleChanged: {
-        if (!visible) {
-            if (document) {
-                document.clearCache()
-            }
-            document = null
-        } else {
-            forceActiveFocus()
-            document = Collection.getDocument(archiveView.currentBook)
-        }
-    }
 
     function reloadModel() {
         if (!document) {
@@ -137,8 +126,8 @@ Item {
             
             delegate: Item {
                 id: bookItem
-                width: 320
-                height: 400
+                width: (editActionsItem.maxDisplayItemCount === 9 ) ? 320 : 150
+                height: (editActionsItem.maxDisplayItemCount === 9 ) ? 400 : 200
                 property int pageNumber: index + archiveBook.currentPage * archiveBook.maxDisplayItems
                 property bool selected: (archiveBook.selectedPages.indexOf(pageNumber) !== -1)
 
@@ -160,7 +149,7 @@ Item {
                         }
                         asynchronous: true
                         
-                        source: "file://" + archiveView.currentBook + "-" + bookItem.pageNumber + ".thumbnail.jpg"
+                        source: archiveBook.document !== null ? "file://" + archiveBook.document.path() + "-" + bookItem.pageNumber + ".thumbnail.jpg" : ""
                         cache: false
                         sourceSize.width: width
                         sourceSize.height: height
@@ -185,7 +174,7 @@ Item {
                             anchors.fill: parent
                             onClicked: {
                                 if (!editActionsItem.selectionModeActive) {
-                                    archiveView.openBookAt(archiveView.currentBook, bookItem.pageNumber)
+                                    archiveBook.pageClicked(bookItem.pageNumber)
                                     return
                                 }
 
@@ -329,7 +318,7 @@ Item {
                 margins: 100
             }
 
-            source: visible ? "file://" + archiveView.currentBook + "-" + previewBackground.index + ".thumbnail.jpg" : ""
+            source: visible ? "file://" + archiveBook.document.path() + "-" + previewBackground.index + ".thumbnail.jpg" : ""
             sourceSize.width: width
             sourceSize.height: height
 
@@ -371,7 +360,7 @@ Item {
                 }
 
                 icon: "qrc:///icons/Open-book_white.svg"
-                onClicked: archiveView.openBookAt(archiveView.currentBook, previewBackground.index)
+                onClicked: archiveBook.pageClicked(previewBackground.index)
             }
         }
     }
@@ -379,9 +368,8 @@ Item {
     Dialog {
         id: deleteDialog
         onAccepted: {
-            console.log(selectedPages)
             archiveBook.document.deletePages(selectedPages)
-            console.log("eplepung")
+            reloadModel()
             editActionsItem.selectionModeActive = false
         }
     }

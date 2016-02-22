@@ -165,11 +165,31 @@ Rectangle {
         document: noteTab.document
     }
 
-    ThumbnailGrid {
+
+    Rectangle {
         id: thumbnailGrid
-        currentThumbnailPage: noteTab.currentPage / maxDisplayItems
-        thumbnailPageCount: Math.ceil(noteTab.pageCount / maxDisplayItems)
-        documentPath: noteTab.documentPath
-        pageCount: noteTab.pageCount
+        width: rootItem.width
+        height: rootItem.height
+        x: -viewRoot.x
+        y: -viewRoot.y
+        visible: false
+
+        color: "#7f000000"
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: thumbnailGrid.visible
+            onClicked: thumbnailGrid.visible = false
+        }
+
+        ArchiveBook {
+            document: noteTab.document
+            anchors.fill: parent
+            onPageClicked:{
+                thumbnailGrid.visible = false
+                document.currentIndex = index
+                noteTab.forceActiveFocus()
+            }
+        }
     }
 }
