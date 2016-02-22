@@ -19,8 +19,7 @@ Rectangle {
         anchors {
             top: parent.top
             left: parent.left
-            topMargin: 100
-            leftMargin: 30
+            topMargin: 50
         }
 
         height: 300
@@ -33,7 +32,7 @@ Rectangle {
                 top: parent.top
                 bottom: parent.bottom
                 left: parent.left
-                right: newSketchItem.left
+                right: parent.horizontalCenter
             }
 
             Image {
@@ -63,7 +62,8 @@ Rectangle {
             anchors {
                 top: parent.top
                 bottom: parent.bottom
-                horizontalCenter: parent.horizontalCenter
+                left: parent.horizontalCenter
+                right: parent.right
             }
 
             Image {
@@ -86,40 +86,6 @@ Rectangle {
                 }
             }
 
-        }
-
-        Item {
-            id: goToArchiveItem
-
-            anchors {
-                top: parent.top
-                bottom: parent.bottom
-                left: newSketchItem.right
-                right: parent.right
-            }
-
-            Image {
-                source: "qrc:/icons/Archive-large.svg"
-                anchors.centerIn: parent
-                height: hugeIconSize
-                width: height
-                smooth: true
-
-                Text {
-                    anchors.top: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.bottomMargin: 20
-                    font.pointSize: 18
-                    text: "Archive"
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        mainScreen.archiveClicked()
-                    }
-                }
-            }
         }
     }
 
@@ -148,6 +114,7 @@ Rectangle {
                 frequentlyUsed.reloadModel()
             }
         }
+        onOpenClicked: mainScreen.archiveClicked()
     }
 
     MainScreenPreviews {
@@ -174,6 +141,7 @@ Rectangle {
                 recentlyImported.reloadModel()
             }
         }
+        onOpenClicked: mainScreen.archiveClicked()
     }
 
     Text {
