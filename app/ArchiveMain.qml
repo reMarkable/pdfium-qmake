@@ -81,12 +81,22 @@ Item {
             documentRepeater.model = Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, archiveMain.currentPage * mainArchiveGrid.pageItemCount)
         }
 
-        Component.onCompleted: reloadDocuments()
+        Component.onCompleted: reloadTimer.start()
         Connections {
             target: Collection
             onRecentlyUsedChanged: {
                 mainArchiveGrid.reloadDocuments()
             }
+        }
+        Timer {
+            id: reloadTimer
+            interval: 10
+            running: false
+            repeat: false
+            onTriggered: {
+                parent.reloadDocuments()
+            }
+
         }
 
         Repeater {
