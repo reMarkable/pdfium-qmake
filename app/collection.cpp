@@ -117,6 +117,7 @@ QObject *Collection::getDocument(const QString &path)
     }
 
     QTimer::singleShot(10, document, SLOT(preload()));
+    QTimer::singleShot(10, document, SLOT(loadLines()));
     QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
     m_openDocuments.insert(path, QPointer<Document>(document));
     return document;

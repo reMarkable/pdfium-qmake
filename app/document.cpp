@@ -33,17 +33,6 @@ Document::Document(QString path, QObject *parent)
         m_currentIndex = metadataFile.readLine().trimmed().toInt();
         m_pageCount = metadataFile.readLine().trimmed().toInt();
     }
-
-    QString cachedBackgroundPath = getStoredPagePath(m_currentIndex);
-    if (QFile::exists(cachedBackgroundPath)) {
-        m_pageContents[m_currentIndex] = QImage(cachedBackgroundPath);
-    }
-
-    QFile lineFile(m_path + ".lines");
-    if (lineFile.open(QIODevice::ReadOnly)) {
-        QDataStream dataStream(&lineFile);
-        dataStream >> m_lines;
-    }
 }
 
 Document::~Document()
@@ -209,6 +198,15 @@ void Document::clearCache()
     }
     qDebug() << m_path << "bytes used:" << (totalSize / (1024 * 1024)) << "mb";
 #endif
+}
+
+void Document::loadLines()
+{
+    QFile lineFile(m_path + ".lines");
+    if (lineFile.open(QIODevice::ReadOnly)) {
+        QDataStream dataStream(&lineFile);
+        dataStream >> m_lines;
+    }
 }
 
 void Document::setPageCount(int pageCount)

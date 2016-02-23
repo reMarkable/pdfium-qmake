@@ -47,6 +47,8 @@ public slots:
     virtual QStringList availableTemplates() const = 0;
     virtual QString currentTemplate() const = 0;
 
+    void loadLines();
+
 signals:
     void currentIndexChanged();
     void pageCountChanged();
