@@ -47,6 +47,7 @@ Column {
         id: buttonRepeater
 
         delegate: Loader {
+            asynchronous: true
             sourceComponent: toolBox.availableButtons[modelData]
         }
     }
