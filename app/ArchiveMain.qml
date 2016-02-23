@@ -90,7 +90,7 @@ Item {
         }
         Timer {
             id: reloadTimer
-            interval: 10
+            interval: 0
             running: false
             repeat: false
             onTriggered: {
