@@ -188,7 +188,10 @@ Rectangle {
 
         BookOverview {
             document: noteTab.document
-            anchors.fill: parent
+            anchors {
+                fill: parent
+                topMargin: 75
+            }
             onPageClicked:{
                 thumbnailGrid.visible = false
                 document.currentIndex = index
