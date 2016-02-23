@@ -45,7 +45,7 @@ Item {
         color: "gray"
     }
 
-    Item {
+    Rectangle {
         id: openButton
         anchors {
             top: header.bottom

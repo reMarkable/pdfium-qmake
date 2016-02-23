@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import com.magmacompany 1.0
 
-Rectangle {
+Item  {
     id: mainScreen
     signal newNoteClicked
     signal newSketchClicked
