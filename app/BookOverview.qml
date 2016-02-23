@@ -68,6 +68,10 @@ Item {
             return
         }
 
+        if (selectedPages.length >= pageCount) {
+            return
+        }
+
         var pageNumbers = []
         for (var pageNumber in selectedPages) {
             pageNumbers.push(selectedPages[pageNumber] + 1)
