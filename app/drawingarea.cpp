@@ -196,7 +196,6 @@ void DrawingArea::setDocument(Document *document)
 
 void DrawingArea::mousePressEvent(QMouseEvent *)
 {
-    DEBUG_BLOCK
     if (m_zoomSelected) {
         DEBUG_BLOCK
         doZoom();
