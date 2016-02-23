@@ -111,10 +111,11 @@ void EPRenderer::drawRects()
         }
     }
 
-    if (timer.elapsed() > 75) {
+    const double damagedPercent = 100.0 * totalDamaged.height() * totalDamaged.width() / (fb->width() * fb->height());
+    if (timer.elapsed() > 75 && damagedPercent < 90) {
         qDebug() << "Drawing took:" << timer.elapsed() << "ms";
         qDebug() << "Damaged rect:" << totalDamaged;
-        qDebug() << "Damaged area:" << (double(100.0 * totalDamaged.height() * totalDamaged.width()) / double(fb->width() * fb->height())) << "%";
+        qDebug() << "Damaged area:" << damagedPercent << "%";
     }
 
     painter.end();
@@ -150,7 +151,7 @@ void EPRenderer::drawRects()
     }
 
 #else
-    if (((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) > 90) {
+    if (damagedPercent > 90) {
         static int ghostCount = 0;
         if (ghostCount > 0) {
             EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
@@ -163,11 +164,8 @@ void EPRenderer::drawRects()
     } else {
         //EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
         EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
-        return;
     }
 #endif
-
-//    qDebug() << Q_FUNC_INFO << timer.restart() << "updated";
 }
 
 void EPRenderer::handleEpaperNode(EPNode *node)
