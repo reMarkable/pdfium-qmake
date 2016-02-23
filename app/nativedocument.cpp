@@ -97,7 +97,6 @@ QString NativeDocument::currentTemplate() const
 void NativeDocument::addPage()
 {
     m_templates.append(m_defaultTemplate);
-    m_templates[pageCount() - 1] = m_templates.value(currentIndex());
     setPageCount(pageCount() + 1);
     setCurrentIndex(pageCount() - 1);
     setCurrentBackground(s_templateLoader.templates[m_defaultTemplate]);
