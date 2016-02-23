@@ -101,17 +101,24 @@ Item {
             onClicked: thumbnailGrid.visible = false
         }
 
-        BookOverview {
-            document: noteTab.document
+        Loader {
             anchors {
                 fill: parent
-                topMargin: 75
             }
-
-            onPageClicked:{
-                thumbnailGrid.visible = false
-                document.currentIndex = index
-                noteTab.forceActiveFocus()
+            asynchronous: true
+            sourceComponent: Component {
+                BookOverview {
+                    document: documentTab.document
+                    anchors {
+                        fill: parent
+                        topMargin: 75
+                    }
+                    onPageClicked:{
+                        thumbnailGrid.visible = false
+                        document.currentIndex = index
+                        documentTab.forceActiveFocus()
+                    }
+                }
             }
         }
     }
