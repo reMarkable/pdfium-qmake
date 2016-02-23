@@ -49,8 +49,13 @@ Rectangle {
 
         Image {
             id: bookHeaderIcon
-            anchors.centerIn: parent
-            width: parent.width - 20
+            anchors {
+                left: parent.left
+                leftMargin: 20
+                verticalCenter: parent.verticalCenter
+            }
+
+            width: height
             height: parent.height - 20
             sourceSize.width: width
             sourceSize.height: height
