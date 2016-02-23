@@ -188,16 +188,24 @@ Rectangle {
             onClicked: thumbnailGrid.visible = false
         }
 
-        BookOverview {
-            document: noteTab.document
+        Loader {
             anchors {
                 fill: parent
-                topMargin: 75
             }
-            onPageClicked:{
-                thumbnailGrid.visible = false
-                document.currentIndex = index
-                noteTab.forceActiveFocus()
+            asynchronous: true
+            sourceComponent: Component {
+                BookOverview {
+                    document: visible ? noteTab.document : null
+                    anchors {
+                        fill: parent
+                        topMargin: 75
+                    }
+                    onPageClicked:{
+                        thumbnailGrid.visible = false
+                        document.currentIndex = index
+                        noteTab.forceActiveFocus()
+                    }
+                }
             }
         }
     }
