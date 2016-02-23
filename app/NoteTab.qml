@@ -129,6 +129,8 @@ Rectangle {
                 anchors.margins: 8
                 width: 24
                 height: width
+                sourceSize.width: width
+                sourceSize.height: height
                 source: "qrc:/icons/pluss.svg"
             }
         }
