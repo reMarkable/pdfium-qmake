@@ -31,6 +31,9 @@ public:
 
         QImage m_scaledImage;
         QImage m_sourceImage;
+#ifdef TWO_PASS
+        QImage m_monoImage;
+#endif
         Qt::TransformationMode m_transformationMode = Qt::FastTransformation;
     };
 };

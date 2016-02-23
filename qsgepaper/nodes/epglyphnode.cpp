@@ -22,7 +22,15 @@ void EPGlyphNode::EPGlyphNodeContent::draw(QPainter *painter) const
     for (int i=0; i<indices.size(); i++) {
         QPainterPath path = m_glyphs.rawFont().pathForGlyph(indices[i]);
         painter->translate(positions[i].x(), (positions[i].y() - offset));
+#ifdef TWO_PASS
+        if (painter->renderHints() & QPainter::Antialiasing) {
+            painter->fillPath(path, m_color);;
+        } else {
+            painter->fillPath(path, Qt::black);;
+        }
+#else
         painter->fillPath(path, m_color);;
+#endif
         painter->translate(-positions[i].x(), -(positions[i].y() - offset));
     }
 

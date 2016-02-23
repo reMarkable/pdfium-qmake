@@ -15,6 +15,8 @@ CONFIG += c++11
 TARGET = qsgepaper
 TEMPLATE = lib
 
+#DEFINES += TWO_PASS
+
 SOURCES += \
     epcontext.cpp \
     epframebuffer.cpp \

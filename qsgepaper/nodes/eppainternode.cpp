@@ -13,6 +13,12 @@ EPPainterNode::EPPainterNode(QQuickPaintedItem *item) :
 
 void EPPainterNode::EPPainterNodeContent::draw(QPainter *painter) const
 {
+#ifdef TWO_PASS
+    if (!(painter->renderHints() & QPainter::Antialiasing)) {
+        return;
+    }
+#endif
+
     Q_ASSERT(m_item);
     painter->save();
     painter->setTransform(transform);

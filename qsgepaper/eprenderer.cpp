@@ -74,7 +74,11 @@ void EPRenderer::drawRects()
     }
 
     QPainter painter(fb);
+#ifdef TWO_PASS
+    painter.setRenderHint(QPainter::Antialiasing, false);
+#else
     painter.setRenderHint(QPainter::Antialiasing);
+#endif
     painter.setBackground(Qt::white);
 
     for(const QRect &area : damagedAreas) {
@@ -91,18 +95,29 @@ void EPRenderer::drawRects()
         }
     }
 
+#ifdef TWO_PASS
+    QVector<std::shared_ptr<EPNode::Content>> drawnItems;
+#endif
+
     QRect painterClipRect = totalDamaged;
     // Rects are sorted in z-order
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         if (rect->dirty) {
             rect->draw(&painter);
             rect->dirty = false;
+#ifdef TWO_PASS
+            drawnItems.append(rect);
+#endif
             continue;
         }
 
         for (const QRect &area : damagedAreas) {
             if (rect->transformedRect.intersects(area)) {
+#ifdef TWO_PASS
+                drawnItems.append(rect);
+#else
                 rect->draw(&painter);
+#endif
                 damagedAreas.append(rect->transformedRect);
                 painterClipRect = painterClipRect.united(rect->transformedRect);
                 painter.setClipRect(painterClipRect);
@@ -118,38 +133,25 @@ void EPRenderer::drawRects()
         qDebug() << "Damaged area:" << damagedPercent << "%";
     }
 
-    painter.end();
-
-#if 0
-    // FIXME: do something more clever here plz
-    for (int i=0; i<fastAreas.size(); i++) {
-        if (fastAreas[i].isEmpty()) {
-            continue;
-        }
-        for (int j=0; j<fastAreas.size(); j++) {
-            if (i==j) continue;
-            if (fastAreas[i].intersects(fastAreas[j])) {
-                fastAreas[i] = fastAreas[i].united(fastAreas[j]);
-                fastAreas[j] = QRect();
-            }
-        }
+#ifdef TWO_PASS
+    EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Mono, EPFrameBuffer::PartialUpdate, true);
+    painter.fillRect(totalDamaged, Qt::white);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    for(std::shared_ptr<EPNode::Content> rect : currentRects) {
+        rect->draw(&painter);
     }
-
-    qDebug() << "count" << damagedAreas.count();
-    if (damagedAreas.count() > 20) {
-        sendUpdate(m_fb.rect(), Grayscale, PartialUpdate, true);
+    if (damagedPercent > 90) {
+        static int ghostCount = 0;
+        if (ghostCount > 0) {
+            EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+            ghostCount = 0;
+        } else {
+            EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
+            ghostCount++;
+        }
     } else {
-        int i = 0;
-        for(const QRect &area : fastAreas) {
-            if (area.isEmpty()) {
-                continue;
-            }
-            sendUpdate(area, Fast, PartialUpdate);
-            i++;
-        }
-        qDebug() << "damaged areas:" << i;
+        EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
     }
-
 #else
     if (damagedPercent > 90) {
         static int ghostCount = 0;
@@ -160,12 +162,11 @@ void EPRenderer::drawRects()
             EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
             ghostCount++;
         }
-        //EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
     } else {
-        //EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
-        EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
+        EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
     }
 #endif
+      painter.end();
 }
 
 void EPRenderer::handleEpaperNode(EPNode *node)

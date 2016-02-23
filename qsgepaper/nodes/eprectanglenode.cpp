@@ -14,7 +14,27 @@ void EPRectangleNode::EPRectangleNodeContent::draw(QPainter *painter) const
     painter->save();
     painter->setTransform(transform);
 
+#if TWO_PASS
+    if (painter->renderHints() & QPainter::Antialiasing) {
+        painter->setBrush(m_bgColor);
+        painter->setPen(QPen(m_fgColor, m_borderWidth));
+    } else {
+        if (m_bgColor != Qt::black && m_bgColor != Qt::white) {
+            painter->setBrush(Qt::transparent);
+        } else {
+            painter->setBrush(m_bgColor);
+        }
+
+        if (m_fgColor != Qt::black && m_fgColor != Qt::white) {
+            painter->setPen(QPen(Qt::transparent, m_borderWidth));
+        } else {
+            painter->setPen(QPen(m_fgColor, m_borderWidth));
+        }
+    }
+#else
     painter->setBrush(m_bgColor);
+    painter->setPen(QPen(m_fgColor, m_borderWidth));
+#endif
 
     // Account for stupid QPainter drawing outside of the rectangle...
     QRect drawnRect(rect.x() + m_borderWidth,
@@ -22,7 +42,6 @@ void EPRectangleNode::EPRectangleNodeContent::draw(QPainter *painter) const
                     rect.width() - m_borderWidth * 2,
                     rect.height() - m_borderWidth * 2);
 
-    painter->setPen(QPen(m_fgColor, m_borderWidth));
     if (m_radius) {
         painter->drawRoundedRect(drawnRect, m_radius, m_radius);
     } else {

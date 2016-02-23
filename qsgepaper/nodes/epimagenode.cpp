@@ -11,9 +11,20 @@ EPImageNode::EPImageNode() :
 
 void EPImageNode::EPImageNodeContent::draw(QPainter *painter) const
 {
+
     painter->save();
     painter->setTransform(transform);
+
+#ifdef TWO_PASS
+    if ((painter->renderHints() & QPainter::Antialiasing)) {
+        painter->drawImage(rect.topLeft(), m_scaledImage);
+    } else {
+        painter->drawImage(rect.topLeft(), m_monoImage);
+    }
+#else
     painter->drawImage(rect.topLeft(), m_scaledImage);
+#endif
+
     painter->restore();
 }
 
@@ -24,7 +35,10 @@ void EPImageNode::EPImageNodeContent::updateCached()
     }
 
     m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, m_transformationMode);
-    //m_scaledImage = m_sourceImage.scaled(rect.size(), Qt::IgnoreAspectRatio, Qt::FastTransformation);
+#ifdef TWO_PASS
+    m_monoImage = m_scaledImage.createMaskFromColor(Qt::black, Qt::MaskOutColor);
+    m_monoImage.setColor(1, Qt::transparent);
+#endif
 }
 
 
