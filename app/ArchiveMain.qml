@@ -6,7 +6,7 @@ Item {
     visible: archiveView.currentBook === ""
     
     property int currentPage: 0
-    onCurrentPageChanged: mainArchiveGrid.reloadDocuments()
+    onCurrentPageChanged: reloadTimer.start()
 
     function deleteBooks() {
         if (selectedBooks.length === 0) {
