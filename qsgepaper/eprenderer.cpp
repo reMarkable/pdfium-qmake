@@ -73,7 +73,6 @@ void EPRenderer::drawRects()
         }
     }
 
-    //qDebug() << "starting drawing" << timer.elapsed();
     QPainter painter(fb);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setBackground(Qt::white);
@@ -81,7 +80,6 @@ void EPRenderer::drawRects()
     for(const QRect &area : damagedAreas) {
         painter.eraseRect(area);
     }
-    //qDebug() << "erased damage" << timer.elapsed();
 
     QRect totalDamaged;
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
@@ -94,7 +92,6 @@ void EPRenderer::drawRects()
     }
 
     QRect painterClipRect = totalDamaged;
-    painter.setClipRect(painterClipRect);
     // Rects are sorted in z-order
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         if (rect->dirty) {
@@ -115,9 +112,9 @@ void EPRenderer::drawRects()
     }
 
     if (timer.elapsed() > 75) {
-        qDebug() << Q_FUNC_INFO << "Drawing took:" << timer.restart() << "ms";
-        qDebug() << Q_FUNC_INFO << "Damaged rect:" << totalDamaged;
-        qDebug() << Q_FUNC_INFO << "Damaged area:" << ((double)(100.0 * totalDamaged.height() * totalDamaged.width()) / (double)(fb->width() * fb->height())) << "%";
+        qDebug() << "Drawing took:" << timer.elapsed() << "ms";
+        qDebug() << "Damaged rect:" << totalDamaged;
+        qDebug() << "Damaged area:" << (double(100.0 * totalDamaged.height() * totalDamaged.width()) / double(fb->width() * fb->height())) << "%";
     }
 
     painter.end();
