@@ -14,12 +14,14 @@ Rectangle {
         visible = true
     }
 
+    property string message: ""
     property string question: ""
     signal accepted
     
     color: "#7f000000"
 
     function dismiss() {
+        dialog.message = ""
         dialog.question = ""
         dialog.visible = false
     }
@@ -46,12 +48,14 @@ Rectangle {
                 bottom: parent.verticalCenter
             }
             
-            text: dialog.question
+            text: dialog.question !== "" ? dialog.question : (dialog.message !== "" ? dialog.message : "")
             font.pointSize: 18
             wrapMode: Text.Wrap
         }
         
         Item {
+            id: yesButton
+            visible: dialog.question !== ""
             anchors {
                 right: parent.horizontalCenter
                 left: parent.left
@@ -76,6 +80,8 @@ Rectangle {
         }
         
         Item {
+            id: noButton
+            visible: dialog.question !== ""
             anchors {
                 left: parent.horizontalCenter
                 right: parent.right
@@ -93,6 +99,31 @@ Rectangle {
                     anchors.fill: parent
                     onClicked: {
                         dialog.dismiss()
+                    }
+                }
+            }
+        }
+
+        Item {
+            id: okButton
+            visible: dialog.message !== ""
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+                bottom: parent.bottom
+                top: parent.verticalCenter
+            }
+
+            Image {
+                anchors.centerIn: parent
+                source: "qrc:/icons/yes.svg"
+                height: 100
+                width: height
+                MouseArea {
+                    enabled: dialogContent.visible
+                    anchors.fill: parent
+                    onClicked: {
+                        dialog.accepted()
+                        dialog.visible = false
                     }
                 }
             }
