@@ -1,6 +1,7 @@
 #include "drawingarea.h"
 #include <QDebug>
 #include <QLine>
+#include <QLoggingCategory>
 #include <QPainter>
 #include <QElapsedTimer>
 #include <QThread>
@@ -17,6 +18,8 @@
 
 //#define DEBUG_PREDICTION
 
+QLoggingCategory timingDebug("drawingarea.timing");
+
 DrawingArea::DrawingArea() :
     m_invert(false),
     m_currentBrush(Line::Paintbrush),
@@ -30,6 +33,8 @@ DrawingArea::DrawingArea() :
     m_doublePredict(false)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
+
+    timingDebug.setEnabled(QtDebugMsg, false);
 }
 
 DrawingArea::~DrawingArea()
@@ -278,7 +283,12 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
                                      prevPenPoint.pressure));
 
     PenPoint penPoint;
+    qint64 totalHandlingTime = 0;
+    int eventsHandled = 0;
+    QElapsedTimer handlingTimer;
     while (digitizer->getPoint(&penPoint)) {
+        handlingTimer.restart();
+        eventsHandled++;
 #ifdef DEBUG_PREDICTION
         PenPoint realPoint = point;
         painter.setPen(debugPen);
@@ -347,6 +357,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             }
 
             if (freeLuts < 1) {
+                totalHandlingTime += handlingTimer.nsecsElapsed();
                 continue;
             }
 
@@ -378,6 +389,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             }
 
             if (updateRect.isEmpty()) {
+                totalHandlingTime += handlingTimer.nsecsElapsed();
                 continue;
             }
 
@@ -395,8 +407,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             freeLuts--;
             lutTimer.restart();
             sendUpdate(updateRect, EPFrameBuffer::Grayscale);
+            totalHandlingTime += handlingTimer.nsecsElapsed();
         }
     }
+    qCDebug(timingDebug) << "average handling time:" << (totalHandlingTime / eventsHandled) << "ns";
 
     digitizer->releaseLock();
 
