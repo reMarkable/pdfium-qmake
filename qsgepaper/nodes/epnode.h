@@ -8,10 +8,10 @@
 
 struct EPNode
 {
-    virtual ~EPNode() {
-    }
+    virtual ~EPNode();
 
     struct Content {
+        virtual ~Content();
         virtual void draw(QPainter *) const = 0;
 
         QRect rect;
