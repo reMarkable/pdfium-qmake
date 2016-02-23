@@ -195,7 +195,7 @@ Rectangle {
             asynchronous: true
             sourceComponent: Component {
                 BookOverview {
-                    document: visible ? noteTab.document : null
+                    document: noteTab.document
                     anchors {
                         fill: parent
                         topMargin: 75
