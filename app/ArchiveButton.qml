@@ -13,8 +13,9 @@ Rectangle {
     signal clicked
     
     Image {
-        anchors.fill: parent
-        anchors.margins: 10
+        anchors.centerIn: parent
+        width: parent.width - 10
+        height: width
         sourceSize.width: width
         sourceSize.height: width
         source: archiveButton.icon

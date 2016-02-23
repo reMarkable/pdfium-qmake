@@ -49,13 +49,11 @@ Rectangle {
 
         Image {
             id: bookHeaderIcon
-            anchors {
-                top: parent.top
-                left: parent.left
-                bottom: parent.bottom
-                margins: 20
-            }
-            width: height
+            anchors.centerIn: parent
+            width: parent.width - 20
+            height: parent.height - 20
+            sourceSize.width: width
+            sourceSize.height: height
 
             source: "qrc:///icons/Notebook_white.svg"
 
@@ -91,12 +89,15 @@ Rectangle {
         Image {
             id: archiveHeaderIcon
             anchors {
-                top: parent.top
                 left: parent.left
-                bottom: parent.bottom
-                margins: 20
+                leftMargin: 20
+                verticalCenter: parent.verticalCenter
             }
+
+            height: parent.height - 20
             width: height
+            sourceSize.width: width
+            sourceSize.height: height
 
             source: "qrc:///icons/Archive-small_white.svg"
         }

@@ -68,6 +68,8 @@ Rectangle {
                 source: "qrc:/icons/yes.svg"
                 height: 100
                 width: height
+                sourceSize.width: width
+                sourceSize.height: height
                 MouseArea {
                     enabled: dialogContent.visible
                     anchors.fill: parent
@@ -94,6 +96,8 @@ Rectangle {
                 source: "qrc:/icons/no.svg"
                 height: 100
                 width: height
+                sourceSize.width: width
+                sourceSize.height: height
                 MouseArea {
                     enabled: dialogContent.visible
                     anchors.fill: parent
@@ -118,6 +122,8 @@ Rectangle {
                 source: "qrc:/icons/yes.svg"
                 height: 100
                 width: height
+                sourceSize.width: width
+                sourceSize.height: height
                 MouseArea {
                     enabled: dialogContent.visible
                     anchors.fill: parent
