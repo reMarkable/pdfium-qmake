@@ -68,14 +68,13 @@ Item {
             return
         }
 
+        var pageNumbers = []
+        for (var pageNumber in selectedPages) {
+            pageNumbers.push(selectedPages[pageNumber] + 1)
+        }
         if (selectedPages.length > 5) {
             deleteDialog.show("Are you sure you want to delete these pages?")
         } else if (selectedPages.length > 1) {
-            var pageNumbers = []
-            for (var pageNumber in selectedPages) {
-                pageNumbers.push(selectedPages[pageNumber] + 1)
-            }
-
             deleteDialog.show("Are you sure you want to delete pages " + pageNumbers.join(", ") + "?")
         } else {
             deleteDialog.show("Are you sure you want to delete page " + pageNumbers[0] + "?")
