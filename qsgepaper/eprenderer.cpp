@@ -156,14 +156,14 @@ void EPRenderer::drawRects()
     if (damagedPercent > 90) {
         static int ghostCount = 0;
         if (ghostCount > 0) {
-            EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+            EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
             ghostCount = 0;
         } else {
-            EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
+            EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
             ghostCount++;
         }
     } else {
-        EPFrameBuffer::instance()->sendUpdate(totalDamaged, EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
+        EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::PartialUpdate, true);
     }
 #endif
       painter.end();
