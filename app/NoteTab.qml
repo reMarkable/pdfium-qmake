@@ -71,6 +71,8 @@ Rectangle {
         event.accepted = true
     }
 
+    Keys.forwardTo: rootItem
+
     DrawingArea {
         id: drawingArea
         anchors.fill: parent
