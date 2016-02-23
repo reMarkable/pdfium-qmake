@@ -41,6 +41,7 @@ Window {
 
             if (index === -1) {
                 if (tabBar.tabModel.length > 4) {
+                    tooMainTabsDialog.visible = true
                     return
                 }
 
@@ -198,14 +199,15 @@ Window {
                 }
 
                 onArchiveClicked: {
-                    if (tabBar.tabModel.length > 4) {
-                        return
-                    }
-
                     console.time("archiveclicked")
                     var index = tabBar.tabModel.indexOf("Archive")
 
                     if (index === -1) {
+                        if (tabBar.tabModel.length > 4) {
+                            tooMainTabsDialog.visible = true
+                            return
+                        }
+
                         var createdObject = archiveComponent.createObject(viewRoot, {"tabIndex": 1 })
                         var objectList = tabBar.objectList
                         objectList.splice(0, 0, createdObject)
@@ -222,6 +224,12 @@ Window {
                 }
             }
 
+        }
+
+        Dialog {
+            id: tooMainTabsDialog
+            message: "Too many tabs open"
+            anchors.fill: parent
         }
 
         Rectangle {
