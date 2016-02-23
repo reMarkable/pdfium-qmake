@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
         QImage splashScreen("/data/start-crushed.png");
         painter.drawImage(0, 0, splashScreen);
         EPFrameBuffer::instance()->sendUpdate(fb->rect(), EPFrameBuffer::Grayscale, EPFrameBuffer::FullUpdate, true);
+        EPFrameBuffer::instance()->framebuffer()->fill(Qt::white);
     }
 
     if (!Digitizer::initialize("/dev/input/event1")) {
