@@ -136,14 +136,16 @@ Rectangle {
         Rectangle {
             width: 64
             height: 100
-            border.width: 4
             radius: 5
+            border.width: 4
+            border.color: "gray"
 
             Rectangle {
                 width: parent.width
                 height: drawingArea.smoothFactor * parent.height / 1000
-                color: "gray"
+                color: "darkGray"
                 border.width: 4
+                border.color: "gray"
                 radius: 5
             }
 
