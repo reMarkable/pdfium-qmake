@@ -42,8 +42,8 @@ Item {
             anchors.centerIn: parent
 
             asynchronous: true
-            width: parent.width - 2
-            height: parent.height - 2
+            width: parent.width - 4
+            height: parent.height - 4
             sourceSize.width: width
             sourceSize.height: height
             
