@@ -20,6 +20,8 @@ Rectangle {
         anchors.margins: 8
         width: parent.width - 16
         height: width
+        sourceSize.width: width
+        sourceSize.height: height
         source: toolButton.icon
     }
     
