@@ -22,6 +22,8 @@ public slots:
     QObject *createDocument(const QString &defaultTemplate);
     QStringList getDocumentPaths(int count, int offset = 0) const;
 
+    QStringList getFrequentlyOpenedPaths(int count, int offset = 0) const;
+
     int documentCount();
 
     QString thumbnailPath(const QString &documentPath) const;
@@ -31,11 +33,15 @@ public slots:
 
 signals:
     void documentPathsChanged();
+    void documentsOpenCountsChanged();
 
 private:
+    void storeMetadata();
+
     QMap<QString, QPointer<Document>> m_openDocuments;
     QMap<QString, int> m_documentsPageCount;
     QMap<QString, int> m_documentsLastPage;
+    QMap<QString, int> m_documentOpenCount;
     QStringList m_documentPaths;
 };
 

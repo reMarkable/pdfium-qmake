@@ -23,6 +23,21 @@ Collection::Collection(QObject *parent) : QObject(parent)
 {
     DEBUG_BLOCK;
 
+    QFile openCountsFile(collectionPath() + "opencounts.data");
+    if (openCountsFile.open(QIODevice::ReadOnly)) {
+        while (!openCountsFile.atEnd()) {
+            QByteArray line = openCountsFile.readLine().trimmed();
+            int index = line.indexOf(' ');
+            if (index == -1) {
+                qWarning() << "Invalid line in" << openCountsFile.fileName() << ":" << line;
+                continue;
+            }
+            m_documentOpenCount.insert(QString::fromUtf8(line.mid(index)), line.left(index).toInt());
+        }
+    } else {
+        qWarning() << "unable to open" << openCountsFile.fileName();
+    }
+
     QDir dir;
     QFileInfoList fileList;
 
@@ -39,6 +54,10 @@ Collection::Collection(QObject *parent) : QObject(parent)
         QString documentPath = fileInfo.canonicalFilePath();
         m_documentPaths.append(documentPath);
 
+        if (!m_documentOpenCount.contains(documentPath)) {
+            m_documentOpenCount[documentPath] = 0;
+        }
+
         QFile metadataFile(documentPath + ".metadata");
         if (!metadataFile.open(QIODevice::ReadOnly)) {
             qWarning() << "unable to open metadata" << documentPath;
@@ -52,6 +71,7 @@ Collection::Collection(QObject *parent) : QObject(parent)
 
 Collection::~Collection()
 {
+    storeMetadata();
 }
 
 QString Collection::collectionPath()
@@ -66,6 +86,9 @@ QString Collection::collectionPath()
 QObject *Collection::getDocument(const QString &path)
 {
     DEBUG_BLOCK;
+
+    m_documentOpenCount[path]++;
+    emit documentsOpenCountsChanged();
 
     if (m_openDocuments.contains(path)) {
         Document *document = m_openDocuments.value(path).data();
@@ -143,7 +166,24 @@ QStringList Collection::getDocumentPaths(int count, int offset) const
 {
     DEBUG_BLOCK;
 
+//    if (offset - 1 > m_documentPaths.length()) {
+//        offset = m_documentPaths.length() - 1;
+//    }
+
     return m_documentPaths.mid(offset, count);
+}
+
+QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
+{
+    QMultiMap<int, QString> reverseMap;
+    QMapIterator<QString, int> mapIterator(m_documentOpenCount);
+    while (mapIterator.hasNext()) {
+        mapIterator.next();
+        reverseMap.insert(0 - mapIterator.value(), mapIterator.key());
+    }
+
+    QStringList sortedPaths = reverseMap.values();
+    return sortedPaths.mid(offset, count);
 }
 
 int Collection::documentCount()
@@ -222,4 +262,18 @@ void Collection::deleteDocument(const QString documentPath)
     m_documentPaths.removeAll(documentPath);
 
     emit documentPathsChanged();
+}
+
+void Collection::storeMetadata()
+{
+    QFile openCountsFile(collectionPath() + "opencounts.data");
+    if (!openCountsFile.open(QIODevice::WriteOnly)) {
+        qWarning() << "Unable to open" << openCountsFile.fileName() << "for writing";
+        return;
+    }
+    QMapIterator<QString, int> mapIterator(m_documentOpenCount);
+    while (mapIterator.hasNext()) {
+        mapIterator.next();
+        openCountsFile.write(QByteArray::number(mapIterator.value()) + ' ' + mapIterator.key().toUtf8() + '\n');
+    }
 }
