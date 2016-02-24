@@ -5,6 +5,7 @@ Rectangle {
     id: archiveView
 
     property string title: "Archive"
+    property string tabIdentifier: "archive"
 
     signal openBook(var path)
     signal openBookAt(var path, var page)

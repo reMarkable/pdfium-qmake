@@ -8,16 +8,16 @@ Rectangle {
     property string title: ""
     property int currentPage: 0
     property int pageCount: 0
-    property string documentPath
+    property string tabIdentifier: "note"
 
     property QtObject document
     onDocumentChanged: {
         if (!document) {
             return;
         }
-
-        documentPath = document.path()
-        title = Collection.title(documentPath)
+        var path = document.path()
+        tabIdentifier = path
+        title = Collection.title(path)
         pageCount = Qt.binding(function() { return document.pageCount; })
         currentPage = Qt.binding(function() { return document.currentIndex; })
     }

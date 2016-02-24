@@ -31,48 +31,6 @@ Window {
             Settings.setValue(Settings.Rotation, rotation)
         }
 
-        function endsWith(string, suffix) {
-            return string.indexOf(suffix, string.length - suffix.length) !== -1
-        }
-
-        function openDocument(path, pageToOpen) {
-            var name = Collection.title(path)
-            var index = tabBar.tabModel.indexOf(name)
-
-            if (index === -1) {
-                if (tabBar.tabModel.length > 4) {
-                    tooMainTabsDialog.visible = true
-                    return
-                }
-
-                var newIndex = tabBar.tabModel.length + 1
-                var createdObject;
-                if (endsWith(path, ".pdf")) {
-                    createdObject = documentComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    createdObject.documentPath = path
-                } else {
-                    createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    createdObject.documentPath = path
-
-                    createdObject.document = Collection.getDocument(path)
-                }
-                if (pageToOpen !== -1) {
-                    console.log(pageToOpen)
-                    createdObject.document.currentIndex = pageToOpen
-                }
-
-                var objectList = tabBar.objectList
-                objectList.push(createdObject)
-                tabBar.objectList = objectList
-                tabBar.setCurrentTab(newIndex)
-            } else {
-                tabBar.setCurrentTab(index + 1)
-                if (pageToOpen !== -1) {
-                    tabBar.objectList[index].document.currentIndex = pageToOpen
-                }
-            }
-        }
-
         property bool homeRecentlyClicked: false
         Timer {
             id: homeButtonTimer
@@ -117,16 +75,61 @@ Window {
                 right: parent.right
             }
 
-            tabModel: []
-        }
+            function openDocument(path, pageToShow) {
+                var index = getTabIndex(path)
+                if (index !== -1) {
+                    showTab(path, pageToShow)
+                    return objectList[index].document
+                }
 
-        Component {
-            id: documentComponent
+                if (objectList.length > 4) {
+                    tooMainTabsDialog.visible = true
+                    return null
+                }
 
-            DocumentTab {
-                anchors.fill: parent
+                var createdObject = noteComponent.createObject(viewRoot)
+                createdObject.document = Collection.getDocument(path)
 
-                property int tabIndex
+                // Reset list so that the repeater gets updated
+                var objects = objectList
+                objects.push(createdObject)
+                objectList = objects
+
+                showTab(path, pageToShow)
+
+                return createdObject.document
+            }
+
+            function closeDocument(documentPath) {
+                var index = getTabIndex(documentPath)
+                if (index === -1) {
+                    return
+                }
+                closePage(index)
+            }
+
+
+            function openArchive() {
+                var path = "archive"
+
+                if (tabBar.isTabOpen(path)) {
+                    tabBar.showTab(path, -1)
+                    return
+                }
+
+                console.time("archiveclicked")
+
+                if (objectList.length > 4) {
+                    tooMainTabsDialog.visible = true
+                    return
+                }
+
+                var createdObject = archiveComponent.createObject(viewRoot)
+                var objects = tabBar.objectList
+                objects.splice(0, 0, createdObject)
+                tabBar.objectList = objects
+                tabBar.setCurrentTab(1)
+                console.timeEnd("archiveclicked")
             }
         }
 
@@ -135,7 +138,6 @@ Window {
 
             NoteTab {
                 anchors.fill: parent
-                property int tabIndex
             }
         }
 
@@ -145,13 +147,13 @@ Window {
             ArchiveView {
                 id: archiveView
                 anchors.fill: parent
-                property int tabIndex
 
                 onOpenBook: {
-                    rootItem.openDocument(path, -1)
+                    tabBar.openDocument(path, -1)
                 }
+
                 onOpenBookAt: {
-                    rootItem.openDocument(path, page)
+                    tabBar.openDocument(path, page)
                 }
             }
         }
@@ -175,59 +177,23 @@ Window {
                         return
                     }
 
-                    openBook(Collection.createDocument(type))
+                    var path = Collection.createDocument(type)
+                    tabBar.openDocument(path, -1)
                 }
 
                 onNewPageClicked: {
                     var path = Collection.defaultDocumentPath(type)
-                    var name = Collection.title(path)
-                    var index = tabBar.tabModel.indexOf(name)
 
-                    if (index === -1) {
-                        if (tabBar.tabModel.length > 4) {
-                            tooMainTabsDialog.visible = true
-                            return
-                        }
-
-                        var newIndex = tabBar.tabModel.length + 1
-                        var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-
-                        createdObject.document = Collection.getDocument(path)
-                        createdObject.document.addPage(type)
-
-                        var objectList = tabBar.objectList
-                        objectList.push(createdObject)
-                        tabBar.objectList = objectList
-                        tabBar.setCurrentTab(newIndex)
-                    } else {
-                        tabBar.setCurrentTab(index + 1)
-                        tabBar.objectList[index].document.addPage(type)
-                    }
+                    var document = tabBar.openDocument(path, -1)
+                    document.addPage(type)
                 }
 
                 onArchiveClicked: {
-                    console.time("archiveclicked")
-                    var index = tabBar.tabModel.indexOf("Archive")
-
-                    if (index === -1) {
-                        if (tabBar.tabModel.length > 4) {
-                            tooMainTabsDialog.visible = true
-                            return
-                        }
-
-                        var createdObject = archiveComponent.createObject(viewRoot, {"tabIndex": 1 })
-                        var objectList = tabBar.objectList
-                        objectList.splice(0, 0, createdObject)
-                        tabBar.objectList = objectList
-                        tabBar.setCurrentTab(1)
-                    } else {
-                        tabBar.setCurrentTab(index + 1)
-                    }
-                    console.timeEnd("archiveclicked")
+                    tabBar.openArchive()
                 }
 
                 onOpenBook: {
-                    rootItem.openDocument(path, -1)
+                    tabBar.openDocument(path, -1)
                 }
             }
         }

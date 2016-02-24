@@ -5,26 +5,50 @@ Rectangle {
     id: tabBar
 
     property var objectList: []
-    property var tabModel: []
-    onObjectListChanged: {
-        tabModel = []
+
+    function getTabIndex(identifier) {
         for (var i=0; i<objectList.length; i++) {
-            tabModel.push(objectList[i].title)
+            if (objectList[i].tabIdentifier === identifier) {
+                return i
+            }
+        }
+
+        return -1
+    }
+
+    function isTabOpen(identifier) {
+        if (getTabIndex(identifier) === -1) {
+            return false
+        } else {
+            return true
         }
     }
 
-    function closeDocument(documentPath) {
-        console.log("closing " + documentPath)
-        for (var i=0; i<objectList.length; i++) {
-            console.log("object path: " + objectList[i].documentPath)
-            if (objectList[i].documentPath === documentPath) {
-                closePage(i)
-            }
+    function getDocument(identifier) {
+        var index = getTabIndex(identifier)
+        if (index === - 1) {
+            return null
         }
+
+        return objectList[index]
+    }
+
+    function showTab(identifier, pageToShow) {
+        var index = getTabIndex(identifier)
+
+        if (index === - 1) {
+            return
+        }
+
+        if (pageToShow !== -1) {
+            objectList[index].document.currentIndex = pageToShow
+        }
+
+        setCurrentTab(index + 1)
     }
 
     function closePage(index) {
-        if (tabBar.tabModel.length == 1) {
+        if (objectList.length == 1) {
             currentTab = 0
             mainScreen.visible = true
         } else if (index + 1 === tabBar.currentTab) {
@@ -38,10 +62,10 @@ Rectangle {
             currentTab--
         }
 
-        var objectList = tabBar.objectList
-        objectList[index].destroy()
-        objectList.splice(index, 1)
-        tabBar.objectList = objectList
+        var objects = tabBar.objectList
+        objects[index].destroy()
+        objects.splice(index, 1)
+        tabBar.objectList = objects
     }
 
     function setCurrentTab(index) {
