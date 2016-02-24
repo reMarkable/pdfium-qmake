@@ -175,14 +175,7 @@ Window {
                         return
                     }
 
-                    var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    var path = Collection.createDocument(type)
-                    createdObject.document = Collection.getDocument(path)
-                    var objectList = tabBar.objectList
-                    objectList.push(createdObject)
-                    tabBar.objectList = objectList
-                    tabBar.setCurrentTab(newIndex)
+                    openBook(Collection.createDocument(type))
                 }
 
                 onNewPageClicked: {
