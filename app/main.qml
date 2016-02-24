@@ -177,7 +177,8 @@ Window {
 
                     var newIndex = tabBar.tabModel.length + 1
                     var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    createdObject.document = Collection.createDocument(type)
+                    var path = Collection.createDocument(type)
+                    createdObject.document = Collection.getDocument(path)
                     var objectList = tabBar.objectList
                     objectList.push(createdObject)
                     tabBar.objectList = objectList
@@ -240,7 +241,6 @@ Window {
                     rootItem.openDocument(path, -1)
                 }
             }
-
         }
 
         Dialog {

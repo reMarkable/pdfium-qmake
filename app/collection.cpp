@@ -148,7 +148,7 @@ QObject *Collection::getDefaultDocument(const QString &type)
     return getDocument(path);
 }
 
-QObject *Collection::createDocument(const QString &defaultTemplate)
+QString Collection::createDocument(const QString &defaultTemplate)
 {
     DEBUG_BLOCK;
 
@@ -166,28 +166,22 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
 
     if (QFile::exists(path)) {
         qWarning() << "unable to create unique path";
-        return nullptr;
+        return QString();
     }
 
     if (!QDir(path).mkpath(path)) {
         qWarning() << "Unable to create document";
-        return nullptr;
+        return QString();
     }
-
-    NativeDocument *document = new NativeDocument(path, defaultTemplate);
-    document->preload();
-
-    QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
 
     m_documentsLastPage.insert(path, 0);
     m_documentsPageCount.insert(path, 1);
     m_documentPaths.prepend(path);
-    m_openDocuments.insert(path, QPointer<Document>(document));
     m_documentOpenCount.insert(path, 1);
 
     emit documentPathsChanged();
 
-    return document;
+    return path;
 }
 
 QStringList Collection::getDocumentPaths(int count, int offset) const
