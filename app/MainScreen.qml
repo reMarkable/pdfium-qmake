@@ -96,7 +96,7 @@ Item  {
         anchors {
             left: parent.left
             right: parent.right
-            bottom: recentlyImported.top
+            bottom: logoText.top
         }
 
         rows: 2
@@ -112,33 +112,6 @@ Item  {
             target: Collection
             onRecentlyUsedChanged: {
                 frequentlyUsed.reloadModel()
-            }
-        }
-        onOpenClicked: mainScreen.archiveClicked()
-    }
-
-    MainScreenPreviews {
-        id: recentlyImported
-
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: logoText.top
-        }
-
-        rows: 1
-        columns: 4
-        title: "Recently imported"
-
-        function reloadModel() {
-            model = Collection.recentlyImportedPaths(rows * columns)
-        }
-
-        Component.onCompleted: reloadModel()
-        Connections {
-            target: Collection
-            onRecentlyUsedChanged: {
-                recentlyImported.reloadModel()
             }
         }
         onOpenClicked: mainScreen.archiveClicked()
