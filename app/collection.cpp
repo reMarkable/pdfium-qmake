@@ -36,7 +36,7 @@ Collection::Collection(QObject *parent) : QObject(parent)
 
 
     std::sort(fileList.begin(), fileList.end(), [](const QFileInfo &a, const QFileInfo &b) {
-        return a.created() < b.created();
+        return a.created() > b.created();
     });
 
     for (const QFileInfo fileInfo : fileList) {
