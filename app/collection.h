@@ -32,6 +32,8 @@ public slots:
     int pageCount(const QString documentPath) const;
     void deleteDocument(const QString documentPath);
 
+    QString defaultDocumentPath(const QString &type) const;
+
 signals:
     void documentPathsChanged();
     void documentsOpenCountsChanged();

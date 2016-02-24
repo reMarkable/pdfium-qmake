@@ -67,6 +67,16 @@ Collection::Collection(QObject *parent) : QObject(parent)
         m_documentsLastPage[documentPath] = metadataFile.readLine().trimmed().toInt();
         m_documentsPageCount[documentPath] = metadataFile.readLine().trimmed().toInt();
     }
+
+    QString defaultPath = defaultDocumentPath("Sketch");
+    if (!QFile::exists(defaultPath)) {
+        createDocument(defaultPath);
+    }
+
+    defaultPath = defaultDocumentPath("Lined");
+    if (!QFile::exists(defaultPath)) {
+        createDocument(defaultPath);
+    }
 }
 
 Collection::~Collection()
@@ -105,6 +115,7 @@ QObject *Collection::getDocument(const QString &path)
     Document *document = nullptr;
 
     if (!pathInfo.exists(path)) {
+        qWarning() << "Document doesn't exist:" << path;
         return document;
     } else if (pathInfo.isFile() && path.endsWith(".pdf")) {
         document = new PdfDocument(path);
@@ -129,21 +140,7 @@ QObject *Collection::getDefaultDocument(const QString &type)
         return nullptr;
     }
 
-    QString path = collectionPath();
-    if (type == "Sketch") {
-        path += "Default sketchbook";
-    } else {
-        path += "Default notebook";
-    }
-
-    if (!QFile::exists(path)) {
-        QDir(path).mkpath(path);
-        NativeDocument *document = new NativeDocument(path, type);
-        m_documentsLastPage.insert(path, 0);
-        m_documentsPageCount.insert(path, 1);
-        m_openDocuments.insert(path, QPointer<Document>(document));
-        return document;
-    }
+    QString path = defaultDocumentPath(type);
 
     return getDocument(path);
 }
@@ -191,8 +188,8 @@ QStringList Collection::getDocumentPaths(int count, int offset) const
     QStringList paths;
     if (offset == 0) {
         count -= 2; // For the default documents
-        paths.append(collectionPath() + "Default notebook");
-        paths.append(collectionPath() + "Default sketchbook");
+        paths.append(defaultDocumentPath("Sketch"));
+        paths.append(defaultDocumentPath("Lined"));
     } else {
         offset -= 2;
     }
@@ -307,6 +304,15 @@ void Collection::deleteDocument(const QString documentPath)
     m_documentPaths.removeAll(documentPath);
 
     emit documentPathsChanged();
+}
+
+QString Collection::defaultDocumentPath(const QString &type) const
+{
+    if (type == "Sketch") {
+        return collectionPath() + "Default sketchbook";
+    } else {
+        return collectionPath() + "Default notebook";
+    }
 }
 
 void Collection::storeMetadata()

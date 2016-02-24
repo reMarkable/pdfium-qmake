@@ -186,12 +186,8 @@ Window {
                 }
 
                 onNewPageClicked: {
-                    var name
-                    if (type === "Sketch") {
-                        name = "Default sketchbook"
-                    } else {
-                        name = "Default notebook"
-                    }
+                    var path = Collection.defaultDocumentPath(type)
+                    var name = Collection.title(path)
                     var index = tabBar.tabModel.indexOf(name)
 
                     if (index === -1) {
@@ -203,7 +199,7 @@ Window {
                         var newIndex = tabBar.tabModel.length + 1
                         var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
 
-                        createdObject.document = Collection.getDefaultDocument(type)
+                        createdObject.document = Collection.getDocument(path)
                         createdObject.document.addPage(type)
 
                         var objectList = tabBar.objectList
