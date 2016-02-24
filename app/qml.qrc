@@ -95,5 +95,6 @@
         <file>BookThumbnail.qml</file>
         <file>EditActions.qml</file>
         <file>BookOverview.qml</file>
+        <file>icons/reMarkable.svg</file>
     </qresource>
 </RCC>

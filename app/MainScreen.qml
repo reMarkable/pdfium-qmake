@@ -19,11 +19,10 @@ Item  {
         anchors {
             top: parent.top
             left: parent.left
-            topMargin: 50
+            right: parent.right
+            bottom: frequentlyUsed.top
+            bottomMargin: 25
         }
-
-        height: 300
-        width: parent.width
 
         Item {
             id: newNoteItem
@@ -56,28 +55,56 @@ Item  {
             }
         }
 
-        Item {
-            id: newSketchItem
+        Image {
+            source: "qrc:/icons/new sketch-large.svg"
+            anchors.centerIn: parent
+            height: hugeIconSize
+            width: height
+            smooth: true
 
+            Text {
+                anchors.top: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "New sketch"
+                font.pointSize: 18
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: mainScreen.newSketchClicked()
+            }
+        }
+
+        Item {
             anchors {
-                top: parent.top
-                bottom: parent.bottom
-                left: parent.horizontalCenter
                 right: parent.right
+                left: parent.horizontalCenter
+                top: parent.top
+                bottom: parent.verticalCenter
             }
 
             Image {
-                source: "qrc:/icons/new sketch-large.svg"
+                source: "qrc:/icons/Notebook.svg"
                 anchors.centerIn: parent
-                height: hugeIconSize
+                height: mediumIconSize
                 width: height
                 smooth: true
+
+                Image {
+                    anchors {
+                        bottom: parent.bottom
+                        right: parent.right
+                    }
+                    source: "qrc:/icons/pluss.svg"
+                    width: smallIconSize
+                    height: width
+                }
 
                 Text {
                     anchors.top: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "New sketch"
-                    font.pointSize: 18
+                    text: "New notebook"
+                    font.pixelSize: 25
                 }
 
                 MouseArea {
@@ -85,7 +112,45 @@ Item  {
                     onClicked: mainScreen.newSketchClicked()
                 }
             }
+        }
 
+        Item {
+            anchors {
+                right: parent.right
+                left: parent.horizontalCenter
+                bottom: parent.bottom
+                top: parent.verticalCenter
+            }
+
+            Image {
+                source: "qrc:/icons/Notebook.svg"
+                anchors.centerIn: parent
+                height: mediumIconSize
+                width: height
+                smooth: true
+
+                Image {
+                    anchors {
+                        bottom: parent.bottom
+                        right: parent.right
+                    }
+                    source: "qrc:/icons/pluss.svg"
+                    width: smallIconSize
+                    height: width
+                }
+
+                Text {
+                    anchors.top: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "New sketchbook"
+                    font.pixelSize: 25
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: mainScreen.newSketchClicked()
+                }
+            }
         }
     }
 
@@ -95,11 +160,14 @@ Item  {
 
         anchors {
             left: parent.left
+            leftMargin: 20
             right: parent.right
-            bottom: logoText.top
+            rightMargin: 20
+            bottom: logo.top
+            bottomMargin: 50
         }
 
-        rows: 2
+        rows: 3
         columns: 4
         title: "Frequently used"
 
@@ -117,17 +185,16 @@ Item  {
         onOpenClicked: mainScreen.archiveClicked()
     }
 
-    Text {
-        id: logoText
+    Image {
+        id: logo
         anchors {
             bottom: parent.bottom
-            bottomMargin: 20
-            left: parent.left
-            right: parent.right
+            bottomMargin: 15
+            horizontalCenter: parent.horizontalCenter
         }
-        horizontalAlignment: Text.AlignHCenter
-        font.pixelSize: 24
-        text: "reMarkable"
+        height: 25
+        width: height * 6.2
+        source: "qrc:/icons/reMarkable.svg"
     }
 }
 

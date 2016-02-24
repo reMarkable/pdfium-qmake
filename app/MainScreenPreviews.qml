@@ -10,20 +10,18 @@ Item {
     property alias title: headerText.text
 
     property int thumbnailHeight: 300
-    property int thumbnailWidth: 220
+    property int thumbnailWidth: thumbnailHeight * 3 / 4
 
     signal openClicked()
 
-    height: previewsGrid.anchors.bottomMargin + previewsGrid.anchors.topMargin + previewsGrid.rowSpacing + rows * thumbnailHeight + headerText.height + headerText.anchors.topMargin + header.height
+    height: previewsGrid.height + headerText.height + header.height
 
     Text {
         id: headerText
         anchors {
             left: parent.left
-            leftMargin: 20
             right: parent.right
             top: parent.top
-            topMargin: 0
         }
         color: window.fontColor
         text: mainScreenPreviews.title
@@ -36,24 +34,21 @@ Item {
         anchors {
             top: headerText.bottom
             right: parent.right
-            rightMargin: 30
             left: parent.left
-            leftMargin: 30
         }
 
         height: 3
         color: "gray"
     }
 
-    Rectangle {
+    Item {
         id: openButton
         anchors {
             top: header.bottom
             bottom: parent.bottom
             right: parent.right
-            rightMargin: 45
         }
-        width: mediumIconSize
+        width: 150
 
         Image {
             anchors {
@@ -77,27 +72,26 @@ Item {
         
         anchors {
             left: parent.left
-            leftMargin: 20
-            right: parent.right
-            rightMargin: 100
+            right: openButton.left
             top: header.bottom
             topMargin: 20
-            bottom: parent.bottom
-            bottomMargin: 0
         }
-        horizontalItemAlignment: Grid.AlignHCenter
-        verticalItemAlignment: Grid.AlignVCenter
-        columnSpacing: ((width - openButton.width) / columns) - bigIconSize
-        rowSpacing: 20
+        height: rows * mainScreenPreviews.thumbnailHeight + 75
 
         Repeater {
             id: frequentlyUsedRepeater
 
-            BookThumbnail {
-                width: mainScreenPreviews.thumbnailWidth
-                height: mainScreenPreviews.thumbnailHeight
-                onClicked: mainScreen.openBook(modelData)
+            Item {
+                height: previewsGrid.height / previewsGrid.rows
+                width: previewsGrid.width / previewsGrid.columns
+                BookThumbnail {
+                    anchors.centerIn: parent
+                    width: mainScreenPreviews.thumbnailWidth
+                    height: mainScreenPreviews.thumbnailHeight
+                    onClicked: mainScreen.openBook(modelData)
+                }
             }
         }
     }
+
 }
