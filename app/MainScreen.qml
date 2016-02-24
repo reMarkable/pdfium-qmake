@@ -3,8 +3,8 @@ import com.magmacompany 1.0
 
 Item  {
     id: mainScreen
-    signal newNoteClicked
-    signal newSketchClicked
+    signal newPageClicked(var type)
+    signal newBookClicked(var type)
     signal archiveClicked
     signal openBook(var path)
 
@@ -50,7 +50,7 @@ Item  {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: mainScreen.newNoteClicked()
+                    onClicked: mainScreen.newPageClicked("Lined")
                 }
             }
         }
@@ -71,7 +71,7 @@ Item  {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: mainScreen.newSketchClicked()
+                onClicked: mainScreen.newPageClicked("Sketch")
             }
         }
 
@@ -109,7 +109,7 @@ Item  {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: mainScreen.newSketchClicked()
+                    onClicked: mainScreen.newBookClicked("Lined")
                 }
             }
         }
@@ -148,7 +148,7 @@ Item  {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: mainScreen.newSketchClicked()
+                    onClicked: mainScreen.newBookClicked("Sketch")
                 }
             }
         }

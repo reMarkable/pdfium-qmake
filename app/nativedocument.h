@@ -17,7 +17,7 @@ public slots:
     void setTemplate(QString backgroundTemplate) override;
     QStringList availableTemplates() const override;
     QString currentTemplate() const override;
-    void addPage();
+    void addPage(QString backgroundTemplate = QString());
     void deletePages(QList<int> pagesToRemove) override;
 
 signals:

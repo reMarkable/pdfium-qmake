@@ -94,12 +94,16 @@ QString NativeDocument::currentTemplate() const
     return m_templates.value(currentIndex());
 }
 
-void NativeDocument::addPage()
+void NativeDocument::addPage(QString backgroundTemplate)
 {
-    m_templates.append(m_defaultTemplate);
+    if (backgroundTemplate.isEmpty()) {
+        backgroundTemplate = m_defaultTemplate;
+    }
+
+    m_templates.append(backgroundTemplate);
     setPageCount(pageCount() + 1);
     setCurrentIndex(pageCount() - 1);
-    setCurrentBackground(s_templateLoader.templates[m_defaultTemplate]);
+    setCurrentBackground(s_templateLoader.templates[backgroundTemplate]);
 }
 
 void NativeDocument::deletePages(QList<int> pagesToRemove)

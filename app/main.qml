@@ -170,32 +170,49 @@ Window {
                 id: mainScreen
                 anchors.fill: parent
 
-                onNewNoteClicked: {
+                onNewBookClicked: {
                     if (tabBar.tabModel.length > 4) {
                         return
                     }
 
                     var newIndex = tabBar.tabModel.length + 1
                     var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    createdObject.document = Collection.createDocument("Lined")
+                    createdObject.document = Collection.createDocument(type)
                     var objectList = tabBar.objectList
                     objectList.push(createdObject)
                     tabBar.objectList = objectList
                     tabBar.setCurrentTab(newIndex)
                 }
 
-                onNewSketchClicked: {
-                    if (tabBar.tabModel.length > 4) {
-                        return
+                onNewPageClicked: {
+                    var name
+                    if (type === "Sketch") {
+                        name = "Default sketchbook"
+                    } else {
+                        name = "Default notebook"
                     }
+                    var index = tabBar.tabModel.indexOf(name)
 
-                    var newIndex = tabBar.tabModel.length + 1
-                    var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
-                    createdObject.document = Collection.createDocument("Sketch")
-                    var objectList = tabBar.objectList
-                    objectList.push(createdObject)
-                    tabBar.objectList = objectList
-                    tabBar.setCurrentTab(newIndex)
+                    if (index === -1) {
+                        if (tabBar.tabModel.length > 4) {
+                            tooMainTabsDialog.visible = true
+                            return
+                        }
+
+                        var newIndex = tabBar.tabModel.length + 1
+                        var createdObject = noteComponent.createObject(viewRoot, {"tabIndex": newIndex})
+
+                        createdObject.document = Collection.getDefaultDocument(type)
+                        createdObject.document.addPage(type)
+
+                        var objectList = tabBar.objectList
+                        objectList.push(createdObject)
+                        tabBar.objectList = objectList
+                        tabBar.setCurrentTab(newIndex)
+                    } else {
+                        tabBar.setCurrentTab(index + 1)
+                        tabBar.objectList[index].document.addPage(type)
+                    }
                 }
 
                 onArchiveClicked: {

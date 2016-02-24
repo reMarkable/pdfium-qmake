@@ -32,7 +32,7 @@ Collection::Collection(QObject *parent) : QObject(parent)
                 qWarning() << "Invalid line in" << openCountsFile.fileName() << ":" << line;
                 continue;
             }
-            m_documentOpenCount.insert(QString::fromUtf8(line.mid(index)), line.left(index).toInt());
+            m_documentOpenCount.insert(QString::fromUtf8(line.mid(index)).trimmed(), line.left(index).toInt());
         }
     } else {
         qWarning() << "unable to open" << openCountsFile.fileName();
@@ -109,6 +109,7 @@ QObject *Collection::getDocument(const QString &path)
     } else if (pathInfo.isFile() && path.endsWith(".pdf")) {
         document = new PdfDocument(path);
     } else if (pathInfo.isDir()) {
+        qWarning() << "returning new document object";
         document = new NativeDocument(path);
     } else {
         qWarning() << "Asked for invalid path" << path;
@@ -119,6 +120,32 @@ QObject *Collection::getDocument(const QString &path)
     QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
     m_openDocuments.insert(path, QPointer<Document>(document));
     return document;
+}
+
+QObject *Collection::getDefaultDocument(const QString &type)
+{
+    if (type.isEmpty()) {
+        qWarning() << "Tried to get invalid default document";
+        return nullptr;
+    }
+
+    QString path = collectionPath();
+    if (type == "Sketch") {
+        path += "Default sketchbook";
+    } else {
+        path += "Default notebook";
+    }
+
+    if (!QFile::exists(path)) {
+        QDir(path).mkpath(path);
+        NativeDocument *document = new NativeDocument(path, type);
+        m_documentsLastPage.insert(path, 0);
+        m_documentsPageCount.insert(path, 1);
+        m_openDocuments.insert(path, QPointer<Document>(document));
+        return document;
+    }
+
+    return getDocument(path);
 }
 
 QObject *Collection::createDocument(const QString &defaultTemplate)
@@ -156,6 +183,7 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
     m_documentsPageCount.insert(path, 1);
     m_documentPaths.prepend(path);
     m_openDocuments.insert(path, QPointer<Document>(document));
+    m_documentOpenCount.insert(path, 1);
 
     emit documentPathsChanged();
 
