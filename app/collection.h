@@ -16,7 +16,6 @@ public:
     ~Collection();
 
     static QString collectionPath();
-    static QString localCollectionPath();
 
 public slots:
     QStringList folderEntries(QString path = QString()) const;

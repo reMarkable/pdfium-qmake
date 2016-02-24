@@ -14,6 +14,8 @@
 #include <QQmlEngine>
 #include <QDateTime>
 
+#include <algorithm>
+
 #define DEBUG_THIS
 #include "debug.h"
 
@@ -23,16 +25,28 @@ Collection::Collection(QObject *parent) : QObject(parent)
 {
     DEBUG_BLOCK;
 
-    QDir localDir(localCollectionPath());
+    QDir dir;
+    QFileInfoList fileList;
 
-    QFileInfoList fileList = localDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+
+    dir.setPath(collectionPath() + "/Local/");
+    fileList.append(dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot));
+    dir.setPath(collectionPath() + "/Imported/");
+    fileList.append(dir.entryInfoList(QStringList() << "*.pdf", QDir::Files));
+
+
+    std::sort(fileList.begin(), fileList.end(), [](const QFileInfo &a, const QFileInfo &b) {
+        return a.created() < b.created();
+    });
 
     for (const QFileInfo fileInfo : fileList) {
         QString documentPath = fileInfo.canonicalFilePath();
+        qDebug() << documentPath;
         m_recentlyUsedPaths.append(documentPath);
 
         QFile metadataFile(documentPath + ".metadata");
         if (!metadataFile.open(QIODevice::ReadOnly)) {
+            qWarning() << "unable to open metadata" << documentPath;
             continue;
         }
 
@@ -52,11 +66,6 @@ QString Collection::collectionPath()
 #else// Q_PROCESSOR_ARM
     return "/home/sandsmark/xo/testdata/";
 #endif// Q_PROCESSOR_ARM
-}
-
-QString Collection::localCollectionPath()
-{
-    return collectionPath() + "/Local/";
 }
 
 QStringList Collection::folderEntries(QString path) const
