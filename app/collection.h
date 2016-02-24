@@ -18,7 +18,6 @@ public:
     static QString collectionPath();
 
 public slots:
-    QStringList folderEntries(QString path = QString()) const;
     bool isFolder(const QString &path) const;
     QObject *getDocument(const QString &path);
     QObject *createDocument(const QString &defaultTemplate);

@@ -63,28 +63,6 @@ QString Collection::collectionPath()
 #endif// Q_PROCESSOR_ARM
 }
 
-QStringList Collection::folderEntries(QString path) const
-{
-    if (path.isEmpty()) {
-        path = collectionPath() + "/Local/";
-    }
-
-    QDir dir(path);
-    QFileInfoList files = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    QStringList paths;
-    for (const QFileInfo &file : files) {
-        if (file.isFile() && file.suffix() == "pdf") {
-            paths.append(file.canonicalFilePath());
-        }
-
-        if (file.isDir()) {
-            paths.append(file.canonicalFilePath());
-        }
-    }
-
-    return paths;
-}
-
 bool Collection::isFolder(const QString &path) const
 {
     DEBUG_BLOCK;
