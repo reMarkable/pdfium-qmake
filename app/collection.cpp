@@ -63,13 +63,6 @@ QString Collection::collectionPath()
 #endif// Q_PROCESSOR_ARM
 }
 
-bool Collection::isFolder(const QString &path) const
-{
-    DEBUG_BLOCK;
-
-    return !QFile::exists(path + ".metadata");
-}
-
 QObject *Collection::getDocument(const QString &path)
 {
     DEBUG_BLOCK;
