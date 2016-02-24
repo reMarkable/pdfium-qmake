@@ -22,7 +22,6 @@ PdfDocument::~PdfDocument()
     if (m_pdfDocument) {
         FPDF_CloseDocument(m_pdfDocument);
         m_pdfDocument = nullptr;
-        FPDF_DestroyLibrary();
     }
 }
 
