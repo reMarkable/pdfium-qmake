@@ -194,15 +194,38 @@ QStringList Collection::getDocumentPaths(int count, int offset) const
 {
     DEBUG_BLOCK;
 
-//    if (offset - 1 > m_documentPaths.length()) {
-//        offset = m_documentPaths.length() - 1;
-//    }
+    QStringList paths;
+    if (offset == 0) {
+        count -= 2; // For the default documents
+        paths.append(collectionPath() + "Default notebook");
+        paths.append(collectionPath() + "Default sketchbook");
+    } else {
+        offset -= 2;
+    }
 
-    return m_documentPaths.mid(offset, count);
+    if (count < 1) {
+        return paths;
+    }
+    paths.append(m_documentPaths.mid(offset, count));
+
+    return paths;
 }
 
 QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
 {
+    QStringList sortedPaths;
+    if (offset == 0) {
+        count -= 2; // For the default documents
+        sortedPaths.append(collectionPath() + "Default notebook");
+        sortedPaths.append(collectionPath() + "Default sketchbook");
+    } else {
+        offset -= 2;
+    }
+
+    if (count < 1) {
+        return sortedPaths;
+    }
+
     QMultiMap<int, QString> reverseMap;
     QMapIterator<QString, int> mapIterator(m_documentOpenCount);
     while (mapIterator.hasNext()) {
@@ -210,8 +233,8 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
         reverseMap.insert(0 - mapIterator.value(), mapIterator.key());
     }
 
-    QStringList sortedPaths = reverseMap.values();
-    return sortedPaths.mid(offset, count);
+    sortedPaths.append(reverseMap.values().mid(offset, count));
+    return sortedPaths;
 }
 
 int Collection::documentCount()
