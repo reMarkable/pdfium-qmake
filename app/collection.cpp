@@ -139,18 +139,6 @@ QObject *Collection::getDocument(const QString &path)
     return document;
 }
 
-QObject *Collection::getDefaultDocument(const QString &type)
-{
-    if (type.isEmpty()) {
-        qWarning() << "Tried to get invalid default document";
-        return nullptr;
-    }
-
-    QString path = defaultDocumentPath(type);
-
-    return getDocument(path);
-}
-
 QString Collection::createDocument(const QString &defaultTemplate)
 {
     DEBUG_BLOCK;

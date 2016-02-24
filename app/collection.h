@@ -19,7 +19,6 @@ public:
 
 public slots:
     QObject *getDocument(const QString &path);
-    QObject *getDefaultDocument(const QString &type);
     QString createDocument(const QString &defaultTemplate);
     QStringList getDocumentPaths(int count, int offset = 0) const;
 
