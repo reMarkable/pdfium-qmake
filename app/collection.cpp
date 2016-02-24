@@ -160,7 +160,7 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
 
     m_documentsLastPage.insert(path, 0);
     m_documentsPageCount.insert(path, 1);
-    m_documentPaths.append(path);
+    m_documentPaths.prepend(path);
     m_openDocuments.insert(path, QPointer<Document>(document));
 
     emit documentPathsChanged();
