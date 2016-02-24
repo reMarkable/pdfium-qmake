@@ -23,21 +23,6 @@ Collection::Collection(QObject *parent) : QObject(parent)
 {
     DEBUG_BLOCK;
 
-    QFile openCountsFile(collectionPath() + "opencounts.data");
-    if (openCountsFile.open(QIODevice::ReadOnly)) {
-        while (!openCountsFile.atEnd()) {
-            QByteArray line = openCountsFile.readLine().trimmed();
-            int index = line.indexOf(' ');
-            if (index == -1) {
-                qWarning() << "Invalid line in" << openCountsFile.fileName() << ":" << line;
-                continue;
-            }
-            m_documentOpenCount.insert(QString::fromUtf8(line.mid(index)).trimmed(), line.left(index).toInt());
-        }
-    } else {
-        qWarning() << "unable to open" << openCountsFile.fileName();
-    }
-
     QDir dir;
     QFileInfoList fileList;
 
@@ -52,11 +37,11 @@ Collection::Collection(QObject *parent) : QObject(parent)
 
     for (const QFileInfo fileInfo : fileList) {
         QString documentPath = fileInfo.canonicalFilePath();
-        m_documentPaths.append(documentPath);
-
-        if (!m_documentOpenCount.contains(documentPath)) {
-            m_documentOpenCount[documentPath] = 0;
+        if (!documentPath.startsWith(collectionPath()) || !QFile::exists(documentPath)) {
+            continue;
         }
+
+        m_documentPaths.append(documentPath);
 
         QFile metadataFile(documentPath + ".metadata");
         if (!metadataFile.open(QIODevice::ReadOnly)) {
@@ -68,14 +53,35 @@ Collection::Collection(QObject *parent) : QObject(parent)
         m_documentsPageCount[documentPath] = metadataFile.readLine().trimmed().toInt();
     }
 
+    QFile openCountsFile(collectionPath() + "opencounts.data");
+    if (openCountsFile.open(QIODevice::ReadOnly)) {
+        while (!openCountsFile.atEnd()) {
+            QByteArray line = openCountsFile.readLine().trimmed();
+            int index = line.indexOf(' ');
+            if (index == -1) {
+                qWarning() << "Invalid line in" << openCountsFile.fileName() << ":" << line;
+                continue;
+            }
+
+            QString path = QString::fromUtf8(line.mid(index)).trimmed();
+            if (!m_documentPaths.contains(path)) {
+                continue;
+            }
+
+            m_documentOpenCount.insert(path, line.left(index).toInt());
+        }
+    } else {
+        qWarning() << "unable to open" << openCountsFile.fileName();
+    }
+
     QString defaultPath = defaultDocumentPath("Sketch");
     if (!QFile::exists(defaultPath)) {
-        createDocument(defaultPath);
+        QDir(defaultPath).mkpath(defaultPath);
     }
 
     defaultPath = defaultDocumentPath("Lined");
     if (!QFile::exists(defaultPath)) {
-        createDocument(defaultPath);
+        QDir(defaultPath).mkpath(defaultPath);
     }
 }
 
