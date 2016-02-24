@@ -22,22 +22,23 @@ public slots:
     bool isFolder(const QString &path) const;
     QObject *getDocument(const QString &path);
     QObject *createDocument(const QString &defaultTemplate);
-    QStringList recentlyUsedPaths(int count, int offset = 0) const;
-    int localDocumentCount();
-    QStringList recentlyImportedPaths(int count) const;
+    QStringList getDocumentPaths(int count, int offset = 0) const;
+
+    int documentCount();
+
     QString thumbnailPath(const QString &documentPath) const;
     QString title(const QString &documentPath) const;
     int pageCount(const QString documentPath) const;
     void deleteDocument(const QString documentPath);
 
 signals:
-    void recentlyUsedChanged();
+    void documentPathsChanged();
 
 private:
     QMap<QString, QPointer<Document>> m_openDocuments;
     QMap<QString, int> m_documentsPageCount;
     QMap<QString, int> m_documentsLastPage;
-    QStringList m_recentlyUsedPaths;
+    QStringList m_documentPaths;
 };
 
 #endif // COLLECTION_H

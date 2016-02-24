@@ -19,8 +19,6 @@
 #define DEBUG_THIS
 #include "debug.h"
 
-#define RECENTLY_USED_KEY "RecentlyUsed"
-
 Collection::Collection(QObject *parent) : QObject(parent)
 {
     DEBUG_BLOCK;
@@ -28,12 +26,10 @@ Collection::Collection(QObject *parent) : QObject(parent)
     QDir dir;
     QFileInfoList fileList;
 
-
     dir.setPath(collectionPath() + "/Local/");
     fileList.append(dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot));
     dir.setPath(collectionPath() + "/Imported/");
     fileList.append(dir.entryInfoList(QStringList() << "*.pdf", QDir::Files));
-
 
     std::sort(fileList.begin(), fileList.end(), [](const QFileInfo &a, const QFileInfo &b) {
         return a.created() > b.created();
@@ -41,8 +37,7 @@ Collection::Collection(QObject *parent) : QObject(parent)
 
     for (const QFileInfo fileInfo : fileList) {
         QString documentPath = fileInfo.canonicalFilePath();
-        qDebug() << documentPath;
-        m_recentlyUsedPaths.append(documentPath);
+        m_documentPaths.append(documentPath);
 
         QFile metadataFile(documentPath + ".metadata");
         if (!metadataFile.open(QIODevice::ReadOnly)) {
@@ -165,42 +160,26 @@ QObject *Collection::createDocument(const QString &defaultTemplate)
 
     m_documentsLastPage.insert(path, 0);
     m_documentsPageCount.insert(path, 1);
-    m_recentlyUsedPaths.append(path);
+    m_documentPaths.append(path);
     m_openDocuments.insert(path, QPointer<Document>(document));
 
-    emit recentlyUsedChanged();
+    emit documentPathsChanged();
 
     return document;
 }
 
-QStringList Collection::recentlyUsedPaths(int count, int offset) const
+QStringList Collection::getDocumentPaths(int count, int offset) const
 {
     DEBUG_BLOCK;
 
-    return m_recentlyUsedPaths.mid(offset, count);
+    return m_documentPaths.mid(offset, count);
 }
 
-int Collection::localDocumentCount()
+int Collection::documentCount()
 {
     DEBUG_BLOCK;
 
-    return m_recentlyUsedPaths.count();
-}
-
-QStringList Collection::recentlyImportedPaths(int count) const
-{
-    DEBUG_BLOCK;
-
-    QDir dir(collectionPath() + "/Dropbox/");
-
-    QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.pdf", QDir::Files, QDir::Time);
-
-    QStringList paths;
-    for (int i=0; i<qMin(fileList.count(), count); i++) {
-        paths.append(fileList[i].canonicalFilePath());
-    }
-
-    return paths;
+    return m_documentPaths.count();
 }
 
 QString Collection::thumbnailPath(const QString &documentPath) const
@@ -269,7 +248,7 @@ void Collection::deleteDocument(const QString documentPath)
 
     m_documentsLastPage.remove(documentPath);
     m_documentsPageCount.remove(documentPath);
-    m_recentlyUsedPaths.removeAll(documentPath);
+    m_documentPaths.removeAll(documentPath);
 
-    emit recentlyUsedChanged();
+    emit documentPathsChanged();
 }

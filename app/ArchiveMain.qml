@@ -78,13 +78,13 @@ Item {
         
         function reloadDocuments() {
             pageRowRepeater.reloadModel()
-            documentRepeater.model = Collection.recentlyUsedPaths(mainArchiveGrid.pageItemCount, archiveMain.currentPage * mainArchiveGrid.pageItemCount)
+            documentRepeater.model = Collection.getDocumentPaths(mainArchiveGrid.pageItemCount, archiveMain.currentPage * mainArchiveGrid.pageItemCount)
         }
 
         Component.onCompleted: reloadTimer.start()
         Connections {
             target: Collection
-            onRecentlyUsedChanged: {
+            onDocumentPathsChanged: {
                 mainArchiveGrid.reloadDocuments()
             }
         }
@@ -180,7 +180,7 @@ Item {
         Repeater {
             id: pageRowRepeater
             function reloadModel() {
-                model = Collection.localDocumentCount() > mainArchiveGrid.pageItemCount ? Math.ceil(Collection.localDocumentCount() / mainArchiveGrid.pageItemCount) : 0
+                model = Collection.documentCount() > mainArchiveGrid.pageItemCount ? Math.ceil(Collection.documentCount() / mainArchiveGrid.pageItemCount) : 0
             }
 
             onCountChanged: {

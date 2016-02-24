@@ -104,13 +104,13 @@ Item  {
         title: "Frequently used"
 
         function reloadModel() {
-            model = Collection.recentlyUsedPaths(rows * columns)
+            model = Collection.getDocumentPaths(rows * columns)
         }
 
         Component.onCompleted: reloadModel()
         Connections {
             target: Collection
-            onRecentlyUsedChanged: {
+            onDocumentPathsChanged: {
                 frequentlyUsed.reloadModel()
             }
         }
