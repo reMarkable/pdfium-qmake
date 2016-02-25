@@ -9,7 +9,8 @@
 #include <QDebug>
 
 SystemMonitor::SystemMonitor(QObject *parent) : QObject(parent),
-    m_batteryLeft(50)
+    m_batteryLeft(50),
+    m_memoryUsed(0)
 {
     // Get initial values
     doPoll();
