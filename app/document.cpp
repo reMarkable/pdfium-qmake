@@ -281,6 +281,39 @@ void Document::deletePages(QList<int> pagesToRemove)
     setPageCount(pagesTaken);
 }
 
+void Document::printMemoryUsage() const
+{
+    size_t linesMem = 0;
+    linesMem += sizeof m_lines;
+    for (const int key : m_lines.keys()) {
+        linesMem += sizeof key;
+        const QVector<Line> &lines = m_lines.value(key);
+        linesMem += sizeof lines;
+        for (const Line &line : lines) {
+            linesMem += sizeof line;
+            linesMem += line.points.count() * sizeof(PenPoint);
+        }
+    }
+    qDebug() << "Memory used for lines:" << (linesMem / 1024.0) << "kb";
+
+    size_t contentsMem = 0;
+    for (const int key : m_pageContents.keys()) {
+        const QImage &content = m_pageContents.value(key);
+        contentsMem += sizeof content;
+        contentsMem += content.byteCount();
+    }
+    qDebug() << "Memory used for contents:" << (contentsMem / 1024.0) << "kb";
+
+    size_t backgroundsMem = 0;
+    for (const int key : m_cachedBackgrounds.keys()) {
+        const QImage &background = m_cachedBackgrounds.value(key);
+        backgroundsMem += sizeof background;
+        backgroundsMem += background.byteCount();
+    }
+    qDebug() << "Memory used for backgrounds:" << (backgroundsMem / 1024.0) << "kb";
+    qDebug() << "Total memory used:" << ((backgroundsMem + contentsMem + linesMem + sizeof(*this)) / (1024.0 * 1024.0)) << "mb";
+}
+
 void Document::loadPage(int index)
 {
     QMutexLocker locker(&m_cacheLock);

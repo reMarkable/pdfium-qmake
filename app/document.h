@@ -64,6 +64,8 @@ protected slots:
     virtual void deletePages(QList<int> pagesToRemove);
 
 private:
+    void printMemoryUsage() const;
+
     friend class DocumentWorker;
     void loadPage(int index);
     void storePage(QImage image, int index);
