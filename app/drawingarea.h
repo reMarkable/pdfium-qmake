@@ -59,7 +59,6 @@ private slots:
 private:
     void drawBackground(QPainter *painter, const QRectF part);
     void doZoom();
-    void handleGesture();
     QRectF lineBoundingRect(const QPointF &point1, const QPointF &point2);
     QRectF drawLine(QPainter *painter, const Line::Brush brush, const Line::Color color, const QPointF &point , const QPointF &prevPoint, qreal pressure);
 
