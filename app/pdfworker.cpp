@@ -1,31 +1,30 @@
-#include "pdfdocument.h"
+#include "pdfworker.h"
 
+#include "document.h"
 #include <QDebug>
-#include <QElapsedTimer>
-#include <QMutexLocker>
 
 #define BORDER 100
 
 static bool s_pdfiumInitialized = false;
 
-PdfDocument::PdfDocument(QString path, QObject *parent) :
-    Document(path, parent),
+PDFWorker::PDFWorker(Document *document) :
     m_pdfDocument(nullptr),
-    m_initialized(false)
+    m_initialized(false),
+    m_path(document->path()),
+    m_pageCount(0)
 {
+    connect(this, SIGNAL(pageCountChanged(int)), document, SLOT(setPageCount(int)));
 }
 
-PdfDocument::~PdfDocument()
+PDFWorker::~PDFWorker()
 {
-    QMutexLocker destructionLocker(&m_destructionLock);
-
     if (m_pdfDocument) {
         FPDF_CloseDocument(m_pdfDocument);
         m_pdfDocument = nullptr;
     }
 }
 
-QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
+QImage PDFWorker::loadOriginalPage(int index, QSize dimensions)
 {
     // TODO: FPDF_QuickDrawPage?
     if (index < 0) {
@@ -33,8 +32,6 @@ QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
     }
 
     { // Try to handle construction/destruction in a thread safe manner
-        QMutexLocker destructionLocker(&m_destructionLock);
-
         if (!s_pdfiumInitialized) {
             FPDF_LIBRARY_CONFIG_ config;
             config.version = 2;
@@ -52,11 +49,9 @@ QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
         }
 
         if (!m_initialized) {
-            QElapsedTimer documentTimer;
-            documentTimer.start();
-            m_pdfDocument = FPDF_LoadDocument(path().toLocal8Bit().constData(), nullptr);
-            setPageCount(FPDF_GetPageCount(m_pdfDocument));
-            qDebug() << "Document loaded in" << documentTimer.elapsed() << "ms";
+            m_pdfDocument = FPDF_LoadDocument(m_path.toLocal8Bit().constData(), nullptr);
+            m_pageCount = FPDF_GetPageCount(m_pdfDocument);
+            emit pageCountChanged(m_pageCount);
             m_initialized = true;
         }
 
@@ -65,12 +60,9 @@ QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
         }
     }
 
-    if (index > pageCount()) {
+    if (index > m_pageCount) {
         return QImage();
     }
-
-    QElapsedTimer timer;
-    timer.start();
 
     FPDF_PAGE pdfPage = FPDF_LoadPage(m_pdfDocument, index);
 
@@ -129,8 +121,6 @@ QImage PdfDocument::loadOriginalPage(int index, QSize dimensions)
     } else {
         image = image.scaledToHeight(dimensions.height(), Qt::SmoothTransformation);
     }
-
-    qDebug() << "Page" << index << " loaded in" << timer.elapsed() << "ms";
 
     return image.convertToFormat(QImage::Format_RGB16);
 }

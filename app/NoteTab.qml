@@ -15,23 +15,23 @@ Rectangle {
         if (!document) {
             return;
         }
-        var path = document.path()
+        var path = document.path
         tabIdentifier = path
         title = Collection.title(path)
         pageCount = Qt.binding(function() { return document.pageCount; })
-        currentPage = Qt.binding(function() { return document.currentIndex; })
+        currentPage = Qt.binding(function() { return document.currentPage; })
     }
 
 
     function moveForward() {
-        if (document.currentIndex < pageCount - 1) {
-            document.currentIndex++
+        if (document.currentPage < pageCount - 1) {
+            document.currentPage++
         }
     }
 
     function moveBackward() {
-        if (document.currentIndex > 0) {
-            document.currentIndex--
+        if (document.currentPage > 0) {
+            document.currentPage--
         }
     }
 
@@ -202,7 +202,7 @@ Rectangle {
                     }
                     onPageClicked:{
                         thumbnailGrid.visible = false
-                        document.currentIndex = index
+                        document.currentPage = index
                         noteTab.forceActiveFocus()
                     }
                 }

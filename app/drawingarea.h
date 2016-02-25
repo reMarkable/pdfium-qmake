@@ -4,7 +4,7 @@
 #include <QQuickPaintedItem>
 #include <QImage>
 #include "line.h"
-#include "document.h"
+#include "documentworker.h"
 #include <QPointer>
 
 #ifdef Q_PROCESSOR_ARM
@@ -19,7 +19,7 @@ class DrawingArea : public QQuickPaintedItem
     Q_PROPERTY(bool zoomtoolSelected MEMBER m_zoomSelected NOTIFY zoomtoolSelectedChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(Line::Color currentColor MEMBER m_currentColor NOTIFY currentColorChanged)
-    Q_PROPERTY(Document* document MEMBER m_document WRITE setDocument)
+    Q_PROPERTY(Document* document WRITE setDocument)
     Q_PROPERTY(bool predictionEnabled MEMBER m_predict NOTIFY predictionToggled)
     Q_PROPERTY(bool doublePredictionEnabled MEMBER m_doublePredict NOTIFY doublePredictionChanged)
     Q_PROPERTY(int smoothFactor MEMBER m_smoothFactor NOTIFY smoothFactorChanged)
@@ -42,6 +42,8 @@ public slots:
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void hoverEnterEvent(QHoverEvent*) override;
+    void hoverLeaveEvent(QHoverEvent*) override;
 
 signals:
     void currentBrushChanged();
@@ -68,14 +70,13 @@ private:
 
     bool m_invert;
     Line::Brush m_currentBrush;
-    QImage m_contents;
     bool m_hasEdited;
     QList<Line> m_undoneLines;
     double m_zoomFactor;
     QRectF m_zoomRect;
     bool m_zoomSelected;
     Line::Color m_currentColor;
-    QPointer<Document> m_document;
+    QPointer<DocumentWorker> m_documentWorker;
     bool m_predict;
     int m_smoothFactor;
     bool m_doublePredict;

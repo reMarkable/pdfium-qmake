@@ -12,10 +12,9 @@ Item {
             pageCount = 0
             pageRepeater.model = 0
         } else {
-            document.preload()
             pageCount = Qt.binding(function() { return Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
             currentPage = 0
-            pageRepeater.model = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
+            reloadModel()
         }
     }
 
@@ -31,14 +30,12 @@ Item {
 
     property int documentPageCount: document === null ? 0 : document.pageCount
 
-    property int maxDisplayItems: 9
-
     function reloadModel() {
         if (!document) {
             return
         }
 
-        var visiblePages = Math.min(document.pageCount - currentPage * maxDisplayItems, maxDisplayItems)
+        var visiblePages = Math.min(document.pageCount - currentPage * editActionsItem.maxDisplayItemCount, editActionsItem.maxDisplayItemCount)
         if (visiblePages != pageRepeater.count) {
             pageRepeater.model = 0
             pageRepeater.model = visiblePages
@@ -110,6 +107,7 @@ Item {
         onDeleteItems: {
             deletePages()
         }
+        onMaxDisplayItemCountChanged: reloadModel()
     }
 
     Grid {
@@ -131,7 +129,7 @@ Item {
                 id: bookItem
                 width: (editActionsItem.maxDisplayItemCount === 9 ) ? 320 : 150
                 height: (editActionsItem.maxDisplayItemCount === 9 ) ? 400 : 200
-                property int pageNumber: index + archiveBook.currentPage * archiveBook.maxDisplayItems
+                property int pageNumber: index + archiveBook.currentPage * editActionsItem.maxDisplayItemCount
                 property bool selected: (archiveBook.selectedPages.indexOf(pageNumber) !== -1)
 
                 Rectangle {
@@ -152,7 +150,7 @@ Item {
                         }
                         asynchronous: true
                         
-                        source: archiveBook.document !== null ? "file://" + archiveBook.document.path() + "-" + bookItem.pageNumber + ".thumbnail.jpg" : ""
+                        source: archiveBook.document !== null ? "file://" + archiveBook.document.path + "-" + bookItem.pageNumber + ".thumbnail.jpg" : ""
                         cache: false
                         sourceSize.width: width
                         sourceSize.height: height

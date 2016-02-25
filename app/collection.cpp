@@ -1,9 +1,5 @@
 #include "collection.h"
 
-#include "pdfdocument.h"
-#include "imagedocument.h"
-#include "nativedocument.h"
-
 #include <QFile>
 #include <QDir>
 #include <QDebug>
@@ -118,23 +114,25 @@ QObject *Collection::getDocument(const QString &path)
 
     QFileInfo pathInfo(path);
 
-    Document *document = nullptr;
 
     if (!pathInfo.exists(path)) {
         qWarning() << "Document doesn't exist:" << path;
-        return document;
-    } else if (pathInfo.isFile() && path.endsWith(".pdf")) {
-        document = new PdfDocument(path);
-    } else if (pathInfo.isDir()) {
-        qWarning() << "returning new document object";
-        document = new NativeDocument(path);
-    } else {
-        qWarning() << "Asked for invalid path" << path;
+        return nullptr;
     }
+//    Document *document = nullptr;
+//    } else if (pathInfo.isFile() && path.endsWith(".pdf")) {
+//        document = new PDFWorker(path);
+//    } else if (pathInfo.isDir()) {
+//        qWarning() << "returning new document object";
+//        document = new NativeDocument(path);
+//    } else {
+//        qWarning() << "Asked for invalid path" << path;
+//    }
 
-    QTimer::singleShot(10, document, SLOT(preload()));
-    QTimer::singleShot(10, document, SLOT(loadLines()));
-    QQmlEngine::setObjectOwnership(document, QQmlEngine::JavaScriptOwnership);
+    Document *document = new Document(path);
+//    QTimer::singleShot(10, document, SLOT(preload()));
+//    QTimer::singleShot(10, document, SLOT(loadLines()));
+    QQmlEngine::setObjectOwnership(document, QQmlEngine::CppOwnership);
     m_openDocuments.insert(path, QPointer<Document>(document));
     return document;
 }

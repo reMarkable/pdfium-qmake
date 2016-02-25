@@ -13,11 +13,11 @@ SOURCES += main.cpp \
     settings.cpp \
     systemmonitor.cpp \
     document.cpp \
-    pdfdocument.cpp \
-    imagedocument.cpp \
     nativedocument.cpp \
     messagehandler.cpp \
-    line.cpp
+    line.cpp \
+    documentworker.cpp \
+    pdfworker.cpp
 
 RESOURCES += qml.qrc
 
@@ -37,12 +37,12 @@ HEADERS += \
     systemmonitor.h \
     document.h \
     line.h \
-    pdfdocument.h \
-    imagedocument.h \
     penpoint.h \
     debug.h \
     nativedocument.h \
-    messagehandler.h
+    messagehandler.h \
+    documentworker.h \
+    pdfworker.h
 
 OTHER_FILES += \
     ArchiveButton.qml \

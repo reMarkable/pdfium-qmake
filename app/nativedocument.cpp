@@ -8,53 +8,11 @@
 
 #include <algorithm>
 
-namespace { // Local to this file
-struct TemplateLoader {
-    TemplateLoader() {
-        QDir dir(Collection::collectionPath() + "/templates/");
-        QFileInfoList files = dir.entryInfoList(QStringList("*.png"));
-        for (QFileInfo fileInfo : files) {
-            templates.insert(fileInfo.baseName(), QImage(fileInfo.absoluteFilePath()));
-        }
-    }
-
-    QMap<QString, QImage> templates;
-};
-}
-
-static TemplateLoader s_templateLoader;
-
+#if 0
 NativeDocument::NativeDocument(QString documentPath, QString defaultTemplate, QObject *parent) :
     Document(documentPath, parent),
     m_defaultTemplate(defaultTemplate)
 {
-    if (s_templateLoader.templates.isEmpty()) {
-        qWarning() << "No templates available!";
-        return;
-    }
-
-    if (!s_templateLoader.templates.contains(m_defaultTemplate)) {
-        m_defaultTemplate = s_templateLoader.templates.keys().first();
-        qWarning() << "setting default to" << m_defaultTemplate;
-    }
-
-    m_templates.fill(m_defaultTemplate, pageCount());
-
-    QFile metadataFile(path() + ".pagedata");
-    if (!metadataFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open" << metadataFile.fileName();
-        return;
-    }
-
-    int page = 0;
-    while (!metadataFile.atEnd()) {
-        QString pageTemplate = metadataFile.readLine().trimmed();
-        if (pageTemplate.isEmpty()) {
-            break;
-        }
-        m_templates[page] = pageTemplate;
-        page++;
-    }
 }
 
 NativeDocument::~NativeDocument()
@@ -146,3 +104,5 @@ QImage NativeDocument::loadOriginalPage(int index, QSize dimensions)
 
     return s_templateLoader.templates.value(templateName).scaled(dimensions);
 }
+
+#endif

@@ -5,33 +5,43 @@
 #include <QFile>
 #include <QDataStream>
 
-#define CACHE_COUNT 2 // Cache this many before and after
-
 #define DEBUG_THIS
 #include "debug.h"
 
 Document::Document(QString path, QObject *parent)
     : QObject(parent),
       m_path(path),
-      m_currentIndex(0),
-      m_pageCount(1),
-      m_pageDirty(false)
+      m_currentPage(0),
+      m_pageCount(1)
 {
     DEBUG_BLOCK;
 
-    // Set up a worker to let stuff be loaded in another thread
-    DocumentWorker *worker = new DocumentWorker(this);
-    worker->moveToThread(&m_workerThread);
-    m_workerThread.start(QThread::LowestPriority);
-
-    connect(&m_workerThread, SIGNAL(finished()), worker, SLOT(deleteLater()));
-    connect(this, SIGNAL(pageRequested(int)), worker, SLOT(onPageRequested(int)), Qt::QueuedConnection);
-    connect(this, SIGNAL(storingRequested(QImage,int)), worker, SLOT(onStoringRequested(QImage,int)), Qt::QueuedConnection);
-
     QFile metadataFile(path + ".metadata");
     if (metadataFile.open(QIODevice::ReadOnly)) {
-        m_currentIndex = metadataFile.readLine().trimmed().toInt();
+        m_currentPage = metadataFile.readLine().trimmed().toInt();
         m_pageCount = metadataFile.readLine().trimmed().toInt();
+    }
+
+    if (path.endsWith(".pdf")) {
+        return;
+    }
+
+    m_templates.fill(m_defaultTemplate, pageCount());
+
+    QFile templatesFile(path + ".pagedata");
+    if (!templatesFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Unable to open" << templatesFile.fileName();
+        return;
+    }
+
+    int page = 0;
+    while (!templatesFile.atEnd()) {
+        QString pageTemplate = templatesFile.readLine().trimmed();
+        if (pageTemplate.isEmpty()) {
+            break;
+        }
+        m_templates[page] = pageTemplate;
+        page++;
     }
 }
 
@@ -39,176 +49,28 @@ Document::~Document()
 {
     DEBUG_BLOCK;
 
-    m_workerThread.quit();
-    m_workerThread.wait(); // don't destroy while twerking
-
     QFile metadataFile(m_path + ".metadata");
     if (metadataFile.open(QIODevice::WriteOnly)) {
-        metadataFile.write(QByteArray::number(m_currentIndex) + "\n");
+        metadataFile.write(QByteArray::number(m_currentPage) + "\n");
         metadataFile.write(QByteArray::number(m_pageCount) + "\n");
     }
-
-    QMutexLocker locker(&m_cacheLock);
-
-    if (m_pageContents.contains(m_currentIndex)) {
-        storePage(m_pageContents[m_currentIndex], m_currentIndex);
-        m_pageContents[m_currentIndex].save(m_path + ".thumbnail.jpg");
-    } else if (m_cachedBackgrounds.contains(m_currentIndex)){
-        m_cachedBackgrounds[m_currentIndex].save(m_path + ".thumbnail.jpg");
-    }
-
-    QFile lineFile(m_path + ".lines");
-    if (lineFile.open(QIODevice::WriteOnly)) {
-        QDataStream dataStream(&lineFile);
-        dataStream << m_lines;
-    }
-
-    qDebug() << "document nuked";
 }
 
-QImage Document::background()
+void Document::setCurrentPage(int newPage)
 {
-    QMutexLocker locker(&m_cacheLock);
-
-    if (m_pageContents.contains(m_currentIndex)) {
-        return m_pageContents[m_currentIndex];
-    }
-    if (m_cachedBackgrounds.contains(m_currentIndex)) {
-        return m_cachedBackgrounds[m_currentIndex];
-    }
-
-    // It will hopefully be returned soon
-    return QImage();
-}
-
-const QVector<Line> &Document::lines()
-{
-    return m_lines[m_currentIndex];
-}
-
-void Document::addLine(Line line)
-{
-    m_lines[m_currentIndex].append(line);
-}
-
-Line Document::popLine()
-{
-    if (!m_lines.contains(m_currentIndex)) {
-        return Line();
-    }
-
-    return m_lines[m_currentIndex].takeLast();
-}
-
-void Document::setDrawnPage(const QImage &pageContents)
-{
-    QMutexLocker locker(&m_cacheLock);
-    m_pageDirty = true;
-    if (pageContents.isNull()) {
-        m_pageContents.remove(m_currentIndex);
-    } else {
-        m_pageContents[m_currentIndex] = pageContents;
-    }
-}
-
-void Document::setCurrentIndex(int newIndex)
-{
-    if (m_currentIndex == newIndex || newIndex < 0) {
+    qDebug() << "changing page";
+    if (m_currentPage == newPage || newPage < 0) {
         return;
     }
 
-    if (newIndex >= m_pageCount) {
+    if (newPage >= m_pageCount) {
         return;
     }
 
-    // If we have drawn on the current page, we need to store it
-    if (m_pageDirty) {
-        emit storingRequested(m_pageContents.value(m_currentIndex), m_currentIndex);
-        m_pageDirty = false;
-    }
+    m_currentPage = newPage;
 
-    const int cacheMin = qMax(newIndex - CACHE_COUNT, 0);
-    const int cacheMax = newIndex + CACHE_COUNT;
-
-    QMutexLocker locker(&m_cacheLock);
-    foreach(int index, m_cachedBackgrounds.keys()) {
-        if (index > cacheMin && index < cacheMax) {
-            continue;
-        }
-
-        m_cachedBackgrounds.remove(index);
-    }
-
-    m_currentIndex = newIndex;
-
-    locker.unlock();
-
-    preload();
-
-    emit currentIndexChanged();
+    emit currentPageChanged(newPage);
 }
-
-void Document::preload()
-{
-    QMutexLocker locker(&m_cacheLock);
-
-    if (!m_cachedBackgrounds.contains(m_currentIndex)) {
-        emit pageRequested(m_currentIndex);
-    }
-
-    for (int i=1; i<CACHE_COUNT; i++) {
-        const int indexForward = m_currentIndex + i;
-        const int indexBackward = m_currentIndex - i;
-
-        if (!m_cachedBackgrounds.contains(indexForward)) {
-            emit pageRequested(indexForward);
-        }
-
-        if (!m_cachedBackgrounds.contains(indexBackward)) {
-            emit pageRequested(indexBackward);
-        }
-    }
-}
-
-void Document::clearCache()
-{
-    QMutexLocker locker(&m_cacheLock);
-
-    foreach(int index, m_cachedBackgrounds.keys()) {
-        // Only keep the current page
-        if (index != m_currentIndex) {
-            m_cachedBackgrounds.remove(index);
-        }
-    }
-
-    foreach(int index, m_pageContents.keys()) {
-        // Only keep the current page
-        if (index != m_currentIndex) {
-            m_pageContents.remove(index);
-        }
-    }
-
-#if 0
-    size_t totalSize = 0;
-    for(const int key : m_cachedBackgrounds.keys()) {
-        totalSize += m_cachedBackgrounds.value(key).byteCount();
-    }
-    for(const int key : m_pageContents.keys()) {
-        totalSize += m_pageContents.value(key).byteCount();
-    }
-    qDebug() << m_path << "bytes used:" << (totalSize / (1024 * 1024)) << "mb";
-#endif
-}
-
-void Document::loadLines()
-{
-    QFile lineFile(m_path + ".lines");
-    if (lineFile.open(QIODevice::ReadOnly)) {
-        QDataStream dataStream(&lineFile);
-        dataStream >> m_lines;
-    }
-}
-
 void Document::setPageCount(int pageCount)
 {
     if (pageCount == m_pageCount) {
@@ -218,23 +80,9 @@ void Document::setPageCount(int pageCount)
     m_pageCount = pageCount;
     emit pageCountChanged();
 
-    if (m_currentIndex >= m_pageCount) {
-        setCurrentIndex(m_pageCount - 1);
+    if (m_currentPage >= m_pageCount) {
+        setCurrentPage(m_pageCount - 1);
     }
-}
-
-void Document::setCurrentBackground(QImage background)
-{
-    QMutexLocker locker(&m_cacheLock);
-    if (m_cachedBackgrounds.contains(m_currentIndex)) {
-        m_cachedBackgrounds.remove(m_currentIndex);
-    }
-    if (m_pageContents.contains(m_currentIndex)) {
-        m_pageContents.remove(m_currentIndex);
-    }
-    m_cachedBackgrounds[m_currentIndex] = background;
-    locker.unlock();
-    emit backgroundChanged();
 }
 
 void Document::deletePages(QList<int> pagesToRemove)
@@ -243,140 +91,14 @@ void Document::deletePages(QList<int> pagesToRemove)
         return;
     }
 
-    // If we have drawn on the current page, we need to store it
-    if (m_pageDirty) {
-        emit storingRequested(m_pageContents.value(m_currentIndex), m_currentIndex);
-        m_pageDirty = false;
-    }
-
-    // So we avoid having to move everything around
-    m_cacheLock.lock();
-    m_cachedBackgrounds.clear();
-    m_pageContents.clear();
-    m_cacheLock.unlock();
-
-    QMap<int, int> oldPages;
-    for (int i=0; i<m_pageCount; i++) {
-        oldPages[i] = i;
-    }
-
-    QHash<int, QVector<Line>> newLines;
-    int pagesTaken = 0;
-    for (int oldPage : oldPages.keys()) {
-        if (pagesToRemove.contains(oldPage)) {
-            QFile::remove(getThumbnailPath(oldPage));
-            continue;
-        }
-
-        QString oldPath(getThumbnailPath(oldPages[oldPage]));
-        QString newPath(getThumbnailPath(pagesTaken));
-        QFile::rename(oldPath, newPath);
-        newLines.insert(pagesTaken, m_lines[oldPage]);
-
-        pagesTaken++;
-    }
-
-    m_lines = newLines;
-
-    setPageCount(pagesTaken);
+    setPageCount(m_pageCount - pagesToRemove.count());
 }
 
-void Document::printMemoryUsage() const
+QString Document::currentTemplate()
 {
-    size_t linesMem = 0;
-    linesMem += sizeof m_lines;
-    for (const int key : m_lines.keys()) {
-        linesMem += sizeof key;
-        const QVector<Line> &lines = m_lines.value(key);
-        linesMem += sizeof lines;
-        for (const Line &line : lines) {
-            linesMem += sizeof line;
-            linesMem += line.points.count() * sizeof(PenPoint);
-        }
-    }
-    qDebug() << "Memory used for lines:" << (linesMem / 1024.0) << "kb";
-
-    size_t contentsMem = 0;
-    for (const int key : m_pageContents.keys()) {
-        const QImage &content = m_pageContents.value(key);
-        contentsMem += sizeof content;
-        contentsMem += content.byteCount();
-    }
-    qDebug() << "Memory used for contents:" << (contentsMem / 1024.0) << "kb";
-
-    size_t backgroundsMem = 0;
-    for (const int key : m_cachedBackgrounds.keys()) {
-        const QImage &background = m_cachedBackgrounds.value(key);
-        backgroundsMem += sizeof background;
-        backgroundsMem += background.byteCount();
-    }
-    qDebug() << "Memory used for backgrounds:" << (backgroundsMem / 1024.0) << "kb";
-    qDebug() << "Total memory used:" << ((backgroundsMem + contentsMem + linesMem + sizeof(*this)) / (1024.0 * 1024.0)) << "mb";
-}
-
-void Document::loadPage(int index)
-{
-    QMutexLocker locker(&m_cacheLock);
-
-    const QString drawnPagePath = getStoredPagePath(index);
-    if (QFile::exists(drawnPagePath) && !m_pageContents.contains(index)) {
-        locker.unlock();
-
-        QImage page = QImage(drawnPagePath);
-
-        locker.relock();
-
-        m_pageContents[index] = page;
-
-        if (index == m_currentIndex) {
-            emit backgroundChanged();
-        }
+    if (m_path.endsWith(".pdf")) {
+        return "Document";
     }
 
-    if (!m_cachedBackgrounds.contains(index)) {
-        locker.unlock();
-        QImage page = loadOriginalPage(index, QSize(1200, 1560));
-        if (page.isNull()) {
-            return;
-        }
-
-        locker.relock();
-
-        m_cachedBackgrounds[index] = page;
-
-        const QString thumbnailPath = getThumbnailPath(index);
-        if (!QFile::exists(thumbnailPath)) {
-            page.scaledToHeight(512).save(thumbnailPath);
-        }
-
-
-        if (index == m_currentIndex && !m_pageContents.contains(index)) {
-            emit backgroundChanged();
-        }
-    }
-
-#if 0
-    size_t totalSize = 0;
-    for(const int key : m_cachedBackgrounds.keys()) {
-        totalSize += m_cachedBackgrounds.value(key).byteCount();
-    }
-    for(const int key : m_pageContents.keys()) {
-        totalSize += m_pageContents.value(key).byteCount();
-    }
-    qDebug() << m_path << "bytes used:" << (totalSize / (1024 * 1024)) << "mb";
-#endif
-}
-
-void Document::storePage(QImage image, int index)
-{
-    QString filePath = getStoredPagePath(index);
-
-    if (image.isNull()) {
-        if (QFileInfo::exists(filePath)) {
-            QFile::remove(filePath);
-        }
-    } else {
-        image.save(filePath);        
-        image.scaledToHeight(512).save(getThumbnailPath(index));
-    }    
+    return m_templates.value(m_currentPage);
 }

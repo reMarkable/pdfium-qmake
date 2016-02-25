@@ -1,116 +1,61 @@
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 
-#include "line.h"
-
 #include <QObject>
 #include <QVector>
-#include <QHash>
-#include <QImage>
-#include <QMutex>
-#include <QSize>
-#include <QThread>
+
+class PDFWorker;
 
 class Document : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(int currentPage WRITE setCurrentPage READ currentPage NOTIFY currentPageChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
-
+    Q_PROPERTY(QString pageTemplate MEMBER m_defaultTemplate READ currentTemplate NOTIFY templateChanged)
+    Q_PROPERTY(QString path READ path CONSTANT)
 
 public:
     explicit Document(QString path, QObject *parent = 0);
     virtual ~Document();
 
-    QImage background();
-    const QVector<Line> &lines();
-    void addLine(Line line);
-    Line popLine();
-
-    void setDrawnPage(const QImage &pageContents);
-
 public slots:
-    void setCurrentIndex(int index);
+    void setCurrentPage(int newPage);
 
     int pageCount() { return m_pageCount; }
 
-    /// We should preload pages into our cache
-    void preload();
+    int currentPage() const { return m_currentPage; }
+    QString path() const { return m_path; }
 
-    /// We should clear our cache
-    void clearCache();
-
-    int currentIndex() const { return m_currentIndex; }
-    QString path() { return m_path; }
-
-    virtual void setTemplate(QString backgroundTemplate) = 0;
-    virtual QStringList availableTemplates() const = 0;
-    virtual QString currentTemplate() const = 0;
-
-    void loadLines();
-
-signals:
-    void currentIndexChanged();
-    void pageCountChanged();
-    void backgroundChanged();
-    void pageRequested(int index);
-    void storingRequested(QImage image, int index);
-    void templateChanged();
-
-protected slots:
-    virtual QImage loadOriginalPage(int index, QSize dimensions) = 0;
-    void setPageCount(int pageCount);
-    void setCurrentBackground(QImage background);
-    virtual void deletePages(QList<int> pagesToRemove);
-
-private:
-    void printMemoryUsage() const;
-
-    friend class DocumentWorker;
-    void loadPage(int index);
-    void storePage(QImage image, int index);
-
-    QImage getStoredPage(int index);
-    inline QString getStoredPagePath(int index) {
+    QString getStoredPagePath(int index) const {
         return m_path + '-' + QString::number(index) + ".cached.png";
     }
 
-    inline QString getThumbnailPath(int index) {
+    QString getThumbnailPath(int index) const {
         return m_path + '-' + QString::number(index) + ".thumbnail.jpg";
     }
 
-    QString m_path;
-    int m_currentIndex;
-    int m_pageCount;
-    QHash<int, QVector<Line>> m_lines;
-    QHash<int, QImage> m_cachedBackgrounds;
-    QHash<int, QImage> m_pageContents;
-    QMutex m_cacheLock;
-    bool m_pageDirty;
-    QThread m_workerThread;
-};
+    void deletePages(QList<int> pagesToRemove);
+    QString currentTemplate();
 
-// To ensure that things are called from another thread
-class DocumentWorker : public QObject
-{
-    Q_OBJECT
-public:
-    DocumentWorker(Document *document) : QObject(), m_document(document)
-    {
-    }
+    QStringList availableTemplates() { return QStringList() << "Sketch" << "Lined" << "Squared"; }
+
+signals:
+    void currentPageChanged(int newPage);
+    void pageCountChanged();
+    void templateChanged();
+
+    void pagesDeleted(QList<int> pages);
 
 private slots:
-    // These will be asynchronously called on this object's thread,
-    // and synchronously invoke the methods on the Document object
-    void onPageRequested(int index) {
-        m_document->loadPage(index);
-    }
-    void onStoringRequested(QImage image, int index) {
-        m_document->storePage(image, index);
-    }
+    friend class PDFWorker;
+    void setPageCount(int pageCount);
 
 private:
-    Document *m_document;
+    QString m_path;
+    int m_currentPage;
+    int m_pageCount;
+    QVector<QString> m_templates;
+    QString m_defaultTemplate;
 };
 
 #endif // DOCUMENT_H

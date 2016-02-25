@@ -33,45 +33,38 @@ DrawingArea::DrawingArea() :
     m_doublePredict(false)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
+    setAcceptHoverEvents(true);
 
     timingDebug.setEnabled(QtDebugMsg, false);
 }
 
 DrawingArea::~DrawingArea()
 {
+    if (m_documentWorker) {
+        m_documentWorker->deleteLater();
+    }
 }
 
 void DrawingArea::paint(QPainter *painter)
 {
-    if (m_contents.isNull() || (m_document && m_document->background().isNull())) {
-        painter->setPen(Qt::black);
-        painter->drawText(contentsBoundingRect().center(), "Loading...");
+    if (m_documentWorker->pageContents.isNull()) {
+        drawBackground(painter, QRectF(x(), y(), width(), height()));
         return;
     }
-    QElapsedTimer timer;
-    timer.start();
-    painter->drawImage(0, 0, m_contents);
-    if (timer.elapsed() > 75) {
-        qDebug() << Q_FUNC_INFO << "drawing done in" << timer.elapsed() << "ms";
-    }
+
+    painter->drawImage(0, 0, m_documentWorker->pageContents);
     m_lastTransform = painter->transform();
 }
 
 void DrawingArea::clear()
 {
-    if (m_invert) {
-        m_contents.fill(Qt::black);
-    } else {
-        m_contents.fill(Qt::white);
-    }
+    m_documentWorker->pageContents = QImage();
 
-    if (m_document) {
-        m_document->setDrawnPage(QImage());
-    }
     m_hasEdited = false;
     m_undoneLines.clear();
-    if (m_document) {
-        m_document->addLine(Line()); // empty dummy for undoing
+
+    if (m_documentWorker) {
+        m_documentWorker->addLine(Line()); // empty dummy for undoing
     }
 
     redrawBackbuffer();
@@ -81,7 +74,7 @@ void DrawingArea::clear()
 
 void DrawingArea::undo()
 {
-    if (!m_document || m_document->lines().isEmpty()) {
+    if (!m_documentWorker || m_documentWorker->lines().isEmpty()) {
         qDebug() << "no lines to undo";
         return;
     }
@@ -89,11 +82,7 @@ void DrawingArea::undo()
     QElapsedTimer timer;
     timer.start();
 
-    if (m_document) {
-        m_undoneLines.append(m_document->popLine());
-        m_document->setDrawnPage(QImage());
-        //m_document->storeDrawnPage();
-    }
+    m_undoneLines.append(m_documentWorker->popLine());
 
     m_hasEdited = true;
 
@@ -111,33 +100,24 @@ void DrawingArea::undo()
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     painter.setClipRect(updateRect);
     painter.setTransform(m_lastTransform);
-    painter.drawImage(0, 0, m_contents);
+    painter.drawImage(0, 0, m_documentWorker->pageContents);
 //    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
     sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
 #endif
-
-    if (m_document) {
-        m_document->setDrawnPage(m_contents);
-    }
-
 }
 
 void DrawingArea::redo()
 {
-    if (m_undoneLines.isEmpty()) {
+    if (m_undoneLines.isEmpty() || !m_documentWorker) {
         return;
     }
 
-    if (m_document) {
-        m_document->addLine(m_undoneLines.takeLast());
-        m_document->setDrawnPage(QImage());
-        //m_document->storeDrawnPage();
-    }
+    m_documentWorker->addLine(m_undoneLines.takeLast());
 
     m_hasEdited = true;
 
     QPolygonF lastLine;
-    foreach(const PenPoint &penPoint, m_document->lines().last().points) {
+    foreach(const PenPoint &penPoint, m_documentWorker->lines().last().points) {
         QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
                    (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
         lastLine.append(point);
@@ -150,14 +130,10 @@ void DrawingArea::redo()
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     painter.setClipRect(lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16)));
     painter.setTransform(m_lastTransform);
-    painter.drawImage(0, 0, m_contents);
+    painter.drawImage(0, 0, m_documentWorker->pageContents);
 //    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
     sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
 #endif
-
-    if (m_document) {
-        m_document->setDrawnPage(m_contents);
-    }
 }
 
 void DrawingArea::setZoom(double x, double y, double width, double height)
@@ -165,10 +141,6 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
     if (width == 0 || height == 0) {
         qDebug() << "invalid zoom specified";
         return;
-    }
-
-    if (m_document) {
-        m_document->setDrawnPage(QImage());
     }
 
     m_zoomRect = QRectF(x, y, width, height);
@@ -180,16 +152,22 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
 
 void DrawingArea::setDocument(Document *document)
 {
-    m_document = document;
     if (!document) {
         return;
     }
 
+    if (m_documentWorker) {
+        m_documentWorker->deleteLater();
+    }
+
+    m_documentWorker = new DocumentWorker(document);
+    m_documentWorker->start(QThread::LowestPriority);
+    m_documentWorker->preload();
+
     m_undoneLines.clear();
 
     redrawBackbuffer();
-    connect(document, SIGNAL(backgroundChanged()), SLOT(onBackgroundChanged()));
-    connect(document, SIGNAL(currentIndexChanged()), SLOT(onBackgroundChanged()));
+    connect(m_documentWorker, SIGNAL(currentPageLoaded()), SLOT(onBackgroundChanged()));
 }
 
 #define SMOOTHFACTOR_P 0.370
@@ -214,7 +192,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     }
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
-    QPainter selfPainter(&m_contents);
+    QPainter selfPainter(&m_documentWorker->pageContents);
     QPen pen(Qt::black);
     pen.setCapStyle(Qt::RoundCap);
 
@@ -413,10 +391,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     digitizer->releaseLock();
 
     m_undoneLines.clear();
-    if (m_document) {
+    if (m_documentWorker) {
         DEBUG_BLOCK
-        m_document->addLine(drawnLine);
-        m_document->setDrawnPage(m_contents);
+        m_documentWorker->addLine(drawnLine);
+        m_documentWorker->pageDirty = true;
     } else {
         qWarning() << "Can't store line, no document set";
     }
@@ -444,11 +422,26 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 void DrawingArea::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     if (newGeometry.isValid()) {
-        m_contents = QImage(newGeometry.size().toSize(), QImage::Format_RGB16);
+//        m_documentWorker->pageContents = QImage(newGeometry.size().toSize(), QImage::Format_RGB16);
         redrawBackbuffer();
     }
     QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
+
+void DrawingArea::hoverEnterEvent(QHoverEvent *)
+{
+   if (m_documentWorker)  {
+//       m_documentWorker->suspend();
+   }
+}
+
+void DrawingArea::hoverLeaveEvent(QHoverEvent *)
+{
+   if (m_documentWorker)  {
+//       m_documentWorker->wake();
+   }
+}
+
 
 void DrawingArea::redrawBackbuffer(QRectF part)
 {
@@ -460,39 +453,39 @@ void DrawingArea::redrawBackbuffer(QRectF part)
         return;
     }
 
-    if (m_contents.isNull()) {
-        // Probably haven't gotten the proper geometry yet
+    if (!m_documentWorker) {
         return;
     }
 
-    if (!m_document) {
+    if (m_documentWorker->pageContents.isNull()) {
+        // Probably haven't gotten the proper geometry yet
         return;
     }
 
 
     part = mapRectFromScene(part);
-    QPainter painter(&m_contents);
+    QPainter painter(&m_documentWorker->pageContents);
     if (!part.isEmpty()) {
         painter.setClipRect(part);
     } else {
-        part = m_contents.rect();
+        part = m_documentWorker->pageContents.rect();
     }
 
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.fillRect(m_contents.rect(), Qt::white);
+    painter.fillRect(m_documentWorker->pageContents.rect(), Qt::white);
     drawBackground(&painter, part);
 
     int start = 0;
-    for (int i=0; i<m_document->lines().count(); i++) {
-        if (m_document->lines()[i].brush == Line::InvalidBrush) {
+    for (int i=0; i<m_documentWorker->lines().count(); i++) {
+        if (m_documentWorker->lines()[i].brush == Line::InvalidBrush) {
             start = i + 1;
         }
     }
 
     // Re-draw lines on top
-    for (int i=start; i<m_document->lines().count(); i++) {
-        const Line &drawnLine = m_document->lines()[i];
+    for (int i=start; i<m_documentWorker->lines().count(); i++) {
+        const Line &drawnLine = m_documentWorker->lines()[i];
 
         const QVector<PenPoint> &points = drawnLine.points;
         for (int i=1; i<points.count(); i++) {
@@ -514,17 +507,16 @@ void DrawingArea::redrawBackbuffer(QRectF part)
 
 void DrawingArea::onBackgroundChanged()
 {
-    if (Q_UNLIKELY(!m_document)) {
+    if (Q_UNLIKELY(!m_documentWorker)) {
         qWarning() << "No document set";
         return;
     }
 
-    if (m_document->background().isNull()) {
+    if (m_documentWorker->background().isNull()) {
         return;
     }
 
     redrawBackbuffer();
-    m_document->setDrawnPage(m_contents);
     update();
 }
 
@@ -532,7 +524,7 @@ void DrawingArea::drawBackground(QPainter *painter, const QRectF part)
 {
     Q_UNUSED(part); // FIXME
 
-    QImage background = m_document->background();
+    QImage background = m_documentWorker->background();
 
     if (background.isNull()) {
         // Background not loaded yet
