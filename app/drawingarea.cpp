@@ -13,7 +13,7 @@
 #include "digitizer.h"
 #include "predictor.h"
 
-#define DEBUG_THIS
+//#define DEBUG_THIS
 #include "debug.h"
 
 //#define DEBUG_PREDICTION
