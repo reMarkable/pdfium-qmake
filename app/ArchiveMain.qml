@@ -59,6 +59,7 @@ Item {
         onDeleteItems: {
             deleteBooks()
         }
+        onMaxDisplayItemCountChanged: pageRowRepeater.reloadModel()
     }
 
     Grid {
@@ -180,7 +181,7 @@ Item {
         Repeater {
             id: pageRowRepeater
             function reloadModel() {
-                model = Collection.documentCount() > mainArchiveGrid.pageItemCount ? Math.ceil(Collection.documentCount() / mainArchiveGrid.pageItemCount) : 0
+                model = Collection.documentCount() > editActionsItem.maxDisplayItemCount ? Math.ceil(Collection.documentCount() / editActionsItem.maxDisplayItemCount) : 0
             }
 
             onCountChanged: {
