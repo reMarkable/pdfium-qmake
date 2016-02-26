@@ -7,6 +7,8 @@
 #include <QHash>
 #include <QPointer>
 
+class DocumentWorker;
+
 class Collection : public QObject
 {
     Q_OBJECT
@@ -29,6 +31,9 @@ public slots:
 
     QString defaultDocumentPath(const QString &type) const;
 
+    void archiveBookOpened(const QString path);
+    void archiveBookClosed();
+
 signals:
     void documentPathsChanged();
 
@@ -38,6 +43,7 @@ private:
 
     QHash<QString, QPointer<Document>> m_documents;
     QStringList m_sortedPaths;
+    QPointer<DocumentWorker> m_archiveBookWorker;
 };
 
 #endif // COLLECTION_H

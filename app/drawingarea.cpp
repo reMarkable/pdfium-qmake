@@ -481,11 +481,9 @@ void DrawingArea::redrawBackbuffer(QRectF part)
         return;
     }
 
-    if (m_documentWorker->pageContents.isNull()) {
-        // Probably haven't gotten the proper geometry yet
+    if (m_documentWorker->lines().isEmpty()) {
         return;
     }
-
 
     part = mapRectFromScene(part);
     QPainter painter(&m_documentWorker->pageContents);
@@ -524,6 +522,8 @@ void DrawingArea::redrawBackbuffer(QRectF part)
         }
     }
 
+    m_documentWorker->pageDirty = true;
+
     if (timer.elapsed() > 75) {
         qDebug() << "Redrawing backbuffer completed in" <<  timer.elapsed() << "ms";
     }
@@ -537,6 +537,7 @@ void DrawingArea::onBackgroundChanged()
     }
 
     if (m_documentWorker->background().isNull()) {
+        qWarning() << "background changed, but no background available";
         return;
     }
 

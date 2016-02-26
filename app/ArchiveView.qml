@@ -14,10 +14,14 @@ Rectangle {
     onCurrentBookChanged: {
         if (currentBook === "") {
             archiveBook.document = null
+            Collection.archiveBookClosed()
         } else {
+            Collection.archiveBookOpened(currentBook)
             archiveBook.document = Collection.getDocument(archiveView.currentBook)
         }
     }
+
+    Component.onDestruction: Collection.archiveBookClosed()
 
     Rectangle {
         anchors {
@@ -138,11 +142,7 @@ Rectangle {
         visible: archiveView.currentBook != ""
 
         onVisibleChanged: {
-            if (!visible) {
-                if (document) {
-                    document.clearCache()
-                }
-            } else {
+            if (visible) {
                 forceActiveFocus()
             }
         }

@@ -45,6 +45,7 @@ Item {
     onDocumentPageCountChanged: reloadModel()
 
     onCurrentPageChanged: {
+        console.log("reloading")
         reloadModel()
     }
 
@@ -132,7 +133,9 @@ Item {
                 property int pageNumber: index + archiveBook.currentPage * editActionsItem.maxDisplayItemCount
                 property bool selected: (archiveBook.selectedPages.indexOf(pageNumber) !== -1)
 
-                onPageNumberChanged: pageThumbnail.reloadThumbnail()
+                onPageNumberChanged:{
+                    pageThumbnail.reloadThumbnail()
+                }
 
                 Connections {
                     target: archiveBook.document
@@ -165,10 +168,13 @@ Item {
 
                         function reloadThumbnail() {
                             pageThumbnail.source = ""
+                            if (!archiveBook.document) {
+                                return
+                            }
                             pageThumbnail.source = archiveBook.document.getThumbnail(bookItem.pageNumber)
                         }
 
-                        source: archiveBook.document.getThumbnail(bookItem.pageNumber)//archiveBook.document !== null ? "file://" + archiveBook.document.path + "-" + bookItem.pageNumber + ".thumbnail.jpg" : ""
+                        source: archiveBook.document.getThumbnail(bookItem.pageNumber)
 
                         sourceSize.width: width
                         sourceSize.height: height
@@ -295,7 +301,9 @@ Item {
         }
         pageCount: archiveBook.pageCount
         currentPage: archiveBook.currentPage
-        onPageClicked: archiveBook.currentPage = page
+        onPageClicked:{
+            archiveBook.currentPage = page
+        }
     }
 
     Rectangle {

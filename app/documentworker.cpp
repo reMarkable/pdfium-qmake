@@ -37,7 +37,7 @@ DocumentWorker::DocumentWorker(Document *document) :
     connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)));
     connect(document, SIGNAL(missingThumbnailRequested(int)), this, SLOT(onMissingThumbnailRequested(int)));
     connect(document, SIGNAL(pagesDeleted(QList<int>)), this, SLOT(deletePages(QList<int>)));
-    connect(document, SIGNAL(templateChanged()), this, SIGNAL(backgroundChanged()));
+    connect(document, SIGNAL(templateChanged()), this, SLOT(onTemplateChanged()));
     connect(this, SIGNAL(backgroundsLoaded(int,QImage)), this, SLOT(onBackgroundLoaded(int,QImage)));
     connect(this, SIGNAL(pageLoaded(int,QImage)), this, SLOT(onPageLoaded(int,QImage)));
     connect(this, SIGNAL(thumbnailUpdated(int)), document, SIGNAL(thumbnailUpdated(int)));
@@ -114,7 +114,6 @@ QImage DocumentWorker::background()
 
     QString thumbnailPath = m_document->getThumbnailPath(m_currentPage);
     if (!QFile::exists(thumbnailPath)) {
-        qDebug() << "Storing thumbnailo";
         background.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight()).save(thumbnailPath);
         emit thumbnailUpdated(m_currentPage);
     }
@@ -172,7 +171,7 @@ void DocumentWorker::onPageChanged(int newPage)
 
 const QVector<Line> &DocumentWorker::lines()
 {
-    if (m_lines.count() < m_document->currentPage()) {
+    if (m_lines.count() <= m_document->currentPage()) {
         m_lines.resize(m_document->currentPage() + 1);
     }
     return m_lines[m_document->currentPage()];
@@ -289,7 +288,11 @@ void DocumentWorker::onBackgroundLoaded(int page, QImage contents)
     m_cachedBackgrounds[page] = contents;
 
     if (page == m_currentPage && pageContents.isNull()) {
-        emit currentPageLoaded();
+        if (pageContents.isNull()) {
+            emit currentPageLoaded();
+        } else {
+            emit backgroundChanged();
+        }
     }
 }
 
@@ -441,4 +444,10 @@ void DocumentWorker::onMissingThumbnailRequested(int page)
         m_thumbnailsToCreate.append(page);
     }
     m_waitCondition.wakeAll();
+}
+
+void DocumentWorker::onTemplateChanged()
+{
+    QFile::remove(m_document->getThumbnailPath(m_currentPage));
+    emit backgroundChanged();
 }

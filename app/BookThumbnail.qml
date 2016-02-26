@@ -42,6 +42,7 @@ Item {
         Image {
             id: documentThumbnail
             anchors.centerIn: parent
+            cache: false
 
             asynchronous: true
             width: parent.width - 4

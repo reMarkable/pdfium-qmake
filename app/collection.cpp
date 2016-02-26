@@ -1,5 +1,6 @@
 #include "collection.h"
 
+#include "documentworker.h"
 #include "pdfworker.h"
 #include "settings.h"
 
@@ -172,7 +173,7 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
     }
 
     std::sort(documents.begin(), documents.end(), [](const QPointer<Document> a, const QPointer<Document> b) {
-        return a->openCount() > b->openCount();
+        return a->openCount() < b->openCount();
     });
 
     count = qMin(documents.count(), count);
@@ -238,6 +239,25 @@ QString Collection::defaultDocumentPath(const QString &type) const
         return collectionPath() + "Default sketchbook";
     } else {
         return collectionPath() + "Default notebook";
+    }
+}
+
+void Collection::archiveBookOpened(const QString path)
+{
+    if (!m_documents.contains(path)) {
+        qWarning() << "Invalid book opened in archive";
+    }
+    if (m_archiveBookWorker)  {
+        m_archiveBookWorker->deleteLater();
+    }
+    m_archiveBookWorker = new DocumentWorker(m_documents.value(path));
+    m_archiveBookWorker->start();
+}
+
+void Collection::archiveBookClosed()
+{
+    if (m_archiveBookWorker)  {
+        m_archiveBookWorker->deleteLater();
     }
 }
 

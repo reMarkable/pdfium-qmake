@@ -63,6 +63,8 @@ signals:
     void pagesDeleted(QList<int> pages);
 
 private slots:
+    void storeMetadata();
+    void storeTemplates();
     friend class PDFWorker;
     void setPageCount(int pageCount);
 

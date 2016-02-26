@@ -62,6 +62,8 @@ private slots:
 
     void onMissingThumbnailRequested(int page);
 
+    void onTemplateChanged();
+
 private:
     void storeLines();
     void printMemoryUsage() const;

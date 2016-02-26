@@ -46,18 +46,17 @@ Document::Document(QString path, QObject *parent)
         m_templates[page] = pageTemplate;
         page++;
     }
+
+    connect(this, SIGNAL(currentPageChanged(int)), this, SLOT(storeMetadata()));
+    connect(this, SIGNAL(openCountChanged()), this, SLOT(storeMetadata()));
+    connect(this, SIGNAL(pageCountChanged()), this, SLOT(storeMetadata()));
+    connect(this, SIGNAL(pageCountChanged()), this, SLOT(storeTemplates()));
+    connect(this, SIGNAL(templateChanged()), this, SLOT(storeTemplates()));
 }
 
 Document::~Document()
 {
     DEBUG_BLOCK;
-
-    QFile metadataFile(m_path + ".metadata");
-    if (metadataFile.open(QIODevice::WriteOnly)) {
-        metadataFile.write(QByteArray::number(m_currentPage) + "\n");
-        metadataFile.write(QByteArray::number(m_pageCount) + "\n");
-        metadataFile.write(QByteArray::number(m_openCount) + "\n");
-    }
 }
 
 void Document::addOpenCount()
@@ -105,6 +104,7 @@ void Document::setCurrentPage(int newPage)
 
     m_currentPage = newPage;
 
+    emit templateChanged();
     emit currentPageChanged(newPage);
 }
 void Document::setPageCount(int pageCount)
@@ -118,6 +118,26 @@ void Document::setPageCount(int pageCount)
 
     if (m_currentPage >= m_pageCount) {
         setCurrentPage(m_pageCount - 1);
+    }
+}
+
+void Document::storeMetadata()
+{
+    QFile metadataFile(m_path + ".metadata");
+    if (metadataFile.open(QIODevice::WriteOnly)) {
+        metadataFile.write(QByteArray::number(m_currentPage) + "\n");
+        metadataFile.write(QByteArray::number(m_pageCount) + "\n");
+        metadataFile.write(QByteArray::number(m_openCount) + "\n");
+    }
+}
+
+void Document::storeTemplates()
+{
+    QFile templateFile(m_path + ".pagedata");
+    if (templateFile.open(QIODevice::WriteOnly)) {
+        for (const QString pageTemplate : m_templates) {
+            templateFile.write(pageTemplate.toUtf8() + '\n');
+        }
     }
 }
 
