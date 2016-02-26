@@ -74,7 +74,7 @@ Rectangle {
             font.bold: true
             font.pixelSize: 25
             color: "white"
-            text: Collection.title(archiveView.currentBook)
+            text: archiveBook.document === null ? "" : archiveBook.document.title
         }
     }
 

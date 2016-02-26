@@ -158,6 +158,14 @@ Rectangle {
     DocumentPositionBar {
         id: positionBar
 
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            rightMargin: 100
+            left: parent.left
+            leftMargin: 100
+        }
+
         pageCount: noteTab.document.pageCount
         currentPage: noteTab.document.currentPage
         onPageClicked: noteTab.document.currentPage = page

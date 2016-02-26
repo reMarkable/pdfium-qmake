@@ -3,13 +3,6 @@ import com.magmacompany 1.0
 
 Item {
     id: positionBar
-    anchors {
-        bottom: parent.bottom
-        right: parent.right
-        rightMargin: 100
-        left: parent.left
-        leftMargin: 100
-    }
     property int pageCount: 0
     property int currentPage: 0
 

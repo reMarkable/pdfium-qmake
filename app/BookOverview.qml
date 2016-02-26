@@ -264,7 +264,7 @@ Item {
             margins: 50
         }
 
-        visible: archiveBook.currentPage < pageRowRepeater.count - 1
+        visible: archiveBook.currentPage < archiveBook.pageCount - 1
         icon: "qrc:///icons/forward_white.svg"
         color: "#666"
         onClicked: archiveBook.currentPage++
@@ -282,32 +282,20 @@ Item {
         onClicked: archiveBook.currentPage--
     }
 
-    Row {
+    DocumentPositionBar {
         id: pageRow
+
         anchors {
             bottom: parent.bottom
             bottomMargin: 80
-            horizontalCenter: parent.horizontalCenter
+            right: parent.right
+            rightMargin: 200
+            left: parent.left
+            leftMargin: 200
         }
-
-        spacing: 20
-        visible: pageRowRepeater.count > 1
-
-        Repeater {
-            id: pageRowRepeater
-            model: archiveBook.pageCount
-            delegate: Rectangle {
-                width: 30
-                height: width
-                radius: 2
-                color: archiveBook.currentPage === index ? "black" : "darkGray"
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: archiveBook.currentPage = index
-                }
-            }
-        }
+        pageCount: archiveBook.pageCount
+        currentPage: archiveBook.currentPage
+        onPageClicked: archiveBook.currentPage = page
     }
 
     Rectangle {
