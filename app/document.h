@@ -18,6 +18,10 @@ public:
     explicit Document(QString path, QObject *parent = 0);
     virtual ~Document();
 
+    QString getThumbnailPath(int index) const {
+        return m_path + '-' + QString::number(index) + ".thumbnail.jpg";
+    }
+
 public slots:
     void setCurrentPage(int newPage);
 
@@ -30,19 +34,20 @@ public slots:
         return m_path + '-' + QString::number(index) + ".cached.png";
     }
 
-    QString getThumbnailPath(int index) const {
-        return m_path + '-' + QString::number(index) + ".thumbnail.jpg";
-    }
-
     void deletePages(QList<int> pagesToRemove);
     QString currentTemplate();
 
     QStringList availableTemplates() { return QStringList() << "Sketch" << "Lined" << "Squared"; }
 
+    QString getThumbnail(int index);
+
 signals:
     void currentPageChanged(int newPage);
     void pageCountChanged();
     void templateChanged();
+
+    void thumbnailUpdated(int page);
+    void missingThumbnailRequested(int page);
 
     void pagesDeleted(QList<int> pages);
 

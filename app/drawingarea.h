@@ -40,10 +40,9 @@ public slots:
     void setDocument(Document *document);
 
 protected:
-    void mousePressEvent(QMouseEvent *event) override;
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
-    void hoverEnterEvent(QHoverEvent*) override;
-    void hoverLeaveEvent(QHoverEvent*) override;
+    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    virtual void itemChange(ItemChange change, const ItemChangeData &value) override;
 
 signals:
     void currentBrushChanged();

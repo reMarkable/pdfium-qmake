@@ -8,6 +8,8 @@ Item {
 
     signal clicked()
 
+    property QtObject document: Collection.getDocument(modelData)
+
     MouseArea {
         id: selectionMouseArea
         anchors.fill: parent
@@ -47,7 +49,7 @@ Item {
             sourceSize.width: width
             sourceSize.height: height
             
-            source: Collection.thumbnailPath(modelData)
+            source: bookItem.document.getThumbnail(bookItem.document.currentPage)
         }
         
         Rectangle {

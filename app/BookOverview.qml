@@ -132,6 +132,18 @@ Item {
                 property int pageNumber: index + archiveBook.currentPage * editActionsItem.maxDisplayItemCount
                 property bool selected: (archiveBook.selectedPages.indexOf(pageNumber) !== -1)
 
+                onPageNumberChanged: pageThumbnail.reloadThumbnail()
+
+                Connections {
+                    target: archiveBook.document
+                    onThumbnailUpdated: {
+                        if (page !== bookItem.pageNumber) {
+                            return
+                        }
+                        pageThumbnail.reloadThumbnail()
+                    }
+                }
+
                 Rectangle {
                     anchors {
                         fill: parent
@@ -149,9 +161,15 @@ Item {
                             margins: 2
                         }
                         asynchronous: true
-                        
-                        source: archiveBook.document !== null ? "file://" + archiveBook.document.path + "-" + bookItem.pageNumber + ".thumbnail.jpg" : ""
                         cache: false
+
+                        function reloadThumbnail() {
+                            pageThumbnail.source = ""
+                            pageThumbnail.source = archiveBook.document.getThumbnail(bookItem.pageNumber)
+                        }
+
+                        source: archiveBook.document.getThumbnail(bookItem.pageNumber)//archiveBook.document !== null ? "file://" + archiveBook.document.path + "-" + bookItem.pageNumber + ".thumbnail.jpg" : ""
+
                         sourceSize.width: width
                         sourceSize.height: height
                         
@@ -282,7 +300,7 @@ Item {
                 width: 30
                 height: width
                 radius: 2
-                color: archiveBook.currentPage === index ? "black" : "gray"
+                color: archiveBook.currentPage === index ? "black" : "darkGray"
 
                 MouseArea {
                     anchors.fill: parent
@@ -317,9 +335,10 @@ Item {
                 margins: 100
             }
 
-            source: visible ? "file://" + archiveBook.document.path() + "-" + previewBackground.index + ".thumbnail.jpg" : ""
+            source: visible ? archiveBook.document.getThumbnail(previewBackground.index) : ""//visible ? "file://" + archiveBook.document.path() + "-" + previewBackground.index + ".thumbnail.jpg" : ""
             sourceSize.width: width
             sourceSize.height: height
+            asynchronous: true
 
             ArchiveButton {
                 anchors {

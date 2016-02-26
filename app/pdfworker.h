@@ -16,12 +16,13 @@ public:
 
     QImage loadOriginalPage(int index, QSize dimensions);
 
+    bool initialize();
+
 signals:
     void pageCountChanged(int pageCount);
 
 private:
     FPDF_DOCUMENT m_pdfDocument;
-    bool m_initialized;
     QString m_path;
     int m_pageCount;
 };

@@ -40,10 +40,6 @@ Rectangle {
     onVisibleChanged: {
         if (visible) {
             forceActiveFocus()
-        } else {
-            if (document) {
-                document.clearCache()
-            }
         }
     }
 

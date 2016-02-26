@@ -2,6 +2,7 @@
 
 #include "collection.h"
 #include "pdfworker.h"
+#include "settings.h"
 #include "document.h"
 #include <QFile>
 #include <QMap>
@@ -34,8 +35,10 @@ DocumentWorker::DocumentWorker(Document *document) :
     m_pdfWorker(nullptr)
 {
     connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)));
+    connect(document, SIGNAL(missingThumbnailRequested(int)), this, SLOT(onMissingThumbnailRequested(int)));
     connect(this, SIGNAL(backgroundsLoaded(int,QImage)), this, SLOT(onBackgroundLoaded(int,QImage)));
     connect(this, SIGNAL(pageLoaded(int,QImage)), this, SLOT(onPageLoaded(int,QImage)));
+    connect(this, SIGNAL(thumbnailUpdated(int)), document, SIGNAL(thumbnailUpdated(int)));
 
     m_currentPage = m_document->currentPage();
 
@@ -68,6 +71,10 @@ DocumentWorker::~DocumentWorker()
     if (lineFile.open(QIODevice::WriteOnly)) {
         QDataStream dataStream(&lineFile);
         dataStream << m_lines;
+    }
+
+    if (m_pdfWorker) {
+        m_pdfWorker->deleteLater();
     }
 
 
@@ -129,8 +136,7 @@ void DocumentWorker::onPageChanged(int newPage)
         m_cachedContents.remove(page);
     }
 
-    m_pagesToLoad.clear();
-    m_backgroundsToLoad.clear();
+    clearLoadQueue();
 
     m_currentPage = newPage;
 
@@ -165,6 +171,13 @@ Line DocumentWorker::popLine()
 
 void DocumentWorker::run()
 {
+    if (m_pdfWorker) {
+        if (!m_pdfWorker->initialize()) {
+            delete m_pdfWorker;
+            m_pdfWorker = nullptr;
+        }
+    }
+
     while (!isInterruptionRequested()) {
         QMutexLocker locker(&m_lock);
 
@@ -173,34 +186,22 @@ void DocumentWorker::run()
             continue;
         }
 
-        if (m_pagesToLoad.isEmpty() && m_backgroundsToLoad.isEmpty() && m_pagesToStore.isEmpty()) {
+        if (m_pagesToLoad.isEmpty()
+                && m_backgroundsToLoad.isEmpty()
+                && m_pagesToStore.isEmpty()
+                && m_thumbnailsToCreate.isEmpty()) {
             m_waitCondition.wait(&m_lock);
             continue;
         }
 
-        if (!m_pagesToLoad.isEmpty()) {
+        if (!m_pagesToLoad.isEmpty()) { // Prioritize loading pages
             int page = m_pagesToLoad.keys().first();
             QString path = m_pagesToLoad.take(page);
             locker.unlock();
-
             emit pageLoaded(page, QImage(path));
-
-            continue;
-        }
-
-        if (!m_pagesToStore.isEmpty()) {
-            int page = m_pagesToStore.keys().first();
-            QImage image = m_pagesToStore.take(page);
-            locker.unlock();
-
-            image.save(m_document->getStoredPagePath(page));
-            image.scaledToHeight(512).save(m_document->getThumbnailPath(page));
-
-            continue;
-        }
-
-        if (!m_backgroundsToLoad.isEmpty()) {
+        } else if (!m_backgroundsToLoad.isEmpty()) {
             if (!m_pdfWorker) {
+                m_backgroundsToLoad.clear();
                 continue;
             }
 
@@ -212,9 +213,35 @@ void DocumentWorker::run()
             QString thumbnailPath = m_document->getThumbnailPath(page);
             if (!QFile::exists(thumbnailPath)) {
                 image.scaledToHeight(512).save(thumbnailPath);
+                emit thumbnailUpdated(page);
+            }
+        } else if (!m_pagesToStore.isEmpty()) {
+            int page = m_pagesToStore.keys().first();
+            QImage image = m_pagesToStore.take(page);
+            locker.unlock();
+
+            image.save(m_document->getStoredPagePath(page));
+            image.scaledToHeight(512).save(m_document->getThumbnailPath(page));
+            emit thumbnailUpdated(page);
+        } else if (!m_thumbnailsToCreate.isEmpty()) {
+            if (!m_pdfWorker) {
+                qDebug() << "Thumbnail requested, but no PDF worker";
+                m_thumbnailsToCreate.clear();
+                continue;
             }
 
-            continue;
+            int page = m_thumbnailsToCreate.takeFirst();
+            locker.unlock();
+
+            QString thumbnailPath = m_document->getThumbnailPath(page);
+            if (QFile::exists(thumbnailPath)) {
+                qDebug() << "thumbnail" << thumbnailPath << "already exists!";
+                continue;
+            }
+
+            QImage image = m_pdfWorker->loadOriginalPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
+            image.save(thumbnailPath);
+            emit thumbnailUpdated(page);
         }
     }
 }
@@ -278,7 +305,7 @@ void DocumentWorker::preload()
     m_waitCondition.wakeAll();
 }
 
-void DocumentWorker::clearCache()
+void DocumentWorker::pruneCache()
 {
     QMutexLocker locker(&m_lock);
 
@@ -296,8 +323,7 @@ void DocumentWorker::clearCache()
         }
     }
 
-    m_pagesToLoad.clear();
-    m_backgroundsToLoad.clear();
+    clearLoadQueue();
 }
 
 void DocumentWorker::printMemoryUsage() const
@@ -335,6 +361,12 @@ void DocumentWorker::printMemoryUsage() const
 #endif
 }
 
+void DocumentWorker::clearLoadQueue()
+{
+    m_backgroundsToLoad.clear();
+    m_pagesToLoad.clear();
+}
+
 void DocumentWorker::deletePages(QList<int> pagesToRemove)
 {
     if (m_document->pageCount() < pagesToRemove.count()) {
@@ -352,8 +384,7 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
     // So we avoid having to move everything around
     m_cachedBackgrounds.clear();
     m_cachedContents.clear();
-    m_backgroundsToLoad.clear();
-    m_pagesToLoad.clear();
+    clearLoadQueue();
 
     QMap<int, int> oldPages;
     for (int i=0; i<m_document->pageCount(); i++) {
@@ -377,4 +408,13 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
     }
 
     m_lines = newLines;
+}
+
+void DocumentWorker::onMissingThumbnailRequested(int page)
+{
+    QMutexLocker locker(&m_lock);
+    if (!m_thumbnailsToCreate.contains(page)) {
+        m_thumbnailsToCreate.append(page);
+    }
+    m_waitCondition.wakeAll();
 }

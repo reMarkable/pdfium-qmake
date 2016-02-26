@@ -18,6 +18,9 @@ public:
     Q_INVOKABLE void setValue(Key key, QVariant value);
     Q_INVOKABLE QVariant getValue(Key key, QVariant defaultValue);
 
+    Q_INVOKABLE static int thumbnailWidth();
+    Q_INVOKABLE static int thumbnailHeight();
+
 signals:
 
 public slots:

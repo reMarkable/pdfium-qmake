@@ -9,7 +9,6 @@ static bool s_pdfiumInitialized = false;
 
 PDFWorker::PDFWorker(Document *document) :
     m_pdfDocument(nullptr),
-    m_initialized(false),
     m_path(document->path()),
     m_pageCount(0)
 {
@@ -26,46 +25,22 @@ PDFWorker::~PDFWorker()
 
 QImage PDFWorker::loadOriginalPage(int index, QSize dimensions)
 {
-    // TODO: FPDF_QuickDrawPage?
-    if (index < 0) {
+    if (!m_pdfDocument) {
+        qWarning() << "Not initialize!";
         return QImage();
     }
 
-    { // Try to handle construction/destruction in a thread safe manner
-        if (!s_pdfiumInitialized) {
-            FPDF_LIBRARY_CONFIG_ config;
-            config.version = 2;
-            config.m_pUserFontPaths = nullptr;
-            config.m_pIsolate = nullptr;
-            config.m_v8EmbedderSlot = 0;
-            FPDF_InitLibraryWithConfig(&config);
-#ifdef Q_PROCESSOR_ARM
-            static const char *s_fontpaths[] = { "/system/fonts/", nullptr };
-            config.m_pUserFontPaths = s_fontpaths;
-#endif
-
-            s_pdfiumInitialized = true;
-            FPDF_InitLibraryWithConfig(&config);
-        }
-
-        if (!m_initialized) {
-            m_pdfDocument = FPDF_LoadDocument(m_path.toLocal8Bit().constData(), nullptr);
-            m_pageCount = FPDF_GetPageCount(m_pdfDocument);
-            emit pageCountChanged(m_pageCount);
-            m_initialized = true;
-        }
-
-        if (!m_pdfDocument) {
-            return QImage();
-        }
+    if (index < 0) {
+        return QImage();
     }
 
     if (index > m_pageCount) {
         return QImage();
     }
 
-    FPDF_PAGE pdfPage = FPDF_LoadPage(m_pdfDocument, index);
 
+    // TODO: FPDF_QuickDrawPage?
+    FPDF_PAGE pdfPage = FPDF_LoadPage(m_pdfDocument, index);
 
     QImage image(dimensions.width(), dimensions.height(), QImage::Format_Grayscale8);
     image.fill(Qt::white);
@@ -123,4 +98,40 @@ QImage PDFWorker::loadOriginalPage(int index, QSize dimensions)
     }
 
     return image.convertToFormat(QImage::Format_RGB16);
+}
+
+bool PDFWorker::initialize()
+{
+    if (m_pdfDocument) {
+        qWarning() << "Trying to initialize twice!";
+        return false;
+    }
+
+    if (!s_pdfiumInitialized) {
+        FPDF_LIBRARY_CONFIG_ config;
+        config.version = 2;
+        config.m_pUserFontPaths = nullptr;
+        config.m_pIsolate = nullptr;
+        config.m_v8EmbedderSlot = 0;
+#ifdef Q_PROCESSOR_ARM
+        static const char *s_fontpaths[] = { "/system/fonts/", nullptr };
+        config.m_pUserFontPaths = s_fontpaths;
+#endif
+
+        FPDF_InitLibraryWithConfig(&config);
+
+        s_pdfiumInitialized = true;
+    }
+
+    m_pdfDocument = FPDF_LoadDocument(m_path.toLocal8Bit().constData(), nullptr);
+    if (!m_pdfDocument) {
+        qWarning() << "Failed to load PDF document";
+        return false;
+    }
+
+
+    m_pageCount = FPDF_GetPageCount(m_pdfDocument);
+    emit pageCountChanged(m_pageCount);
+
+    return true;
 }

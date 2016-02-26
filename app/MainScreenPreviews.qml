@@ -9,8 +9,8 @@ Item {
     property alias columns: previewsGrid.columns
     property alias title: headerText.text
 
-    property int thumbnailHeight: 300
-    property int thumbnailWidth: thumbnailHeight * 3 / 4
+    property int thumbnailHeight: Settings.thumbnailHeight()
+    property int thumbnailWidth: Settings.thumbnailWidth()
 
     signal openClicked()
 
@@ -86,8 +86,8 @@ Item {
                 width: previewsGrid.width / previewsGrid.columns
                 BookThumbnail {
                     anchors.centerIn: parent
-                    width: mainScreenPreviews.thumbnailWidth
-                    height: mainScreenPreviews.thumbnailHeight
+                    width: Settings.thumbnailWidth()
+                    height: Settings.thumbnailHeight()
                     onClicked: mainScreen.openBook(modelData)
                 }
             }

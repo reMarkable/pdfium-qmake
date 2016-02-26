@@ -102,3 +102,14 @@ QString Document::currentTemplate()
 
     return m_templates.value(m_currentPage);
 }
+
+QString Document::getThumbnail(int index)
+{
+    QString thumbnailPath = getThumbnailPath(index);
+    if (!QFile::exists(thumbnailPath)) {
+        emit missingThumbnailRequested(index);
+        return QStringLiteral("");
+    }
+
+    return "file://" + thumbnailPath;
+}

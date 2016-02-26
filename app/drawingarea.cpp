@@ -33,7 +33,6 @@ DrawingArea::DrawingArea() :
     m_doublePredict(false)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
-    setAcceptHoverEvents(true);
 
     timingDebug.setEnabled(QtDebugMsg, false);
 }
@@ -183,6 +182,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     }
     m_hasEdited = true;
 
+    m_documentWorker->suspend();
 #ifdef Q_PROCESSOR_ARM
 
     Digitizer *digitizer = Digitizer::instance();
@@ -417,6 +417,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 #endif//Q_PROCESSOR_ARM
+    m_documentWorker->wake();
 }
 
 void DrawingArea::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -428,20 +429,20 @@ void DrawingArea::geometryChanged(const QRectF &newGeometry, const QRectF &oldGe
     QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-void DrawingArea::hoverEnterEvent(QHoverEvent *)
+void DrawingArea::itemChange(QQuickItem::ItemChange change, const QQuickItem::ItemChangeData &value)
 {
-   if (m_documentWorker)  {
-//       m_documentWorker->suspend();
-   }
-}
+    if (change == QQuickItem::ItemVisibleHasChanged) {
+        if (value.boolValue) {
+            m_documentWorker->preload();
+            m_documentWorker->wake();
+        } else {
+            m_documentWorker->suspend();
+            m_documentWorker->pruneCache();
+        }
+    }
 
-void DrawingArea::hoverLeaveEvent(QHoverEvent *)
-{
-   if (m_documentWorker)  {
-//       m_documentWorker->wake();
-   }
+    QQuickItem::itemChange(change, value);
 }
-
 
 void DrawingArea::redrawBackbuffer(QRectF part)
 {

@@ -33,7 +33,7 @@ public:
     void preload();
 
     /// We should clear our cache
-    void clearCache();
+    void pruneCache();
 
     const QVector<Line> &lines();
     void addLine(Line line);
@@ -59,9 +59,12 @@ private slots:
     void onPageChanged(int newPage);
     void deletePages(QList<int> pagesToRemove);
 
+    void onMissingThumbnailRequested(int page);
+
 private:
     void storeLines();
     void printMemoryUsage() const;
+    void clearLoadQueue();
 
     QPointer<Document> m_document;
 
@@ -72,6 +75,7 @@ private:
     QHash<int, QImage> m_pagesToStore;
     QList<int> m_backgroundsToLoad;
     QHash<int, QString> m_pagesToLoad;
+    QList<int> m_thumbnailsToCreate;
 
     QMutex m_lock;
 

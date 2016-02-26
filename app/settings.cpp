@@ -30,3 +30,13 @@ QVariant Settings::getValue(Settings::Key key, QVariant defaultValue)
     return settings.value(QVariant(key).toString(), defaultValue);
 }
 
+int Settings::thumbnailWidth()
+{
+    return 225;
+}
+
+int Settings::thumbnailHeight()
+{
+    return 300;
+}
+
