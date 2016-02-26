@@ -12,7 +12,8 @@ Item {
     }
     property int pageCount: 0
     property int currentPage: 0
-    property QtObject document
+
+    signal pageClicked(var page)
 
     height: 50
     
@@ -47,7 +48,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                positionBar.document.currentPage = Math.floor(document.pageCount * mouse.x / width)
+                positionBar.pageClicked(Math.floor(positionBar.pageCount * mouse.x / width))
             }
         }
     }
@@ -77,14 +78,14 @@ Item {
                         bottom: parent.bottom
                     }
                     
-                    height: positionBar.document.currentPage === index ? 14 : 7
-                    color: positionBar.document.currentPage < index ? "#999" : "#333"
+                    height: positionBar.currentPage === index ? 14 : 7
+                    color: positionBar.currentPage < index ? "#999" : "#333"
                     radius: 2
                 }
                 MouseArea {
                     anchors.fill: parent
                     enabled: parent.visible
-                    onClicked: positionBar.document.currentPage = index
+                    onClicked: positionBar.pageClicked(index)
                 }
             }
         }

@@ -6,8 +6,6 @@ Rectangle {
     property int iconMargin: 8
 
     property string title: ""
-    property int currentPage: 0
-    property int pageCount: 0
     property string tabIdentifier: "note"
 
     property QtObject document
@@ -18,13 +16,11 @@ Rectangle {
         var path = document.path
         tabIdentifier = path
         title = Qt.binding(function() { return document.title; })
-        pageCount = Qt.binding(function() { return document.pageCount; })
-        currentPage = Qt.binding(function() { return document.currentPage; })
     }
 
 
     function moveForward() {
-        if (document.currentPage < pageCount - 1) {
+        if (document.currentPage < document.pageCount - 1) {
             document.currentPage++
         }
     }
@@ -162,9 +158,9 @@ Rectangle {
     DocumentPositionBar {
         id: positionBar
 
-        pageCount: noteTab.pageCount
-        currentPage: noteTab.currentPage
-        document: noteTab.document
+        pageCount: noteTab.document.pageCount
+        currentPage: noteTab.document.currentPage
+        onPageClicked: noteTab.document.currentPage = page
     }
 
 
@@ -198,7 +194,7 @@ Rectangle {
                     }
                     onPageClicked:{
                         thumbnailGrid.visible = false
-                        document.currentPage = index
+                        noteTab.document.currentPage = index
                     }
                     onVisibleChanged: {
                         if (visible) {
