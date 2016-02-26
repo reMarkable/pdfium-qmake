@@ -95,7 +95,6 @@ bool Document::createDocument(QString defaultTemplate, QString path)
 
 void Document::setCurrentPage(int newPage)
 {
-    qDebug() << "changing page";
     if (m_currentPage == newPage || newPage < 0) {
         return;
     }

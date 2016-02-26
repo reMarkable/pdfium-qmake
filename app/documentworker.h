@@ -50,6 +50,7 @@ signals:
     void backgroundsLoaded(int page, QImage contents);
     void pageLoaded(int page, QImage contents);
     void currentPageLoaded();
+    void backgroundChanged();
     void thumbnailUpdated(int page);
 
 private slots:

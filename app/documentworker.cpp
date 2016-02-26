@@ -37,6 +37,7 @@ DocumentWorker::DocumentWorker(Document *document) :
     connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)));
     connect(document, SIGNAL(missingThumbnailRequested(int)), this, SLOT(onMissingThumbnailRequested(int)));
     connect(document, SIGNAL(pagesDeleted(QList<int>)), this, SLOT(deletePages(QList<int>)));
+    connect(document, SIGNAL(templateChanged()), this, SIGNAL(backgroundChanged()));
     connect(this, SIGNAL(backgroundsLoaded(int,QImage)), this, SLOT(onBackgroundLoaded(int,QImage)));
     connect(this, SIGNAL(pageLoaded(int,QImage)), this, SLOT(onPageLoaded(int,QImage)));
     connect(this, SIGNAL(thumbnailUpdated(int)), document, SIGNAL(thumbnailUpdated(int)));
@@ -162,7 +163,7 @@ void DocumentWorker::onPageChanged(int newPage)
 
     if (m_cachedContents.contains(newPage)) {
         emit currentPageLoaded();
-    } else if (m_cachedBackgrounds.contains(newPage)) {
+    } else if (m_cachedBackgrounds.contains(newPage) && !QFile::exists(m_document->getStoredPagePath(m_currentPage))) {
         emit currentPageLoaded();
     }
 
@@ -271,7 +272,8 @@ void DocumentWorker::run()
 void DocumentWorker::onPageLoaded(int page, QImage contents)
 {
     if (page == m_currentPage) {
-        if (!pageContents.isNull()) {
+        if (pageDirty) {
+            qWarning() << "Loaded page, after page dirty";
             return;
         }
         pageContents = contents;
@@ -286,7 +288,7 @@ void DocumentWorker::onBackgroundLoaded(int page, QImage contents)
 {
     m_cachedBackgrounds[page] = contents;
 
-    if (page == m_currentPage && !pageDirty) {
+    if (page == m_currentPage && pageContents.isNull()) {
         emit currentPageLoaded();
     }
 }

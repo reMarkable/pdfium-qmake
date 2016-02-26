@@ -27,7 +27,7 @@ Column {
     //property var buttons: []
     property QtObject document
     property QtObject drawingArea
-    property string currentTemplate: (document === undefined || document === null) ? "None" : document.pageTemplate
+    property string currentTemplate: (document === undefined || document === null) ? "None" : document.currentTemplate
 
     onCurrentTemplateChanged: {
         if (!document) {
@@ -255,8 +255,8 @@ Column {
         ToolButton {
             icon: "qrc:/icons/forward.svg"
             onClicked: {
-                if (toolBox.document.currentIndex < toolBox.document.pageCount - 1) {
-                    document.currentIndex++
+                if (toolBox.document.currentPage < toolBox.document.pageCount - 1) {
+                    document.currentPage++
                 }
             }
         }
@@ -267,8 +267,8 @@ Column {
         ToolButton {
             icon: "qrc:/icons/back.svg"
             onClicked: {
-                if (toolBox.document.currentIndex > 0) {
-                    toolBox.document.currentIndex--
+                if (toolBox.document.currentPage > 0) {
+                    toolBox.document.currentPage--
                 }
             }
         }

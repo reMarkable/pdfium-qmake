@@ -125,7 +125,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        document.currentIndex = thumbnailDelegate.pageNumber
+                        document.currentPage = thumbnailDelegate.pageNumber
                         thumbnailGrid.visible = false
                     }
                 }

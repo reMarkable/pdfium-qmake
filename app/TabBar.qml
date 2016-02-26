@@ -41,7 +41,7 @@ Rectangle {
         }
 
         if (pageToShow !== -1) {
-            objectList[index].document.currentIndex = pageToShow
+            objectList[index].document.currentPage = pageToShow
         }
 
         setCurrentTab(index + 1)

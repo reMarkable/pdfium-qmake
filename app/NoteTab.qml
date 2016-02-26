@@ -199,7 +199,13 @@ Rectangle {
                     onPageClicked:{
                         thumbnailGrid.visible = false
                         document.currentPage = index
-                        noteTab.forceActiveFocus()
+                    }
+                    onVisibleChanged: {
+                        if (visible) {
+                            forceActiveFocus()
+                        } else {
+                            noteTab.forceActiveFocus()
+                        }
                     }
                 }
             }

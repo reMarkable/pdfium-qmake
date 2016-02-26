@@ -47,7 +47,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                positionBar.document.currentIndex = Math.floor(document.pageCount * mouse.x / width)
+                positionBar.document.currentPage = Math.floor(document.pageCount * mouse.x / width)
             }
         }
     }
@@ -77,14 +77,14 @@ Item {
                         bottom: parent.bottom
                     }
                     
-                    height: positionBar.currentPage == index ? 14 : 7
-                    color: positionBar.currentPage < index ? "#999" : "#333"
+                    height: positionBar.document.currentPage === index ? 14 : 7
+                    color: positionBar.document.currentPage < index ? "#999" : "#333"
                     radius: 2
                 }
                 MouseArea {
                     anchors.fill: parent
                     enabled: parent.visible
-                    onClicked: positionBar.document.currentIndex = index
+                    onClicked: positionBar.document.currentPage = index
                 }
             }
         }

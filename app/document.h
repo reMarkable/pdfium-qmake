@@ -11,7 +11,7 @@ class Document : public QObject
     Q_OBJECT
     Q_PROPERTY(int currentPage WRITE setCurrentPage READ currentPage NOTIFY currentPageChanged)
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged)
-    Q_PROPERTY(QString pageTemplate READ currentTemplate WRITE setCurrentTemplate NOTIFY templateChanged)
+    Q_PROPERTY(QString currentTemplate READ currentTemplate WRITE setCurrentTemplate NOTIFY templateChanged)
     Q_PROPERTY(QString path READ path CONSTANT)
     Q_PROPERTY(QString title READ title CONSTANT)
 

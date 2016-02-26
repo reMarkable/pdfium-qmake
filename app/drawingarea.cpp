@@ -180,7 +180,8 @@ void DrawingArea::setDocument(Document *document)
     m_undoneLines.clear();
 
     redrawBackbuffer();
-    connect(m_documentWorker, SIGNAL(currentPageLoaded()), SLOT(onBackgroundChanged()));
+    connect(m_documentWorker, SIGNAL(backgroundChanged()), SLOT(onBackgroundChanged()));
+    connect(m_documentWorker, SIGNAL(currentPageLoaded()), SLOT(update()));
 }
 
 #define SMOOTHFACTOR_P 0.370
