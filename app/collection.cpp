@@ -1,5 +1,8 @@
 #include "collection.h"
 
+#include "pdfworker.h"
+#include "settings.h"
+
 #include <QFile>
 #include <QDir>
 #include <QDebug>
@@ -130,6 +133,7 @@ QObject *Collection::getDocument(const QString &path)
 //    }
 
     Document *document = new Document(path);
+    initializePDFDocument(document);
 //    QTimer::singleShot(10, document, SLOT(preload()));
 //    QTimer::singleShot(10, document, SLOT(loadLines()));
     QQmlEngine::setObjectOwnership(document, QQmlEngine::CppOwnership);
@@ -319,4 +323,33 @@ void Collection::storeMetadata()
         mapIterator.next();
         openCountsFile.write(QByteArray::number(mapIterator.value()) + ' ' + mapIterator.key().toUtf8() + '\n');
     }
+}
+
+bool Collection::initializePDFDocument(Document *document)
+{
+    if (!document) {
+        qWarning() << "Got null document";
+        return false;
+    }
+
+    int page = document->currentPage();
+    QString thumbnailPath = document->getThumbnailPath(page);
+    if (QFile::exists(thumbnailPath)) { // This document has already been initialized
+        return true;
+    }
+
+    PDFWorker worker(document);
+    if (!worker.initialize()) {
+        qWarning() << "Can't initialize PDF worker for" << document->path();
+        return false;
+    }
+
+    QImage thumbnail = worker.loadOriginalPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
+    if (thumbnail.isNull()) {
+        qWarning() << "Unable to load PDF page" << page << "from" << document->path();
+    }
+
+    thumbnail.save(document->getThumbnailPath(page));
+
+    return true;
 }

@@ -39,6 +39,7 @@ signals:
 
 private:
     void storeMetadata();
+    bool initializePDFDocument(Document *document);
 
     QMap<QString, QPointer<Document>> m_openDocuments;
     QMap<QString, int> m_documentsPageCount;
