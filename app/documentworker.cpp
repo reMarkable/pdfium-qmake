@@ -36,6 +36,7 @@ DocumentWorker::DocumentWorker(Document *document) :
 {
     connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)));
     connect(document, SIGNAL(missingThumbnailRequested(int)), this, SLOT(onMissingThumbnailRequested(int)));
+    connect(document, SIGNAL(pagesDeleted(QList<int>)), this, SLOT(deletePages(QList<int>)));
     connect(this, SIGNAL(backgroundsLoaded(int,QImage)), this, SLOT(onBackgroundLoaded(int,QImage)));
     connect(this, SIGNAL(pageLoaded(int,QImage)), this, SLOT(onPageLoaded(int,QImage)));
     connect(this, SIGNAL(thumbnailUpdated(int)), document, SIGNAL(thumbnailUpdated(int)));
@@ -60,12 +61,20 @@ DocumentWorker::DocumentWorker(Document *document) :
 
 DocumentWorker::~DocumentWorker()
 {
+    {
+        QMutexLocker locker(&m_lock);
+        m_backgroundsToLoad.clear();
+        m_pagesToLoad.clear();
+
+        m_pagesToStore.insert(m_currentPage, pageContents);
+        m_waitCondition.wakeAll();
+
+    }
+
     requestInterruption();
     m_waitCondition.wakeAll();
-
     wait();
 
-    QMutexLocker locker(&m_lock);
 
     QFile lineFile(m_document->path() + ".lines");
     if (lineFile.open(QIODevice::WriteOnly)) {
@@ -97,10 +106,19 @@ void DocumentWorker::wake()
 QImage DocumentWorker::background()
 {
     if (m_pdfWorker) {
-        return m_cachedBackgrounds.value(m_document->currentPage());
+        return m_cachedBackgrounds.value(m_currentPage);
     }
 
-    return s_templateLoader.templates.value(m_document->currentTemplate());
+    QImage background = s_templateLoader.templates.value(m_document->currentTemplate());
+
+    QString thumbnailPath = m_document->getThumbnailPath(m_currentPage);
+    if (!QFile::exists(thumbnailPath)) {
+        qDebug() << "Storing thumbnailo";
+        background.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight()).save(thumbnailPath);
+        emit thumbnailUpdated(m_currentPage);
+    }
+
+    return background;
 }
 
 void DocumentWorker::onPageChanged(int newPage)
@@ -216,13 +234,17 @@ void DocumentWorker::run()
                 emit thumbnailUpdated(page);
             }
         } else if (!m_pagesToStore.isEmpty()) {
-            int page = m_pagesToStore.keys().first();
-            QImage image = m_pagesToStore.take(page);
-            locker.unlock();
+            while (!m_pagesToStore.isEmpty()) {
+                int page = m_pagesToStore.keys().first();
+                QImage image = m_pagesToStore.take(page);
 
-            image.save(m_document->getStoredPagePath(page));
-            image.scaledToHeight(512).save(m_document->getThumbnailPath(page));
-            emit thumbnailUpdated(page);
+                locker.unlock();
+
+                image.save(m_document->getStoredPagePath(page));
+                image.scaledToHeight(512).save(m_document->getThumbnailPath(page));
+                emit thumbnailUpdated(page);
+                locker.relock();
+            }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
             if (!m_pdfWorker) {
                 qDebug() << "Thumbnail requested, but no PDF worker";

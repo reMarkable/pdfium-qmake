@@ -17,7 +17,7 @@ Rectangle {
         }
         var path = document.path
         tabIdentifier = path
-        title = Collection.title(path)
+        title = Qt.binding(function() { return document.title; })
         pageCount = Qt.binding(function() { return document.pageCount; })
         currentPage = Qt.binding(function() { return document.currentPage; })
     }

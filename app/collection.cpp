@@ -25,9 +25,18 @@ Collection::Collection(QObject *parent) : QObject(parent)
     QDir dir;
     QFileInfoList fileList;
 
-    dir.setPath(collectionPath() + "/Local/");
+    QString localPath = collectionPath() + "/Local/";
+    if (!QFile::exists(localPath)) {
+        QDir(localPath).mkpath(localPath);
+    }
+    QString importedPath = collectionPath() + "/Imported/";
+    if (!QFile::exists(importedPath)) {
+        QDir(importedPath).mkpath(importedPath);
+    }
+
+    dir.setPath(localPath);
     fileList.append(dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot));
-    dir.setPath(collectionPath() + "/Imported/");
+    dir.setPath(importedPath);
     fileList.append(dir.entryInfoList(QStringList() << "*.pdf", QDir::Files));
 
     std::sort(fileList.begin(), fileList.end(), [](const QFileInfo &a, const QFileInfo &b) {
@@ -40,53 +49,29 @@ Collection::Collection(QObject *parent) : QObject(parent)
             continue;
         }
 
-        m_documentPaths.append(documentPath);
-
-        QFile metadataFile(documentPath + ".metadata");
-        if (!metadataFile.open(QIODevice::ReadOnly)) {
-            qWarning() << "unable to open metadata" << documentPath;
-            continue;
-        }
-
-        m_documentsLastPage[documentPath] = metadataFile.readLine().trimmed().toInt();
-        m_documentsPageCount[documentPath] = metadataFile.readLine().trimmed().toInt();
-    }
-
-    QFile openCountsFile(collectionPath() + "opencounts.data");
-    if (openCountsFile.open(QIODevice::ReadOnly)) {
-        while (!openCountsFile.atEnd()) {
-            QByteArray line = openCountsFile.readLine().trimmed();
-            int index = line.indexOf(' ');
-            if (index == -1) {
-                qWarning() << "Invalid line in" << openCountsFile.fileName() << ":" << line;
-                continue;
-            }
-
-            QString path = QString::fromUtf8(line.mid(index)).trimmed();
-            if (!m_documentPaths.contains(path)) {
-                continue;
-            }
-
-            m_documentOpenCount.insert(path, line.left(index).toInt());
-        }
-    } else {
-        qWarning() << "unable to open" << openCountsFile.fileName();
+        loadDocument(documentPath);
+        m_sortedPaths.append(documentPath);
     }
 
     QString defaultPath = defaultDocumentPath("Sketch");
     if (!QFile::exists(defaultPath)) {
-        QDir(defaultPath).mkpath(defaultPath);
+        if (!Document::createDocument("Sketch", defaultPath)) {
+            qWarning() << "Unable to create default sketch document";
+        }
     }
+    loadDocument(defaultPath);
 
     defaultPath = defaultDocumentPath("Lined");
     if (!QFile::exists(defaultPath)) {
-        QDir(defaultPath).mkpath(defaultPath);
+        if (!Document::createDocument("Lined", defaultPath)) {
+            qWarning() << "Unable to create default note document";
+        }
     }
+    loadDocument(defaultPath);
 }
 
 Collection::~Collection()
 {
-    storeMetadata();
 }
 
 QString Collection::collectionPath()
@@ -102,52 +87,18 @@ QObject *Collection::getDocument(const QString &path)
 {
     DEBUG_BLOCK;
 
-    m_documentOpenCount[path]++;
-    emit documentsOpenCountsChanged();
-
-    if (m_openDocuments.contains(path)) {
-        Document *document = m_openDocuments.value(path).data();
-        if (document) {
-            return document;
-        } else {
-            qDebug() << "removing" << path;
-            m_openDocuments.remove(path);
-        }
-    }
-
-    QFileInfo pathInfo(path);
-
-
-    if (!pathInfo.exists(path)) {
-        qWarning() << "Document doesn't exist:" << path;
+    if (!m_documents.contains(path)) {
+        qWarning() << "Asked for invalid document" << path;
+        qDebug() << m_documents;
         return nullptr;
     }
-//    Document *document = nullptr;
-//    } else if (pathInfo.isFile() && path.endsWith(".pdf")) {
-//        document = new PDFWorker(path);
-//    } else if (pathInfo.isDir()) {
-//        qWarning() << "returning new document object";
-//        document = new NativeDocument(path);
-//    } else {
-//        qWarning() << "Asked for invalid path" << path;
-//    }
 
-    Document *document = new Document(path);
-    initializePDFDocument(document);
-//    QTimer::singleShot(10, document, SLOT(preload()));
-//    QTimer::singleShot(10, document, SLOT(loadLines()));
-    QQmlEngine::setObjectOwnership(document, QQmlEngine::CppOwnership);
-    m_openDocuments.insert(path, QPointer<Document>(document));
-    return document;
+    return m_documents.value(path).data();
 }
 
 QString Collection::createDocument(const QString &defaultTemplate)
 {
     DEBUG_BLOCK;
-
-    if (defaultTemplate.isEmpty()) {
-        return nullptr;
-    }
 
     QString path;
     for (int i=0; i<1000; i++) {
@@ -162,15 +113,13 @@ QString Collection::createDocument(const QString &defaultTemplate)
         return QString();
     }
 
-    if (!QDir(path).mkpath(path)) {
+    if (!Document::createDocument(defaultTemplate, path)) {
         qWarning() << "Unable to create document";
         return QString();
     }
 
-    m_documentsLastPage.insert(path, 0);
-    m_documentsPageCount.insert(path, 1);
-    m_documentPaths.prepend(path);
-    m_documentOpenCount.insert(path, 1);
+    loadDocument(path);
+    m_sortedPaths.prepend(path);
 
     emit documentPathsChanged();
 
@@ -193,7 +142,7 @@ QStringList Collection::getDocumentPaths(int count, int offset) const
     if (count < 1) {
         return paths;
     }
-    paths.append(m_documentPaths.mid(offset, count));
+    paths.append(m_sortedPaths.mid(offset, count));
 
     return paths;
 }
@@ -201,6 +150,7 @@ QStringList Collection::getDocumentPaths(int count, int offset) const
 QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
 {
     QStringList sortedPaths;
+
     if (offset == 0) {
         count -= 2; // For the default documents
         sortedPaths.append(collectionPath() + "Default notebook");
@@ -213,14 +163,23 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
         return sortedPaths;
     }
 
-    QMultiMap<int, QString> reverseMap;
-    QMapIterator<QString, int> mapIterator(m_documentOpenCount);
-    while (mapIterator.hasNext()) {
-        mapIterator.next();
-        reverseMap.insert(0 - mapIterator.value(), mapIterator.key());
+    QList<QPointer<Document>> documents;
+    for (const QString &path : m_documents.keys()) {
+        if (path == defaultDocumentPath("Sketch") || path == defaultDocumentPath("Lined")) {
+            continue;
+        }
+        documents.append(m_documents.value(path));
     }
 
-    sortedPaths.append(reverseMap.values().mid(offset, count));
+    std::sort(documents.begin(), documents.end(), [](const QPointer<Document> a, const QPointer<Document> b) {
+        return a->openCount() > b->openCount();
+    });
+
+    count = qMin(documents.count(), count);
+    for (int i=0; i<count; i++) {
+        sortedPaths.append(documents[i]->path());
+    }
+
     return sortedPaths;
 }
 
@@ -228,40 +187,7 @@ int Collection::documentCount()
 {
     DEBUG_BLOCK;
 
-    return m_documentPaths.count();
-}
-
-QString Collection::thumbnailPath(const QString &documentPath) const
-{
-    DEBUG_BLOCK;
-
-    QString cachedPath(documentPath + '-' + QString::number(m_documentsLastPage.value(documentPath)) + ".thumbnail.jpg");
-    if (QFile::exists(cachedPath)) {
-        return "file://" + cachedPath;
-    }
-
-    QDir dir(documentPath);
-    QFileInfoList fileList = dir.entryInfoList(QStringList() << "*.png" << "*.jpg", QDir::Files, QDir::Name);
-    if (fileList.isEmpty()) {
-        qWarning() << Q_FUNC_INFO << "No images in path" << documentPath;
-        return QString();
-    }
-
-    return "file://" + fileList.first().absoluteFilePath();
-}
-
-QString Collection::title(const QString &documentPath) const
-{
-    DEBUG_BLOCK;
-
-    return QFileInfo(documentPath).completeBaseName();
-}
-
-int Collection::pageCount(const QString documentPath) const
-{
-    DEBUG_BLOCK;
-
-    return m_documentsPageCount.value(documentPath);
+    return m_sortedPaths.count();
 }
 
 void Collection::deleteDocument(const QString documentPath)
@@ -271,14 +197,19 @@ void Collection::deleteDocument(const QString documentPath)
         return;
     }
 
+    if (!m_documents.contains(documentPath)) {
+        qWarning() << "Trying to delete unknown path";
+    }
+
     QStringList filesToDelete;
-    filesToDelete << documentPath + ".thumbnail.jpg"
-                  << documentPath + ".metadata"
+    filesToDelete << documentPath + ".metadata"
                   << documentPath + ".pagedata";
 
-    for (int i=0; i<m_documentsPageCount.value(documentPath); i++) {
-        QString thumbnailFile(documentPath + '-' + QString::number(i) + ".thumbnail.jpg");
-        filesToDelete.append(thumbnailFile);
+    Document *document = m_documents.value(documentPath);
+
+    for (int i=0; i<document->pageCount(); i++) {
+        QString thumbnailPath = document->getThumbnailPath(i);
+        filesToDelete.append(thumbnailPath);
     }
 
     for (const QString filePath : filesToDelete) {
@@ -295,9 +226,8 @@ void Collection::deleteDocument(const QString documentPath)
         qWarning() << Q_FUNC_INFO << "Unable to delete directory" << documentPath;
     }
 
-    m_documentsLastPage.remove(documentPath);
-    m_documentsPageCount.remove(documentPath);
-    m_documentPaths.removeAll(documentPath);
+    m_sortedPaths.removeAll(documentPath);
+    m_documents.take(documentPath)->deleteLater();
 
     emit documentPathsChanged();
 }
@@ -311,18 +241,19 @@ QString Collection::defaultDocumentPath(const QString &type) const
     }
 }
 
-void Collection::storeMetadata()
+void Collection::loadDocument(const QString path)
 {
-    QFile openCountsFile(collectionPath() + "opencounts.data");
-    if (!openCountsFile.open(QIODevice::WriteOnly)) {
-        qWarning() << "Unable to open" << openCountsFile.fileName() << "for writing";
+    if (!QFile::exists(path)) {
+        qWarning() << "Asked to load non-existing document";
         return;
     }
-    QMapIterator<QString, int> mapIterator(m_documentOpenCount);
-    while (mapIterator.hasNext()) {
-        mapIterator.next();
-        openCountsFile.write(QByteArray::number(mapIterator.value()) + ' ' + mapIterator.key().toUtf8() + '\n');
+
+    Document *document = new Document(path);
+    if (path.endsWith(".pdf")) {
+        initializePDFDocument(document);
     }
+    QQmlEngine::setObjectOwnership(document, QQmlEngine::CppOwnership);
+    m_documents.insert(path, QPointer<Document>(document));
 }
 
 bool Collection::initializePDFDocument(Document *document)

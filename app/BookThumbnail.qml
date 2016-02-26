@@ -18,7 +18,7 @@ Item {
 
     Repeater {
         id: bgPageRepeater
-        model: Math.min(Collection.pageCount(modelData), 5) - 1
+        model: Math.min(bookItem.document.pageCount, 5) - 1
         property real spacing: Math.max(20 / count, 3)
         Rectangle {
             border.width: 1
@@ -49,7 +49,20 @@ Item {
             sourceSize.width: width
             sourceSize.height: height
             
-            source: bookItem.document.getThumbnail(bookItem.document.currentPage)
+            function reloadThumbnail() {
+                source = ""
+                source = bookItem.document.getThumbnail(bookItem.document.currentPage)
+            }
+
+            Component.onCompleted: reloadThumbnail()
+            Connections {
+                target: bookItem.document
+                onThumbnailUpdated: {
+                    if (page === bookItem.document.currentPage) {
+                        documentThumbnail.reloadThumbnail()
+                    }
+                }
+            }
         }
         
         Rectangle {
@@ -84,7 +97,7 @@ Item {
                     right: pageCountLabel.left
                 }
                 elide: Text.ElideRight
-                text: Collection.title(modelData)
+                text: bookItem.document.title
             }
 
             Text {
@@ -95,7 +108,7 @@ Item {
                     verticalCenter: parent.verticalCenter
                 }
                 
-                text: Collection.pageCount(modelData)
+                text: bookItem.document.pageCount
             }
         }
     }

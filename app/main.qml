@@ -87,8 +87,13 @@ Window {
                     return null
                 }
 
-                var createdObject = noteComponent.createObject(viewRoot)
-                createdObject.document = Collection.getDocument(path)
+                var document = Collection.getDocument(path)
+                if (!document) {
+                    console.log("Unable to get document")
+                    return
+                }
+
+                var createdObject = noteComponent.createObject(viewRoot, {"document": document})
 
                 // Reset list so that the repeater gets updated
                 var objects = objectList
@@ -173,7 +178,7 @@ Window {
                 anchors.fill: parent
 
                 onNewBookClicked: {
-                    if (tabBar.tabModel.length > 4) {
+                    if (tabBar.objectList.length > 4) {
                         return
                     }
 

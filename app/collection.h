@@ -4,7 +4,7 @@
 #include "document.h"
 
 #include <QObject>
-#include <QMap>
+#include <QHash>
 #include <QPointer>
 
 class Collection : public QObject
@@ -20,32 +20,24 @@ public:
 public slots:
     QObject *getDocument(const QString &path);
     QString createDocument(const QString &defaultTemplate);
-    QStringList getDocumentPaths(int count, int offset = 0) const;
+    void deleteDocument(const QString documentPath);
 
+    QStringList getDocumentPaths(int count, int offset = 0) const;
     QStringList getFrequentlyOpenedPaths(int count, int offset = 0) const;
 
     int documentCount();
-
-    QString thumbnailPath(const QString &documentPath) const;
-    QString title(const QString &documentPath) const;
-    int pageCount(const QString documentPath) const;
-    void deleteDocument(const QString documentPath);
 
     QString defaultDocumentPath(const QString &type) const;
 
 signals:
     void documentPathsChanged();
-    void documentsOpenCountsChanged();
 
 private:
-    void storeMetadata();
+    void loadDocument(const QString path);
     bool initializePDFDocument(Document *document);
 
-    QMap<QString, QPointer<Document>> m_openDocuments;
-    QMap<QString, int> m_documentsPageCount;
-    QMap<QString, int> m_documentsLastPage;
-    QMap<QString, int> m_documentOpenCount;
-    QStringList m_documentPaths;
+    QHash<QString, QPointer<Document>> m_documents;
+    QStringList m_sortedPaths;
 };
 
 #endif // COLLECTION_H

@@ -28,6 +28,7 @@ DrawingArea::DrawingArea() :
     m_zoomRect(0, 0, 1.0, 1.0),
     m_zoomSelected(false),
     m_currentColor(Line::Black),
+    m_documentWorker(nullptr),
     m_predict(true),
     m_smoothFactor(314),
     m_doublePredict(false)
@@ -46,6 +47,12 @@ DrawingArea::~DrawingArea()
 
 void DrawingArea::paint(QPainter *painter)
 {
+    if (!m_documentWorker) {
+        painter->setPen(Qt::black);
+        painter->drawText(boundingRect().center(), tr("Loading..."));
+        return;
+    }
+
     if (m_documentWorker->pageContents.isNull()) {
         drawBackground(painter, QRectF(x(), y(), width(), height()));
         return;
@@ -57,6 +64,11 @@ void DrawingArea::paint(QPainter *painter)
 
 void DrawingArea::clear()
 {
+    if (!m_documentWorker) {
+        qWarning() << "Can't clear without a document worker";
+        return;
+    }
+
     m_documentWorker->pageContents = QImage();
 
     m_hasEdited = false;
@@ -155,6 +167,8 @@ void DrawingArea::setDocument(Document *document)
         return;
     }
 
+    document->addOpenCount();
+
     if (m_documentWorker) {
         m_documentWorker->deleteLater();
     }
@@ -181,6 +195,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         return;
     }
     m_hasEdited = true;
+
+    if (!m_documentWorker) {
+        return;
+    }
 
     m_documentWorker->suspend();
 #ifdef Q_PROCESSOR_ARM
@@ -431,6 +449,10 @@ void DrawingArea::geometryChanged(const QRectF &newGeometry, const QRectF &oldGe
 
 void DrawingArea::itemChange(QQuickItem::ItemChange change, const QQuickItem::ItemChangeData &value)
 {
+    if (!m_documentWorker) {
+        return;
+    }
+
     if (change == QQuickItem::ItemVisibleHasChanged) {
         if (value.boolValue) {
             m_documentWorker->preload();
@@ -524,6 +546,9 @@ void DrawingArea::onBackgroundChanged()
 void DrawingArea::drawBackground(QPainter *painter, const QRectF part)
 {
     Q_UNUSED(part); // FIXME
+    if (!m_documentWorker) {
+        return;
+    }
 
     QImage background = m_documentWorker->background();
 

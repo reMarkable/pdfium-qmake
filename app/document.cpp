@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QDataStream>
+#include <QDir>
 
 #define DEBUG_THIS
 #include "debug.h"
@@ -12,7 +13,8 @@ Document::Document(QString path, QObject *parent)
     : QObject(parent),
       m_path(path),
       m_currentPage(0),
-      m_pageCount(1)
+      m_pageCount(0),
+      m_openCount(0)
 {
     DEBUG_BLOCK;
 
@@ -20,13 +22,14 @@ Document::Document(QString path, QObject *parent)
     if (metadataFile.open(QIODevice::ReadOnly)) {
         m_currentPage = metadataFile.readLine().trimmed().toInt();
         m_pageCount = metadataFile.readLine().trimmed().toInt();
+        m_openCount = metadataFile.readLine().trimmed().toInt();
     }
 
     if (path.endsWith(".pdf")) {
         return;
     }
 
-    m_templates.fill(m_defaultTemplate, pageCount());
+    m_templates.fill("Sketch", pageCount());
 
     QFile templatesFile(path + ".pagedata");
     if (!templatesFile.open(QIODevice::ReadOnly)) {
@@ -53,7 +56,41 @@ Document::~Document()
     if (metadataFile.open(QIODevice::WriteOnly)) {
         metadataFile.write(QByteArray::number(m_currentPage) + "\n");
         metadataFile.write(QByteArray::number(m_pageCount) + "\n");
+        metadataFile.write(QByteArray::number(m_openCount) + "\n");
     }
+}
+
+void Document::addOpenCount()
+{
+    m_openCount++;
+}
+
+bool Document::createDocument(QString defaultTemplate, QString path)
+{
+    if (defaultTemplate.isEmpty()) {
+        defaultTemplate = "Sketch";
+    }
+
+    if (!QDir(path).mkpath(path)) {
+        qWarning() << "Unable to create document";
+        return false;
+    }
+
+    QFile metadataFile(path + ".metadata");
+    if (metadataFile.open(QIODevice::WriteOnly)) {
+        metadataFile.write(QByteArray::number(0) + "\n");
+        metadataFile.write(QByteArray::number(1) + "\n");
+        metadataFile.write(QByteArray::number(0) + "\n");
+        metadataFile.close();
+    }
+
+    QFile templatesFile(path + ".pagedata");
+    if (templatesFile.open(QIODevice::WriteOnly)) {
+        templatesFile.write(defaultTemplate.toUtf8() + '\n');
+        templatesFile.close();
+    }
+
+    return true;
 }
 
 void Document::setCurrentPage(int newPage)
@@ -94,13 +131,33 @@ void Document::deletePages(QList<int> pagesToRemove)
     setPageCount(m_pageCount - pagesToRemove.count());
 }
 
+void Document::addPage()
+{
+    m_templates.append(currentTemplate());
+    setPageCount(m_pageCount + 1);
+    setCurrentPage(m_pageCount - 1);
+}
+
 QString Document::currentTemplate()
 {
     if (m_path.endsWith(".pdf")) {
         return "Document";
     }
+    if  (m_currentPage > m_templates.count()) {
+        return "Sketch";
+    }
 
     return m_templates.value(m_currentPage);
+}
+
+void Document::setCurrentTemplate(QString newTemplate)
+{
+    if (newTemplate == currentTemplate() || m_currentPage > m_templates.count()) {
+        return;
+    }
+
+    m_templates[m_currentPage] = newTemplate;
+    emit templateChanged();
 }
 
 QString Document::getThumbnail(int index)
@@ -112,4 +169,9 @@ QString Document::getThumbnail(int index)
     }
 
     return "file://" + thumbnailPath;
+}
+
+QString Document::title()
+{
+    return QFileInfo(m_path).completeBaseName();
 }

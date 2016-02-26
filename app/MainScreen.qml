@@ -178,7 +178,7 @@ Item  {
         Component.onCompleted: reloadModel()
         Connections {
             target: Collection
-            onDocumentsOpenCountsChanged: {
+            onDocumentPathsChanged: {
                 frequentlyUsed.reloadModel()
             }
         }
