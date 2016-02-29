@@ -246,23 +246,31 @@ void DocumentWorker::run()
                 locker.relock();
             }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
-            if (!m_pdfRenderer) {
-                qDebug() << "Thumbnail requested, but no PDF renderer";
-                m_thumbnailsToCreate.clear();
-                continue;
-            }
-
             int page = m_thumbnailsToCreate.takeFirst();
-            locker.unlock();
 
             QString thumbnailPath = m_document->getThumbnailPath(page);
-            if (QFile::exists(thumbnailPath)) {
-                qDebug() << "thumbnail" << thumbnailPath << "already exists!";
-                continue;
+
+            if (m_pdfRenderer) {
+                if (QFile::exists(thumbnailPath)) {
+                    qDebug() << "PDF thumbnail" << thumbnailPath << "already exists, not overwriting";
+                    continue;
+                }
+
+                locker.unlock();
+
+                QImage image = m_pdfRenderer->renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
+                image.save(thumbnailPath);
+                qDebug() << "Save thumbnail for" << page;
+            } else {
+                if (pageDirty) {
+                    QImage contents = pageContents;
+                    locker.unlock();
+                    contents.save(thumbnailPath);
+                } else {
+                    continue;
+                }
             }
 
-            QImage image = m_pdfRenderer->renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
-            image.save(thumbnailPath);
             emit thumbnailUpdated(page);
         }
     }
@@ -442,8 +450,8 @@ void DocumentWorker::onMissingThumbnailRequested(int page)
     QMutexLocker locker(&m_lock);
     if (!m_thumbnailsToCreate.contains(page)) {
         m_thumbnailsToCreate.append(page);
+        m_waitCondition.wakeAll();
     }
-    m_waitCondition.wakeAll();
 }
 
 void DocumentWorker::onTemplateChanged()
