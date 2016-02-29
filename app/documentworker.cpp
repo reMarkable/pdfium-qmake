@@ -192,6 +192,16 @@ Line DocumentWorker::popLine()
     return m_lines[m_currentPage].takeLast();
 }
 
+void DocumentWorker::storeThumbnail()
+{
+    QMutexLocker locker(&m_lock);
+    qDebug() << "page contents changed";
+
+    QFile::remove(m_document->getThumbnailPath(m_currentPage));
+    m_thumbnailsToCreate.insert(m_currentPage, pageContents);
+    m_waitCondition.wakeAll();
+}
+
 void DocumentWorker::run()
 {
     if (m_pdfRenderer) {
@@ -246,36 +256,39 @@ void DocumentWorker::run()
                 locker.unlock();
 
                 image.save(m_document->getStoredPagePath(page));
-                image.scaledToHeight(512).save(m_document->getThumbnailPath(page));
-                emit thumbnailUpdated(page);
                 locker.relock();
             }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
-            int page = m_thumbnailsToCreate.takeFirst();
+            int page = m_thumbnailsToCreate.keys().first();
+            QImage contents = m_thumbnailsToCreate.take(page);
 
             QString thumbnailPath = m_document->getThumbnailPath(page);
+            locker.unlock();
 
-            if (m_pdfRenderer) {
+            if (contents.isNull()) {
+                qDebug() << thumbnailPath << "existando?: " << QFile::exists(thumbnailPath);
                 if (QFile::exists(thumbnailPath)) {
-                    qDebug() << "PDF thumbnail" << thumbnailPath << "already exists, not overwriting";
+                    qDebug() << "Thumbnail for page" << page << "already exists, not overwriting";
                     continue;
                 }
 
-                locker.unlock();
-
-                QImage image = m_pdfRenderer->renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
-                image.save(thumbnailPath);
-                qDebug() << "Save thumbnail for" << page;
-            } else {
-                if (pageDirty) {
-                    QImage contents = pageContents;
-                    locker.unlock();
-                    contents.save(thumbnailPath);
+                if (m_pdfRenderer) {
+                    contents = m_pdfRenderer->renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
                 } else {
-                    continue;
+                    qDebug() << "Storing thumbnail based on page contents";
+                    QString contentPath = m_document->getStoredPagePath(page);
+                    if (!QFile::exists(contentPath)) {
+                        qWarning() << "Unable to load page content for page" << page;
+                        continue;
+                    }
+
+                    contents = QImage(contentPath).scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
                 }
+            } else {
+                contents = contents.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
             }
 
+            contents.save(thumbnailPath);
             emit thumbnailUpdated(page);
         }
     }
@@ -453,10 +466,22 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
 void DocumentWorker::onMissingThumbnailRequested(int page)
 {
     QMutexLocker locker(&m_lock);
-    if (!m_thumbnailsToCreate.contains(page)) {
-        m_thumbnailsToCreate.append(page);
-        m_waitCondition.wakeAll();
+    if (m_thumbnailsToCreate.contains(page)) {
+        return;
     }
+
+    QImage contents;
+    if (!m_pdfRenderer) {
+        QString pageTemplate = m_document->templateForPage(page);
+        if (s_templateLoader.templates.contains(pageTemplate)) {
+            contents = s_templateLoader.templates.value(pageTemplate);
+        } else {
+            qWarning() << "Invalid template:" << pageTemplate << "for page" << page;
+        }
+    }
+
+    m_thumbnailsToCreate.insert(page, QImage());
+    m_waitCondition.wakeAll();
 }
 
 void DocumentWorker::onTemplateChanged()

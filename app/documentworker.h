@@ -62,9 +62,7 @@ public:
     QImage pageContents;
     bool pageDirty;
 
-protected:
-    virtual void run() override;
-
+    void storeThumbnail();
 
 signals:
     void backgroundsLoaded(int page, QImage contents);
@@ -72,6 +70,9 @@ signals:
     void currentPageLoaded();
     void backgroundChanged();
     void thumbnailUpdated(int page);
+
+protected:
+    virtual void run() override;
 
 private slots:
     void onPageLoaded(int page, QImage contents);
@@ -98,7 +99,7 @@ private:
     QHash<int, QImage> m_pagesToStore;
     QList<int> m_backgroundsToLoad;
     QHash<int, QString> m_pagesToLoad;
-    QList<int> m_thumbnailsToCreate;
+    QHash<int, QImage> m_thumbnailsToCreate;
 
     QMutex m_lock;
 

@@ -457,10 +457,9 @@ void DrawingArea::itemChange(QQuickItem::ItemChange change, const QQuickItem::It
     if (change == QQuickItem::ItemVisibleHasChanged) {
         if (value.boolValue) {
             m_documentWorker->preload();
-            m_documentWorker->wake();
         } else {
-            m_documentWorker->suspend();
             m_documentWorker->pruneCache();
+            m_documentWorker->storeThumbnail();
         }
     }
 
@@ -486,6 +485,11 @@ void DrawingArea::redrawBackbuffer(QRectF part)
     }
 
     part = mapRectFromScene(part);
+    if (m_documentWorker->pageContents.isNull()) {
+        qDebug() << width() << height();
+        m_documentWorker->pageContents = QImage(width(), height(), QImage::Format_RGB16);
+    }
+
     QPainter painter(&m_documentWorker->pageContents);
     if (!part.isEmpty()) {
         painter.setClipRect(part);
