@@ -16,7 +16,27 @@
 
 class PdfRenderer;
 
-// To ensure that things are called from another thread
+/*!
+ * \class DocumentWorker
+ *
+ * \brief A class to handle loading and storing page contents, backgrounds and thumbnails.
+ *
+ * It holds separate FIFO queues for page contents to load, page contents to store,
+ * backgrounds to store and thumbnails to store.
+ *
+ * It runs the loading and storing in its own thread, but its QObject lives in the default thread
+ * so that signal handling doesn't block on the main loop in it.
+ *
+ * The main loop in the thread processes the queues, emptying the queues in order of importance.
+ * When all the queues are empty, it waits on a QWaitCondition.
+ *
+ * The calls in the QObject thread appends to the appropriate queue, and then calls wakeAll() on
+ * the QWaitCondition to ensure that the background thread loop is running.
+ *
+ * The suspend() and wake() are used to suspend the loading and storing to ensure that the drawing
+ * in the DrawingArea doesn't get interrupted.
+ */
+
 class DocumentWorker : public QThread
 {
     Q_OBJECT
