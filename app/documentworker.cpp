@@ -45,15 +45,6 @@ DocumentWorker::DocumentWorker(Document *document) :
 
     m_currentPage = m_document->currentPage();
 
-    QFile lineFile(m_document->path() + ".lines");
-    if (lineFile.open(QIODevice::ReadOnly)) {
-        qDebug() << "loading" << lineFile.fileName();
-        QElapsedTimer timer;
-        timer.start();
-        QDataStream dataStream(&lineFile);
-        dataStream >> m_lines;
-        qDebug() << "lines loaded in" << timer.elapsed();
-    }
 
     if (document->path().endsWith(".pdf")) {
         m_pdfRenderer = new PdfRenderer(document);
@@ -63,6 +54,79 @@ DocumentWorker::DocumentWorker(Document *document) :
             return;
         }
     }
+
+    QElapsedTimer timer;
+    timer.start();
+    QFile lineFile(m_document->path() + ".lines");
+    if (!lineFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Unable to open" << lineFile.fileName();
+        return;
+    }
+
+    QVector<Line> pageLines;
+    Line line;
+    while (!lineFile.atEnd()) {
+        QByteArray bytes = lineFile.readLine(256); // at most 256 bytes
+        if (!bytes.endsWith('\n')) {
+            qWarning() << "Missing newline in" << lineFile.fileName() << bytes;
+            break;
+        }
+
+        // Remove the newline at the end
+        bytes = bytes.trimmed();
+        QList<QByteArray> parts = bytes.split(' ');
+
+        if (bytes.startsWith("linestart ")) {
+            if (parts.count() != 3) {
+                qWarning() << "Invalid linestart in" << lineFile.fileName() << bytes;
+                break;
+            }
+            bool ok;
+
+            // Read brush
+            line.brush = Line::Brush(parts[1].toInt(&ok));
+            if (!ok) {
+                qWarning() << "Invalid brush in" << lineFile.fileName() << bytes;
+                break;
+            }
+
+            line.color = Line::Color(parts[2].toInt(&ok));
+            if (!ok) {
+                qWarning() << "Invalid color in" << lineFile.fileName() << bytes;
+                break;
+            }
+        } else if (bytes == "lineend") {
+            pageLines.append(line);
+            line = Line();
+        } else if (bytes == "pageend") {
+            m_lines.append(pageLines);
+            pageLines = QVector<Line>();
+        } else {
+            if (parts.count() != 3) {
+                qWarning() << "Invalid line in" << lineFile.fileName() << bytes;
+                break;
+            }
+            PenPoint point;
+            bool ok;
+            point.x = parts[0].toDouble(&ok);
+            if (!ok) {
+                qWarning() << "Invalid point.x in" << lineFile.fileName() << bytes;
+                break;
+            }
+            point.y = parts[1].toDouble(&ok);
+            if (!ok) {
+                qWarning() << "Invalid point.y in" << lineFile.fileName() << bytes;
+                break;
+            }
+            point.pressure = parts[1].toDouble(&ok);
+            if (!ok) {
+                qWarning() << "Invalid point.pressure in" << lineFile.fileName() << bytes;
+                break;
+            }
+            line.points.append(point);
+        }
+    }
+    qDebug() << "lines loaded in" << timer.elapsed() << "ms";
 }
 
 DocumentWorker::~DocumentWorker()
@@ -82,10 +146,45 @@ DocumentWorker::~DocumentWorker()
     wait();
 
 
-    QFile lineFile(m_document->path() + ".lines");
+    QString linePath = m_document->path() + ".lines";
+    QFile lineFile(linePath + ".new");
     if (lineFile.open(QIODevice::WriteOnly)) {
-        QDataStream dataStream(&lineFile);
-        dataStream << m_lines;
+        qDebug() << "storing lines in" << lineFile.fileName();
+        QElapsedTimer timer;
+        timer.start();
+        for (const QVector<Line> &pageLines : m_lines) {
+            for (const Line &line : pageLines) {
+                lineFile.write("linestart ");
+                lineFile.write(QByteArray::number(line.brush) + ' ');
+                lineFile.write(QByteArray::number(line.color) + ' ');
+                lineFile.write("\n");
+
+                for (const PenPoint &point : line.points) {
+                    // At least 17 significant digits are enough to ensure that we don't lose precision
+                    lineFile.write(QByteArray::number(point.x, 'g', 17) + ' ');
+                    lineFile.write(QByteArray::number(point.y, 'g', 17) + ' ');
+                    lineFile.write(QByteArray::number(point.pressure, 'g', 17));
+                    lineFile.write("\n");
+                }
+                lineFile.write("lineend\n");
+            }
+            lineFile.write("pageend\n");
+        }
+
+        qDebug() << "lines stored in" << timer.elapsed();
+        lineFile.close();
+
+        // Ensure that we don't delete the existing file in case of a failure
+        if (!QFile::rename(linePath, linePath + ".old")) {
+            qWarning() << "Unable to move old lines";
+        }
+        if (lineFile.rename(linePath)) {
+            //QFile::remove(linePath + ".old");
+        } else {
+            qWarning() << "Unable to rename new file";
+        }
+    } else {
+        qWarning() << "Unable to open line file" << lineFile.fileName() << "for storing lines";
     }
 
     if (m_pdfRenderer) {

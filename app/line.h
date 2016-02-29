@@ -32,12 +32,4 @@ public:
     QVector<PenPoint> points;
 };
 
-QDataStream &operator<<(QDataStream &datastream, const PenPoint &point);
-
-QDataStream &operator>>(QDataStream &datastream, PenPoint &point);
-
-QDataStream &operator<<(QDataStream &datastream, const Line &line);
-
-QDataStream &operator>>(QDataStream &datastream, Line &line);
-
 #endif // LINE_H
