@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QDir>
 #include <QDebug>
+#include <QElapsedTimer>
 
 #define CACHE_COUNT 2 // Cache this many before and after
 
@@ -46,8 +47,12 @@ DocumentWorker::DocumentWorker(Document *document) :
 
     QFile lineFile(m_document->path() + ".lines");
     if (lineFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "loading" << lineFile.fileName();
+        QElapsedTimer timer;
+        timer.start();
         QDataStream dataStream(&lineFile);
         dataStream >> m_lines;
+        qDebug() << "lines loaded in" << timer.elapsed();
     }
 
     if (document->path().endsWith(".pdf")) {
