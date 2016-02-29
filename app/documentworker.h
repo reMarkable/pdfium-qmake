@@ -91,6 +91,7 @@ private slots:
     void onTemplateChanged();
 
 private:
+    void loadLines();
     void storeLines();
     void printMemoryUsage() const;
     void clearLoadQueue();

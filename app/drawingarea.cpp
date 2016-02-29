@@ -210,6 +210,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         return;
     }
 
+    if (m_documentWorker->pageContents.isNull()) {
+        m_documentWorker->pageContents = QImage(width(), height(), QImage::Format_RGB16);
+    }
+
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_documentWorker->pageContents);
     QPen pen(Qt::black);
