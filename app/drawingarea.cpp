@@ -544,6 +544,10 @@ void DrawingArea::onBackgroundChanged()
         return;
     }
 
+    if (!m_documentWorker->pageContents.isNull()) {
+        return;
+    }
+
     if (m_documentWorker->background().isNull()) {
         qWarning() << "background changed, but no background available";
         return;
