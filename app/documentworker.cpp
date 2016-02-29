@@ -131,67 +131,13 @@ DocumentWorker::DocumentWorker(Document *document) :
 
 DocumentWorker::~DocumentWorker()
 {
-    {
-        QMutexLocker locker(&m_lock);
-        m_backgroundsToLoad.clear();
-        m_pagesToLoad.clear();
-
-        m_pagesToStore.insert(m_currentPage, pageContents);
-        m_waitCondition.wakeAll();
-
-    }
-
-    requestInterruption();
-    m_waitCondition.wakeAll();
+    qDebug() << "Waiting for thread to die...";
     wait();
-
-
-    QString linePath = m_document->path() + ".lines";
-    QFile lineFile(linePath + ".new");
-    if (lineFile.open(QIODevice::WriteOnly)) {
-        qDebug() << "storing lines in" << lineFile.fileName();
-        QElapsedTimer timer;
-        timer.start();
-        for (const QVector<Line> &pageLines : m_lines) {
-            for (const Line &line : pageLines) {
-                lineFile.write("linestart ");
-                lineFile.write(QByteArray::number(line.brush) + ' ');
-                lineFile.write(QByteArray::number(line.color) + ' ');
-                lineFile.write("\n");
-
-                for (const PenPoint &point : line.points) {
-                    // At least 17 significant digits are enough to ensure that we don't lose precision
-                    lineFile.write(QByteArray::number(point.x, 'g', 17) + ' ');
-                    lineFile.write(QByteArray::number(point.y, 'g', 17) + ' ');
-                    lineFile.write(QByteArray::number(point.pressure, 'g', 17));
-                    lineFile.write("\n");
-                }
-                lineFile.write("lineend\n");
-            }
-            lineFile.write("pageend\n");
-        }
-
-        qDebug() << "lines stored in" << timer.elapsed();
-        lineFile.close();
-
-        // Ensure that we don't delete the existing file in case of a failure
-        if (!QFile::rename(linePath, linePath + ".old")) {
-            qWarning() << "Unable to move old lines";
-        }
-        if (lineFile.rename(linePath)) {
-            QFile::remove(linePath + ".old");
-        } else {
-            qWarning() << "Unable to rename new file";
-        }
-    } else {
-        qWarning() << "Unable to open line file" << lineFile.fileName() << "for storing lines";
-    }
+    qDebug() << "thred ded";
 
     if (m_pdfRenderer) {
         m_pdfRenderer->deleteLater();
     }
-
-
     qDebug() << "document worker nuked";
 }
 
@@ -301,6 +247,15 @@ void DocumentWorker::storeThumbnail()
     m_waitCondition.wakeAll();
 }
 
+void DocumentWorker::stop()
+{
+    QMutexLocker locker(&m_lock);
+    clearLoadQueue();
+    m_waitCondition.wakeAll();
+    m_suspendCondition.wakeAll();
+    requestInterruption();
+}
+
 void DocumentWorker::run()
 {
     if (m_pdfRenderer) {
@@ -327,10 +282,13 @@ void DocumentWorker::run()
         }
 
         if (!m_pagesToLoad.isEmpty()) { // Prioritize loading pages
-            int page = m_pagesToLoad.keys().first();
-            QString path = m_pagesToLoad.take(page);
-            locker.unlock();
-            emit pageLoaded(page, QImage(path));
+            while (!m_pagesToLoad.isEmpty()) {
+                int page = m_pagesToLoad.keys().first();
+                QString path = m_pagesToLoad.take(page);
+                locker.unlock();
+                emit pageLoaded(page, QImage(path));
+                locker.relock();
+            }
         } else if (!m_backgroundsToLoad.isEmpty()) {
             if (!m_pdfRenderer) {
                 m_backgroundsToLoad.clear();
@@ -391,6 +349,58 @@ void DocumentWorker::run()
             emit thumbnailUpdated(page);
         }
     }
+
+    // Store thumbnail
+    QMutexLocker locker(&m_lock);
+    if (!pageContents.isNull()) {
+        QImage thumbnail = pageContents.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
+        thumbnail.save(m_document->getThumbnailPath(m_currentPage));
+        emit thumbnailUpdated(m_currentPage);
+    }
+
+    // Store lines
+    QString linePath = m_document->path() + ".lines";
+    QFile lineFile(linePath + ".new");
+    if (lineFile.open(QIODevice::WriteOnly)) {
+        qDebug() << "storing lines in" << lineFile.fileName();
+        QElapsedTimer timer;
+        timer.start();
+        for (const QVector<Line> &pageLines : m_lines) {
+            for (const Line &line : pageLines) {
+                lineFile.write("linestart ");
+                lineFile.write(QByteArray::number(line.brush) + ' ');
+                lineFile.write(QByteArray::number(line.color) + ' ');
+                lineFile.write("\n");
+
+                for (const PenPoint &point : line.points) {
+                    // At least 17 significant digits are enough to ensure that we don't lose precision
+                    lineFile.write(QByteArray::number(point.x, 'g', 17) + ' ');
+                    lineFile.write(QByteArray::number(point.y, 'g', 17) + ' ');
+                    lineFile.write(QByteArray::number(point.pressure, 'g', 17));
+                    lineFile.write("\n");
+                }
+                lineFile.write("lineend\n");
+            }
+            lineFile.write("pageend\n");
+        }
+
+        qDebug() << "lines stored in" << timer.elapsed();
+        lineFile.close();
+
+        // Ensure that we don't delete the existing file in case of a failure
+        if (!QFile::rename(linePath, linePath + ".old")) {
+            qWarning() << "Unable to move old lines";
+        }
+        if (lineFile.rename(linePath)) {
+            QFile::remove(linePath + ".old");
+        } else {
+            qWarning() << "Unable to rename new file";
+        }
+    } else {
+        qWarning() << "Unable to open line file" << lineFile.fileName() << "for storing lines";
+    }
+
+    deleteLater();
 }
 
 void DocumentWorker::onPageLoaded(int page, QImage contents)

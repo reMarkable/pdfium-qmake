@@ -35,6 +35,9 @@ class PdfRenderer;
  *
  * The suspend() and wake() are used to suspend the loading and storing to ensure that the drawing
  * in the DrawingArea doesn't get interrupted.
+ *
+ * It shouldn't be deleted manually, it deletes itself when the thread ends (i. e.
+ * after stop() is called).
  */
 
 class DocumentWorker : public QThread
@@ -63,6 +66,8 @@ public:
     bool pageDirty;
 
     void storeThumbnail();
+
+    void stop();
 
 signals:
     void backgroundsLoaded(int page, QImage contents);

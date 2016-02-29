@@ -248,7 +248,7 @@ void Collection::archiveBookOpened(const QString path)
         qWarning() << "Invalid book opened in archive";
     }
     if (m_archiveBookWorker)  {
-        m_archiveBookWorker->deleteLater();
+        m_archiveBookWorker->stop();
     }
     m_archiveBookWorker = new DocumentWorker(m_documents.value(path));
     m_archiveBookWorker->start();
@@ -257,7 +257,7 @@ void Collection::archiveBookOpened(const QString path)
 void Collection::archiveBookClosed()
 {
     if (m_archiveBookWorker)  {
-        m_archiveBookWorker->deleteLater();
+        m_archiveBookWorker->stop();
     }
 }
 

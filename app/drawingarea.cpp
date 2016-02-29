@@ -41,7 +41,7 @@ DrawingArea::DrawingArea() :
 DrawingArea::~DrawingArea()
 {
     if (m_documentWorker) {
-        m_documentWorker->deleteLater();
+        m_documentWorker->stop();
     }
 }
 
@@ -170,7 +170,7 @@ void DrawingArea::setDocument(Document *document)
     document->addOpenCount();
 
     if (m_documentWorker) {
-        m_documentWorker->deleteLater();
+        m_documentWorker->stop();
     }
 
     m_documentWorker = new DocumentWorker(document);
