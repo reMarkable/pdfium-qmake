@@ -1,4 +1,4 @@
-#include "pdfworker.h"
+#include "pdfrenderer.h"
 
 #include "document.h"
 #include <QDebug>
@@ -7,7 +7,7 @@
 
 static bool s_pdfiumInitialized = false;
 
-PDFWorker::PDFWorker(Document *document) :
+PdfRenderer::PdfRenderer(Document *document) :
     m_pdfDocument(nullptr),
     m_path(document->path()),
     m_pageCount(0)
@@ -15,7 +15,7 @@ PDFWorker::PDFWorker(Document *document) :
     connect(this, SIGNAL(pageCountChanged(int)), document, SLOT(setPageCount(int)));
 }
 
-PDFWorker::~PDFWorker()
+PdfRenderer::~PdfRenderer()
 {
     if (m_pdfDocument) {
         FPDF_CloseDocument(m_pdfDocument);
@@ -23,7 +23,7 @@ PDFWorker::~PDFWorker()
     }
 }
 
-QImage PDFWorker::loadOriginalPage(int index, QSize dimensions)
+QImage PdfRenderer::renderPage(int index, QSize dimensions)
 {
     if (!m_pdfDocument) {
         qWarning() << "Not initialize!";
@@ -100,7 +100,7 @@ QImage PDFWorker::loadOriginalPage(int index, QSize dimensions)
     return image.convertToFormat(QImage::Format_RGB16);
 }
 
-bool PDFWorker::initialize()
+bool PdfRenderer::initialize()
 {
     if (m_pdfDocument) {
         qWarning() << "Trying to initialize twice!";

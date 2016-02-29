@@ -1,7 +1,7 @@
 #include "collection.h"
 
 #include "documentworker.h"
-#include "pdfworker.h"
+#include "pdfrenderer.h"
 #include "settings.h"
 
 #include <QFile>
@@ -289,13 +289,13 @@ bool Collection::initializePDFDocument(Document *document)
         return true;
     }
 
-    PDFWorker worker(document);
-    if (!worker.initialize()) {
+    PdfRenderer renderer(document);
+    if (!renderer.initialize()) {
         qWarning() << "Can't initialize PDF worker for" << document->path();
         return false;
     }
 
-    QImage thumbnail = worker.loadOriginalPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
+    QImage thumbnail = renderer.renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
     if (thumbnail.isNull()) {
         qWarning() << "Unable to load PDF page" << page << "from" << document->path();
     }

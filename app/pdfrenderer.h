@@ -1,20 +1,20 @@
-#ifndef PDFWORKER_H
-#define PDFWORKER_H
+#ifndef PDFRENDERER_H
+#define PDFRENDERER_H
 
 #include <fpdfview.h>
 #include <QImage>
 
 class Document;
 
-class PDFWorker : public QObject
+class PdfRenderer : public QObject
 {
     Q_OBJECT
 
 public:
-    PDFWorker(Document *document);
-    ~PDFWorker();
+    PdfRenderer(Document *document);
+    ~PdfRenderer();
 
-    QImage loadOriginalPage(int index, QSize dimensions);
+    QImage renderPage(int index, QSize dimensions);
 
     bool initialize();
 
@@ -27,4 +27,4 @@ private:
     int m_pageCount;
 };
 
-#endif // PDFWORKER_H
+#endif//PDFRENDERER_H

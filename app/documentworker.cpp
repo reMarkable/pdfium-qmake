@@ -1,7 +1,7 @@
 #include "documentworker.h"
 
 #include "collection.h"
-#include "pdfworker.h"
+#include "pdfrenderer.h"
 #include "settings.h"
 #include "document.h"
 #include <QFile>
@@ -32,7 +32,7 @@ DocumentWorker::DocumentWorker(Document *document) :
     pageDirty(false),
     m_document(document),
     m_suspended(false),
-    m_pdfWorker(nullptr)
+    m_pdfRenderer(nullptr)
 {
     connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)));
     connect(document, SIGNAL(missingThumbnailRequested(int)), this, SLOT(onMissingThumbnailRequested(int)));
@@ -51,7 +51,7 @@ DocumentWorker::DocumentWorker(Document *document) :
     }
 
     if (document->path().endsWith(".pdf")) {
-        m_pdfWorker = new PDFWorker(document);
+        m_pdfRenderer = new PdfRenderer(document);
     } else {
         if (s_templateLoader.templates.isEmpty()) {
             qWarning() << "No templates available!";
@@ -83,8 +83,8 @@ DocumentWorker::~DocumentWorker()
         dataStream << m_lines;
     }
 
-    if (m_pdfWorker) {
-        m_pdfWorker->deleteLater();
+    if (m_pdfRenderer) {
+        m_pdfRenderer->deleteLater();
     }
 
 
@@ -106,7 +106,7 @@ void DocumentWorker::wake()
 
 QImage DocumentWorker::background()
 {
-    if (m_pdfWorker) {
+    if (m_pdfRenderer) {
         return m_cachedBackgrounds.value(m_currentPage);
     }
 
@@ -189,10 +189,10 @@ Line DocumentWorker::popLine()
 
 void DocumentWorker::run()
 {
-    if (m_pdfWorker) {
-        if (!m_pdfWorker->initialize()) {
-            delete m_pdfWorker;
-            m_pdfWorker = nullptr;
+    if (m_pdfRenderer) {
+        if (!m_pdfRenderer->initialize()) {
+            delete m_pdfRenderer;
+            m_pdfRenderer = nullptr;
         }
     }
 
@@ -218,7 +218,7 @@ void DocumentWorker::run()
             locker.unlock();
             emit pageLoaded(page, QImage(path));
         } else if (!m_backgroundsToLoad.isEmpty()) {
-            if (!m_pdfWorker) {
+            if (!m_pdfRenderer) {
                 m_backgroundsToLoad.clear();
                 continue;
             }
@@ -226,7 +226,7 @@ void DocumentWorker::run()
             int page = m_backgroundsToLoad.takeFirst();
             locker.unlock();
 
-            QImage image = m_pdfWorker->loadOriginalPage(page, QSize(1200, 1600));
+            QImage image = m_pdfRenderer->renderPage(page, QSize(1200, 1600));
             emit backgroundsLoaded(page, image);
             QString thumbnailPath = m_document->getThumbnailPath(page);
             if (!QFile::exists(thumbnailPath)) {
@@ -246,8 +246,8 @@ void DocumentWorker::run()
                 locker.relock();
             }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
-            if (!m_pdfWorker) {
-                qDebug() << "Thumbnail requested, but no PDF worker";
+            if (!m_pdfRenderer) {
+                qDebug() << "Thumbnail requested, but no PDF renderer";
                 m_thumbnailsToCreate.clear();
                 continue;
             }
@@ -261,7 +261,7 @@ void DocumentWorker::run()
                 continue;
             }
 
-            QImage image = m_pdfWorker->loadOriginalPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
+            QImage image = m_pdfRenderer->renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));
             image.save(thumbnailPath);
             emit thumbnailUpdated(page);
         }
@@ -304,7 +304,7 @@ void DocumentWorker::preload()
         m_pagesToLoad.insert(m_currentPage, m_document->getStoredPagePath(m_currentPage));
     }
 
-    if (m_pdfWorker && !m_cachedBackgrounds.contains(m_currentPage) && !m_backgroundsToLoad.contains(m_currentPage)) {
+    if (m_pdfRenderer && !m_cachedBackgrounds.contains(m_currentPage) && !m_backgroundsToLoad.contains(m_currentPage)) {
         m_backgroundsToLoad.append(m_currentPage);
     }
 

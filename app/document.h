@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QVector>
 
-class PDFWorker;
+class PdfRenderer;
 
 class Document : public QObject
 {
@@ -65,7 +65,7 @@ signals:
 private slots:
     void storeMetadata();
     void storeTemplates();
-    friend class PDFWorker;
+    friend class PdfRenderer;
     void setPageCount(int pageCount);
 
 private:

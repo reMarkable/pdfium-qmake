@@ -16,7 +16,7 @@ SOURCES += main.cpp \
     messagehandler.cpp \
     line.cpp \
     documentworker.cpp \
-    pdfworker.cpp
+    pdfrenderer.cpp
 
 RESOURCES += qml.qrc
 
@@ -40,7 +40,7 @@ HEADERS += \
     debug.h \
     messagehandler.h \
     documentworker.h \
-    pdfworker.h
+    pdfrenderer.h
 
 OTHER_FILES += \
     ArchiveButton.qml \

@@ -14,7 +14,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 
-class PDFWorker;
+class PdfRenderer;
 
 // To ensure that things are called from another thread
 class DocumentWorker : public QThread
@@ -83,7 +83,7 @@ private:
     QMutex m_lock;
 
     bool m_suspended;
-    PDFWorker *m_pdfWorker;
+    PdfRenderer *m_pdfRenderer;
     QWaitCondition m_waitCondition;
     QWaitCondition m_suspendCondition;
     int m_currentPage;
