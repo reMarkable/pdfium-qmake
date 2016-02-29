@@ -173,7 +173,7 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
     }
 
     std::sort(documents.begin(), documents.end(), [](const QPointer<Document> a, const QPointer<Document> b) {
-        return a->openCount() < b->openCount();
+        return a->openCount() > b->openCount();
     });
 
     count = qMin(documents.count(), count);
