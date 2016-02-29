@@ -179,7 +179,7 @@ DocumentWorker::~DocumentWorker()
             qWarning() << "Unable to move old lines";
         }
         if (lineFile.rename(linePath)) {
-            //QFile::remove(linePath + ".old");
+            QFile::remove(linePath + ".old");
         } else {
             qWarning() << "Unable to rename new file";
         }
