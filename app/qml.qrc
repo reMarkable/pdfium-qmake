@@ -4,7 +4,6 @@
         <file>dragon.png</file>
         <file>MainScreen.qml</file>
         <file>NoteTab.qml</file>
-        <file>DocumentTab.qml</file>
         <file>ArchiveView.qml</file>
         <file>TabBar.qml</file>
         <file>icons/rotate-left.png</file>
@@ -85,7 +84,6 @@
         <file>icons/xoom+_white.svg</file>
         <file>icons/Lock_small_white.svg</file>
         <file>icons/Open-book_white.svg</file>
-        <file>ThumbnailGrid.qml</file>
         <file>ToolBox.qml</file>
         <file>ArchiveButton.qml</file>
         <file>Dialog.qml</file>

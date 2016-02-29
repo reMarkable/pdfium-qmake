@@ -13,7 +13,6 @@ SOURCES += main.cpp \
     settings.cpp \
     systemmonitor.cpp \
     document.cpp \
-    nativedocument.cpp \
     messagehandler.cpp \
     line.cpp \
     documentworker.cpp \
@@ -39,7 +38,6 @@ HEADERS += \
     line.h \
     penpoint.h \
     debug.h \
-    nativedocument.h \
     messagehandler.h \
     documentworker.h \
     pdfworker.h
@@ -50,13 +48,11 @@ OTHER_FILES += \
     ArchiveView.qml \
     ColorButton.qml \
     Dialog.qml \
-    DocumentTab.qml \
     main.qml \
     MainScreen.qml \
     MainScreenPreviews.qml \
     NoteTab.qml \
     TabBar.qml \
-    ThumbnailGrid.qml \
     ToolBox.qml \
     ToolButton.qml
 
