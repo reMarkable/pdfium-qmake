@@ -149,7 +149,7 @@ Window {
         Component {
             id: archiveComponent
 
-            ArchiveView {
+            ArchiveTab {
                 id: archiveView
                 anchors.fill: parent
 

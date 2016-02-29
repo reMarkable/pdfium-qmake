@@ -45,7 +45,7 @@ HEADERS += \
 OTHER_FILES += \
     ArchiveButton.qml \
     ArchiveMain.qml \
-    ArchiveView.qml \
+    ArchiveTab.qml \
     ColorButton.qml \
     Dialog.qml \
     main.qml \

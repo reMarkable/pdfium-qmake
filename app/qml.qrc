@@ -4,7 +4,7 @@
         <file>dragon.png</file>
         <file>MainScreen.qml</file>
         <file>NoteTab.qml</file>
-        <file>ArchiveView.qml</file>
+        <file>ArchiveTab.qml</file>
         <file>TabBar.qml</file>
         <file>icons/rotate-left.png</file>
         <file>icons/rotate-right.png</file>
