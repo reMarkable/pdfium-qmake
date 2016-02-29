@@ -31,6 +31,16 @@ Window {
             Settings.setValue(Settings.Rotation, rotation)
         }
 
+        property bool powerbuttonRecentlyClicked: false
+        Timer {
+            id: powerbuttonTimer
+            onTriggered: {
+                shutdownDialog.visible = true
+                rootItem.powerbuttonRecentlyClicked = false
+            }
+            interval: 500
+        }
+
         property bool homeRecentlyClicked: false
         Timer {
             id: homeButtonTimer
@@ -58,7 +68,15 @@ Window {
                 return
             } else if (event.key === Qt.Key_PowerOff) {
                 console.log("Poweroff requested")
-                shutdownDialog.visible = true
+                if (powerbuttonRecentlyClicked) {
+                    powerbuttonTimer.stop()
+                    powerbuttonRecentlyClicked = false
+                    Qt.quit()
+                } else {
+                    powerbuttonRecentlyClicked = true
+                    powerbuttonTimer.restart()
+                }
+
                 event.accepted = true
                 return
             }
