@@ -44,6 +44,7 @@ public slots:
     void addPage();
 
     QString currentTemplate();
+    QString templateForPage(int page);
     void setCurrentTemplate(QString newTemplate);
 
     QStringList availableTemplates() { return QStringList() << "Sketch" << "Lined" << "Squared"; }

@@ -169,6 +169,15 @@ QString Document::currentTemplate()
     return m_templates.value(m_currentPage);
 }
 
+QString Document::templateForPage(int page)
+{
+   if (page < 0 || page > m_templates.count()) {
+       qWarning() << "Asked for template for invalid page" << page;
+       return QString();
+   }
+   return m_templates.value(page);
+}
+
 void Document::setCurrentTemplate(QString newTemplate)
 {
     if (newTemplate == currentTemplate() || m_currentPage > m_templates.count()) {
