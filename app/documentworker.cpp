@@ -152,11 +152,18 @@ const QVector<Line> &DocumentWorker::lines()
     if (m_lines.count() <= m_document->currentPage()) {
         m_lines.resize(m_document->currentPage() + 1);
     }
+
     return m_lines[m_document->currentPage()];
 }
 
 void DocumentWorker::addLine(Line line)
 {
+    if (!m_document) {
+        qWarning() << "Tried to add line, but no document available?";
+    }
+    if (m_lines.count() <= m_document->currentPage()) {
+        m_lines.resize(m_document->currentPage() + 1);
+    }
     m_lines[m_document->currentPage()].append(line);
 }
 
