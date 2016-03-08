@@ -449,15 +449,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     m_documentWorker->wake();
 }
 
-void DrawingArea::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
-{
-    if (newGeometry.isValid()) {
-//        m_documentWorker->pageContents = QImage(newGeometry.size().toSize(), QImage::Format_RGB16);
-        redrawBackbuffer();
-    }
-    QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
-}
-
 void DrawingArea::itemChange(QQuickItem::ItemChange change, const QQuickItem::ItemChangeData &value)
 {
     if (!m_documentWorker) {
