@@ -3,9 +3,6 @@ import com.magmacompany 1.0
 
 Column {
     id: toolBox
-    width: 100
-    height: 100
-    spacing: 5
 
     visible: !rootItem.focusMode
 
