@@ -16,6 +16,7 @@ Rectangle {
         anchors.centerIn: parent
         width: parent.width - 10
         height: width
+        asynchronous: true
         sourceSize.width: width
         sourceSize.height: width
         source: archiveButton.icon

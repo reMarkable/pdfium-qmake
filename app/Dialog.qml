@@ -66,6 +66,7 @@ Rectangle {
             Image {
                 anchors.centerIn: parent
                 source: "qrc:/icons/yes.svg"
+                asynchronous: true
                 height: 100
                 width: height
                 sourceSize.width: width
@@ -94,6 +95,7 @@ Rectangle {
             Image {
                 anchors.centerIn: parent
                 source: "qrc:/icons/no.svg"
+                asynchronous: true
                 height: 100
                 width: height
                 sourceSize.width: width
@@ -120,6 +122,7 @@ Rectangle {
             Image {
                 anchors.centerIn: parent
                 source: "qrc:/icons/yes.svg"
+                asynchronous: true
                 height: 100
                 width: height
                 sourceSize.width: width

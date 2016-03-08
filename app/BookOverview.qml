@@ -191,6 +191,7 @@ Item {
                             height: width
                             visible: editActionsItem.selectionModeActive
                             source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
+                            asynchronous: true
                             sourceSize.width: width
                             sourceSize.height: height
                         }

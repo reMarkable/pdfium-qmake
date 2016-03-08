@@ -23,8 +23,9 @@ Rectangle {
         sourceSize.width: width
         sourceSize.height: height
         source: toolButton.icon
+        asynchronous: true
     }
-    
+
     MouseArea {
         anchors.fill: parent
         onClicked: {

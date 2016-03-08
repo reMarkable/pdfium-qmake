@@ -124,6 +124,7 @@ Rectangle {
                 sourceSize.width: width
                 sourceSize.height: height
                 source: "qrc:/icons/pluss.svg"
+                asynchronous: true
             }
         }
 

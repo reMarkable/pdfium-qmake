@@ -64,6 +64,7 @@ Rectangle {
             height: parent.height - 20
             sourceSize.width: width
             sourceSize.height: height
+            asynchronous: true
 
             source: "qrc:///icons/Notebook_white.svg"
 
@@ -103,6 +104,7 @@ Rectangle {
                 leftMargin: 20
                 verticalCenter: parent.verticalCenter
             }
+            asynchronous: true
 
             height: parent.height - 20
             width: height

@@ -143,6 +143,7 @@ Item {
                     anchors.centerIn: bookSelectionOverlay
                     width: mainScreen.bigIconSize
                     height: width
+                    asynchronous: true
 
                     sourceSize.width: width
                     sourceSize.height: width

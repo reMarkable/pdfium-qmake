@@ -86,6 +86,7 @@ Item {
                 }
                 width: height
                 source: "qrc:///icons/Notebook.svg"
+                asynchronous: true
                 sourceSize.width: width
                 sourceSize.height: height
             }
