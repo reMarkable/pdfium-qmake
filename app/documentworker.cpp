@@ -18,7 +18,7 @@ struct TemplateLoader {
         QDir dir(Collection::collectionPath() + "/templates/");
         QFileInfoList files = dir.entryInfoList(QStringList("*.png"));
         for (QFileInfo fileInfo : files) {
-            templates.insert(fileInfo.baseName(), QImage(fileInfo.absoluteFilePath()));
+            templates.insert(fileInfo.baseName(), QImage(fileInfo.absoluteFilePath()).convertToFormat(QImage::Format_RGB16));
         }
     }
 
