@@ -416,13 +416,16 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             totalHandlingTime += handlingTimer.nsecsElapsed();
         }
     }
-    qCDebug(timingDebug) << "average handling time:" << (totalHandlingTime / eventsHandled) << "ns";
+    if (eventsHandled > 0) {
+        qDebug() << Q_FUNC_INFO << "average handling time:" << (totalHandlingTime / eventsHandled) << "ns";
+    } else {
+        qDebug() << "No events handled";
+    }
 
     digitizer->releaseLock();
 
     m_undoneLines.clear();
     if (m_documentWorker) {
-        DEBUG_BLOCK
         m_documentWorker->addLine(drawnLine);
         m_documentWorker->pageDirty = true;
     } else {
