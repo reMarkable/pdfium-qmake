@@ -36,6 +36,7 @@ DrawingArea::DrawingArea() :
     setAcceptedMouseButtons(Qt::LeftButton);
 
     timingDebug.setEnabled(QtDebugMsg, false);
+    m_drawTimer.start();
 }
 
 DrawingArea::~DrawingArea()
@@ -47,6 +48,11 @@ DrawingArea::~DrawingArea()
 
 void DrawingArea::paint(QPainter *painter)
 {
+    if (m_drawTimer.isValid()) {
+        qDebug() << "Time from creation to drawing:" << m_drawTimer.elapsed();
+        m_drawTimer.invalidate();
+    }
+
     if (!m_documentWorker) {
         painter->setPen(Qt::black);
         painter->drawText(boundingRect().center(), tr("Loading..."));

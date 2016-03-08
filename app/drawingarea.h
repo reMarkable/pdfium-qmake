@@ -3,6 +3,7 @@
 
 #include <QQuickPaintedItem>
 #include <QImage>
+#include <QElapsedTimer>
 #include "line.h"
 #include "documentworker.h"
 #include <QPointer>
@@ -80,6 +81,7 @@ private:
     int m_smoothFactor;
     bool m_doublePredict;
     QTransform m_lastTransform;
+    QElapsedTimer m_drawTimer;
 };
 
 #endif // DRAWINGAREA_H
