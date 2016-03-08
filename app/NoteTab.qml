@@ -18,7 +18,6 @@ Rectangle {
         title = Qt.binding(function() { return document.title; })
     }
 
-
     function moveForward() {
         if (document.currentPage < document.pageCount - 1) {
             document.currentPage++
@@ -72,7 +71,6 @@ Rectangle {
         document: noteTab.document
     }
 
-
     ToolBox {
         id: toolBox
         anchors {
@@ -83,7 +81,6 @@ Rectangle {
         }
 
         document: noteTab.document
-        drawingArea: drawingArea
     }
 
     Column {
@@ -155,10 +152,8 @@ Rectangle {
         }
     }
 
-
     DocumentPositionBar {
         id: positionBar
-
         anchors {
             bottom: parent.bottom
             right: parent.right
@@ -171,7 +166,6 @@ Rectangle {
         currentPage: noteTab.document.currentPage
         onPageClicked: noteTab.document.currentPage = page
     }
-
 
     Rectangle {
         id: thumbnailGrid

@@ -21,16 +21,14 @@ Column {
         "Index": indexComponent
     }
 
-    //property var buttons: []
     property QtObject document
-    property QtObject drawingArea
-    property string currentTemplate: (document === undefined || document === null) ? "None" : document.currentTemplate
+
+    property string currentTemplate: document.currentTemplate
 
     onCurrentTemplateChanged: {
         if (!document) {
             return
         }
-
         if (currentTemplate === "Sketch") {
             buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
         } else if (currentTemplate === "Document") {
@@ -54,8 +52,8 @@ Column {
         ToolButton {
             id: brushButton
             icon: "qrc:/icons/brush.svg"
-            active: toolBox.drawingArea.currentBrush === DrawingArea.Paintbrush
-            onClicked: toolBox.drawingArea.currentBrush = DrawingArea.Paintbrush
+            active: drawingArea.currentBrush === DrawingArea.Paintbrush
+            onClicked: drawingArea.currentBrush = DrawingArea.Paintbrush
 
             height: (width - iconMargin) * 4 + iconMargin
 
@@ -109,7 +107,7 @@ Column {
         id: pencilComponent
         ToolButton {
             icon: "qrc:/icons/pencil.svg"
-            active: toolBox.drawingArea.currentBrush === DrawingArea.Pencil
+            active: drawingArea.currentBrush === DrawingArea.Pencil
             onClicked: {
                 drawingArea.currentBrush = DrawingArea.Pencil
             }
@@ -120,7 +118,7 @@ Column {
         id: penComponent
         ToolButton {
             icon: "qrc:/icons/pen.svg"
-            active: toolBox.drawingArea.currentBrush === DrawingArea.Pen
+            active: drawingArea.currentBrush === DrawingArea.Pen
             onClicked: {
                 drawingArea.currentBrush = DrawingArea.Pen
             }
@@ -132,7 +130,7 @@ Column {
 
         ToolButton {
             icon: "qrc:/icons/eraser.svg"
-            active: toolBox.drawingArea.currentBrush === DrawingArea.Eraser
+            active: drawingArea.currentBrush === DrawingArea.Eraser
             onClicked: {
                 drawingArea.currentBrush = DrawingArea.Eraser
             }
@@ -184,6 +182,7 @@ Column {
     
     Component {
         id: focusComponent
+
         ToolButton {
             icon: "qrc:/icons/focus+.svg"
             onClicked: rootItem.focusMode = true
