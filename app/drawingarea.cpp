@@ -169,6 +169,7 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
 
 void DrawingArea::setDocument(Document *document)
 {
+    m_document = document;
     if (!document) {
         return;
     }

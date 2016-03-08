@@ -20,7 +20,7 @@ class DrawingArea : public QQuickPaintedItem
     Q_PROPERTY(bool zoomtoolSelected MEMBER m_zoomSelected NOTIFY zoomtoolSelectedChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(Line::Color currentColor MEMBER m_currentColor NOTIFY currentColorChanged)
-    Q_PROPERTY(Document* document WRITE setDocument)
+    Q_PROPERTY(Document* document WRITE setDocument MEMBER m_document)
     Q_PROPERTY(bool predictionEnabled MEMBER m_predict NOTIFY predictionToggled)
     Q_PROPERTY(bool doublePredictionEnabled MEMBER m_doublePredict NOTIFY doublePredictionChanged)
     Q_PROPERTY(int smoothFactor MEMBER m_smoothFactor NOTIFY smoothFactorChanged)
@@ -80,6 +80,7 @@ private:
     int m_smoothFactor;
     bool m_doublePredict;
     QTransform m_lastTransform;
+    Document *m_document;
     QElapsedTimer m_drawTimer;
 };
 
