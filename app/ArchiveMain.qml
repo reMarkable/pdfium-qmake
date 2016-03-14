@@ -167,6 +167,7 @@ Item {
                         right: parent.right
                         rightMargin: 20
                     }
+                    width: (editActionsItem.maxDisplayItemCount === 9 ) ? 75 : 45
                     visible: !editActionsItem.selectionModeActive
                     icon: "qrc:///icons/Open-book_white.svg"
                     onClicked: archiveView.openBook(modelData)
