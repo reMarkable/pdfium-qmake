@@ -18,6 +18,8 @@ Item {
         }
     }
 
+    property bool canDeletePages: (document.path.indexOf(".pdf") === -1) && documentPagecount > 1
+
     property var selectedPages: []
 
     property int currentPage: 0
@@ -29,7 +31,10 @@ Item {
     }
 
     property int documentPagecount: document === null ? 0 : document.pageCount
-    onDocumentPagecountChanged: reloadModel()
+    onDocumentPagecountChanged: {
+        console.log(documentPagecount)
+        reloadModel()
+    }
 
     function reloadModel() {
         if (!document) {
@@ -102,6 +107,7 @@ Item {
             topMargin: 25
             rightMargin: 50
         }
+        visible: archiveBook.canDeletePages
         onSelectionModeActiveChanged: {
             selectedPages = []
         }
