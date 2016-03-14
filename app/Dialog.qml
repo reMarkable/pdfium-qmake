@@ -47,6 +47,7 @@ Rectangle {
                 margins: 75
                 bottom: parent.verticalCenter
             }
+            horizontalAlignment: Text.AlignHCenter
             
             text: dialog.question !== "" ? dialog.question : (dialog.message !== "" ? dialog.message : "")
             font.pointSize: 18
