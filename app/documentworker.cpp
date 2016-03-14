@@ -683,7 +683,7 @@ void DocumentWorker::loadLines()
                 qWarning() << "Invalid point.pressure in" << lineFile.fileName() << bytes;
                 break;
             }
-            point.pressure = qBound(0, point.pressure, 1);
+            point.pressure = qBound(0.f, point.pressure, 1.f);
 
             line.points.append(point);
         }
