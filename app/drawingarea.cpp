@@ -446,6 +446,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     }
 
     digitizer->releaseLock();
+    m_documentWorker->wake();
 
     m_undoneLines.clear();
 
@@ -470,7 +471,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     }
     sendUpdate(updateRect, EPFrameBuffer::Grayscale);
 #endif//Q_PROCESSOR_ARM
-    m_documentWorker->wake();
 }
 
 void DrawingArea::itemChange(QQuickItem::ItemChange change, const QQuickItem::ItemChangeData &value)
