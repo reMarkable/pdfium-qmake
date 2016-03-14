@@ -1,6 +1,6 @@
 TEMPLATE = lib
-CONFIG += c++11
-QMAKE_CXXFLAGS += -Wno-unused-parameter
+CONFIG += c++11 warn_off
+QMAKE_CXXFLAGS += -Wall -Wno-unused-parameter
 DEFINES += _FX_OS_=_FX_LINUX_DESKTOP_
 DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_LINUX_
 DEFINES += FT2_BUILD_LIBRARY
