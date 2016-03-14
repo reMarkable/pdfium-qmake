@@ -51,10 +51,12 @@ DocumentWorker::DocumentWorker(Document *document) :
     } else {
         if (s_templateLoader.templates.isEmpty()) {
             qWarning() << "No templates available!";
-            return;
         }
     }
 
+    QTimer::singleShot(0, this, [=]() {
+        start(QThread::LowestPriority);
+    });
 }
 
 DocumentWorker::~DocumentWorker()

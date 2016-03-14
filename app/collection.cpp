@@ -251,7 +251,6 @@ void Collection::archiveBookOpened(const QString path)
         m_archiveBookWorker->stop();
     }
     m_archiveBookWorker = new DocumentWorker(m_documents.value(path));
-    m_archiveBookWorker->start();
 }
 
 void Collection::archiveBookClosed()

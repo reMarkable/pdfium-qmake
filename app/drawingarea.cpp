@@ -181,7 +181,6 @@ void DrawingArea::setDocument(Document *document)
     }
 
     m_documentWorker = new DocumentWorker(document);
-    m_documentWorker->start(QThread::LowestPriority);
     m_documentWorker->preload();
 
     m_undoneLines.clear();
