@@ -101,7 +101,7 @@ Window {
                 }
 
                 if (objectList.length > 4) {
-                    tooMainTabsDialog.visible = true
+                    tooManyTabsDialog.visible = true
                     return null
                 }
 
@@ -143,7 +143,7 @@ Window {
                 console.time("archiveclicked")
 
                 if (objectList.length > 4) {
-                    tooMainTabsDialog.visible = true
+                    tooManyTabsDialog.visible = true
                     return
                 }
 
@@ -222,7 +222,7 @@ Window {
         }
 
         Dialog {
-            id: tooMainTabsDialog
+            id: tooManyTabsDialog
             message: "Too many tabs open"
             anchors.fill: parent
         }
