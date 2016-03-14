@@ -403,7 +403,7 @@ void DocumentWorker::preload()
 {
     QMutexLocker locker(&m_lock);
 
-    if (!m_cachedContents.contains(m_currentPage)) {
+    if (!m_cachedContents.contains(m_currentPage) && !pageDirty) {
         qDebug() << "We don't have the current page cached, loading";
         m_pagesToLoad.insert(m_currentPage, m_document->getStoredPagePath(m_currentPage));
     }
