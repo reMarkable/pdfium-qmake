@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QByteArray>
 #include <iostream>
+#include <iomanip>
+#include <QTime>
 
 #include "messagehandler.h"
 
@@ -52,8 +54,27 @@ void MessageHandler::messageHandler(QtMsgType type, const QMessageLogContext &co
     }
 
     { // Print to stdout
-        QString text(QStringLiteral("%1%2\033[01;37m:\t%3 \033[00;37m (%4:%5, %6)\033[0m").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function));
-        std::cout << text.toStdString() << std::endl;
+        QString outputText;
+        QString functionName(context.function);
+
+        QString className;
+        // If it is a class,
+        int classIndex = functionName.indexOf("::");
+        if (classIndex != -1) {
+            className = functionName.left(classIndex).split(' ').last().leftJustified(20);
+            functionName = functionName.mid(classIndex + 2);
+            std::cout << QTime::currentTime().toString("mm:ss.zzz").toStdString() << " "
+                      << typeColor.toStdString()
+                      << className.leftJustified(20).toStdString()
+                      << msg.toStdString() << " "
+                      << context.file << ":" << context.line << " "
+                      << "(" << functionName.toStdString() << ")"
+                      << "\033[0m"
+                      << std::endl;
+        } else {
+            outputText = QTime::currentTime().toString("mm:ss.zzz") + QStringLiteral(" %1%2\033[01;37m:\t%3 \033[00;37m (%4:%5, %6)\033[0m").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function);
+            std::cout << outputText.toStdString() << std::endl;
+        }
     }
 }
 

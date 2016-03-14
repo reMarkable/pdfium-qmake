@@ -175,6 +175,12 @@ Rectangle {
         y: -viewRoot.y
         visible: false
 
+        onVisibleChanged: {
+            if (visible) {
+                drawingArea.storeThumbnail()
+            }
+        }
+
         color: "#7f000000"
 
         MouseArea {

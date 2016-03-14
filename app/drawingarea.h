@@ -40,6 +40,8 @@ public slots:
 
     void setDocument(Document *document);
 
+    void storeThumbnail() { m_documentWorker->storeThumbnail(); }
+
 protected:
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void itemChange(ItemChange change, const ItemChangeData &value) override;
@@ -55,7 +57,7 @@ signals:
 
 private slots:
     void redrawBackbuffer(QRectF part = QRectF());
-    void onBackgroundChanged();
+    void onRedrawRequested();
 
 private:
     void drawBackground(QPainter *painter, const QRectF part);

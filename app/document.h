@@ -19,13 +19,11 @@ public:
     explicit Document(QString path, QObject *parent = 0);
     virtual ~Document();
 
-    QString getThumbnailPath(int index) const {
-        return m_path + '-' + QString::number(index) + ".thumbnail.jpg";
-    }
 
     void addOpenCount();
     int openCount() { return m_openCount; }
 
+    // Creates a new document
     static bool createDocument(QString defaultTemplate, QString path);
 
 public slots:
@@ -36,8 +34,15 @@ public slots:
     int currentPage() const { return m_currentPage; }
     QString path() const { return m_path; }
 
+    // Helper functions to get paths
     QString getStoredPagePath(int index) const {
-        return m_path + '-' + QString::number(index) + ".cached.png";
+        return m_path + '.' + QString::number(index) + ".cached.png";
+    }
+    QString getThumbnailPath(int index) const {
+        return m_path + '.' + QString::number(index) + ".thumbnail.jpg";
+    }
+    QString getMetadataPath() const {
+        return m_path + ".metadata";
     }
 
     void deletePages(QList<int> pagesToRemove);
@@ -46,8 +51,7 @@ public slots:
     QString currentTemplate();
     QString templateForPage(int page);
     void setCurrentTemplate(QString newTemplate);
-
-    QStringList availableTemplates() { return QStringList() << "Sketch" << "Lined" << "Squared"; }
+    QStringList availableTemplates() const;
 
     QString getThumbnail(int index);
     QString title();

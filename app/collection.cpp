@@ -50,6 +50,10 @@ Collection::Collection(QObject *parent) : QObject(parent)
             continue;
         }
 
+        if (fileInfo.isDir() && !documentPath.endsWith('/')) {
+            documentPath += '/';
+        }
+
         loadDocument(documentPath);
         m_sortedPaths.append(documentPath);
     }
@@ -236,9 +240,9 @@ void Collection::deleteDocument(const QString documentPath)
 QString Collection::defaultDocumentPath(const QString &type) const
 {
     if (type == "Sketch") {
-        return collectionPath() + "Default sketchbook";
+        return collectionPath() + "Default sketchbook/";
     } else {
-        return collectionPath() + "Default notebook";
+        return collectionPath() + "Default notebook/";
     }
 }
 
@@ -282,16 +286,18 @@ bool Collection::initializePDFDocument(Document *document)
         return false;
     }
 
-    int page = document->currentPage();
-    QString thumbnailPath = document->getThumbnailPath(page);
-    if (QFile::exists(thumbnailPath)) { // This document has already been initialized
-        return true;
-    }
-
+    // This also verifies the page count
     PdfRenderer renderer(document);
     if (!renderer.initialize()) {
         qWarning() << "Can't initialize PDF worker for" << document->path();
         return false;
+    }
+
+    // Check if we need to create a default thumbnail
+    int page = document->currentPage();
+    QString thumbnailPath = document->getThumbnailPath(page);
+    if (QFile::exists(thumbnailPath)) {
+        return true;
     }
 
     QImage thumbnail = renderer.renderPage(page, QSize(Settings::thumbnailWidth(), Settings::thumbnailHeight()));

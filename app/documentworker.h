@@ -45,7 +45,6 @@ class DocumentWorker : public QThread
     Q_OBJECT
 public:
     DocumentWorker(Document *document);
-    ~DocumentWorker();
 
     void suspend();
     void wake();
@@ -72,9 +71,10 @@ public:
 signals:
     void backgroundsLoaded(int page, QImage contents);
     void pageLoaded(int page, QImage contents);
-    void currentPageLoaded();
-    void backgroundChanged();
+    void updateNeeded();
     void thumbnailUpdated(int page);
+
+    void redrawingNeeded();
 
 protected:
     virtual void run() override;
@@ -91,10 +91,13 @@ private slots:
     void onTemplateChanged();
 
 private:
+    ~DocumentWorker();
+
     void loadLines();
     void storeLines();
     void printMemoryUsage() const;
     void clearLoadQueue();
+    bool hasLinesForPage(int page);
 
     QPointer<Document> m_document;
 
@@ -113,6 +116,7 @@ private:
     PdfRenderer *m_pdfRenderer;
     QWaitCondition m_waitCondition;
     QWaitCondition m_suspendCondition;
+    QString m_currentTemplate;
     int m_currentPage;
 };
 

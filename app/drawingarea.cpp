@@ -41,6 +41,7 @@ DrawingArea::DrawingArea() :
 
 DrawingArea::~DrawingArea()
 {
+    qWarning() << "Drawing area dying";
     if (m_documentWorker) {
         m_documentWorker->stop();
     }
@@ -48,24 +49,39 @@ DrawingArea::~DrawingArea()
 
 void DrawingArea::paint(QPainter *painter)
 {
+    qDebug() << "Painting";
     if (m_drawTimer.isValid()) {
         qDebug() << "Time from creation to drawing:" << m_drawTimer.elapsed();
         m_drawTimer.invalidate();
     }
 
-    if (!m_documentWorker) {
-        painter->setPen(Qt::black);
-        painter->drawText(boundingRect().center(), tr("Loading..."));
-        return;
-    }
-
-    if (m_documentWorker->pageContents.isNull()) {
-        drawBackground(painter, QRectF(x(), y(), width(), height()));
-        return;
-    }
-
-    painter->drawImage(0, 0, m_documentWorker->pageContents);
+    // Needed for being able to getting the proper coordinates when undoing/redoing.
     m_lastTransform = painter->transform();
+
+    if (m_documentWorker) {
+        // Paint the cached page contents
+        if (!m_documentWorker->pageContents.isNull()) {
+            qDebug() << "Have page contents, drawing page contents";
+            painter->drawImage(x(), y(), m_documentWorker->pageContents);
+            return;
+        }
+        qDebug() << "page not loaded";
+
+        // No page contents loaded, paint the background
+        QImage background = m_documentWorker->background();
+        if (!background.isNull()) {
+            painter->drawImage(x(), y(), background);
+            return;
+        }
+        qDebug() << "background not loaded";
+    } else {
+        qWarning() << "No worker?";
+    }
+    qDebug() << "couldn't get either page contents or background";
+
+    // Nothing appropriate loaded yet.
+    painter->setPen(Qt::black);
+    painter->drawText(boundingRect().center(), tr("Loading..."));
 }
 
 void DrawingArea::clear()
@@ -75,7 +91,8 @@ void DrawingArea::clear()
         return;
     }
 
-    m_documentWorker->pageContents = QImage();
+//    m_documentWorker->pageContents = m_documentWorker->background();
+//    m_documentWorker->pageDirty = true;
 
     m_hasEdited = false;
     m_undoneLines.clear();
@@ -185,9 +202,8 @@ void DrawingArea::setDocument(Document *document)
 
     m_undoneLines.clear();
 
-    redrawBackbuffer();
-    connect(m_documentWorker, SIGNAL(backgroundChanged()), SLOT(onBackgroundChanged()));
-    connect(m_documentWorker, SIGNAL(currentPageLoaded()), SLOT(update()));
+    connect(m_documentWorker, SIGNAL(redrawingNeeded()), SLOT(onRedrawRequested()));
+    connect(m_documentWorker, SIGNAL(updateNeeded()), SLOT(update()));
 }
 
 #define SMOOTHFACTOR_P 0.370
@@ -204,10 +220,16 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     m_hasEdited = true;
 
     if (!m_documentWorker) {
+        qWarning() << "No document worker available here";
         return;
     }
 
-    m_documentWorker->suspend();
+    {
+        QElapsedTimer suspensionTimer;
+        suspensionTimer.start();
+        m_documentWorker->suspend();
+        qDebug() << "Worker suspended in" << suspensionTimer.elapsed() << "ms";
+    }
 #ifdef Q_PROCESSOR_ARM
 
     Digitizer *digitizer = Digitizer::instance();
@@ -217,8 +239,10 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     }
 
     if (m_documentWorker->pageContents.isNull()) {
-        m_documentWorker->pageContents = QImage(width(), height(), QImage::Format_RGB16);
+        qWarning() << "Invalid page contents";
+        return;
     }
+    qDebug() << "Page size:" << m_documentWorker->pageContents.size();
 
     QPainter painter(EPFrameBuffer::instance()->framebuffer());
     QPainter selfPainter(&m_documentWorker->pageContents);
@@ -416,7 +440,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         }
     }
     if (eventsHandled > 0) {
-        qDebug() << Q_FUNC_INFO << "average handling time:" << (totalHandlingTime / eventsHandled) << "ns";
+        qDebug() << "average handling time:" << ((totalHandlingTime / 1000000.0) / eventsHandled) << "ms";
     } else {
         qDebug() << "No events handled";
     }
@@ -424,12 +448,9 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     digitizer->releaseLock();
 
     m_undoneLines.clear();
-    if (m_documentWorker) {
-        m_documentWorker->addLine(drawnLine);
-        m_documentWorker->pageDirty = true;
-    } else {
-        qWarning() << "Can't store line, no document set";
-    }
+
+    m_documentWorker->addLine(drawnLine);
+    m_documentWorker->pageDirty = true;
 
     if (skippedUpdatesCounter > 0) {
         sendUpdate(delayedUpdateRect, EPFrameBuffer::Mono);
@@ -472,26 +493,27 @@ void DrawingArea::itemChange(QQuickItem::ItemChange change, const QQuickItem::It
 
 void DrawingArea::redrawBackbuffer(QRectF part)
 {
+    qDebug() << "Redrawing backbuffer";
     QElapsedTimer timer;
     timer.start();
 
+    // Failsafe, should never happen
     if (!width() || !height()) {
-        // Failsafe
+        qWarning() << "Asked to redraw backbuffer with invalid geometry";
         return;
     }
 
+    // Failsafe, should never happen
     if (!m_documentWorker) {
-        return;
-    }
-
-    if (m_documentWorker->lines().isEmpty()) {
+        qWarning() << "Asked to redraw backbuffer without a document worker";
         return;
     }
 
     part = mapRectFromScene(part);
     if (m_documentWorker->pageContents.isNull()) {
-        qDebug() << width() << height();
+        qDebug() << "Empty page contents, recreating with dimensions" << width() << height();
         m_documentWorker->pageContents = QImage(width(), height(), QImage::Format_RGB16);
+        m_documentWorker->pageDirty = true;
     }
 
     QPainter painter(&m_documentWorker->pageContents);
@@ -512,6 +534,7 @@ void DrawingArea::redrawBackbuffer(QRectF part)
             start = i + 1;
         }
     }
+    qDebug() << "Lines starting at" << start << "of total" << m_documentWorker->lines().count();
 
     // Re-draw lines on top
     for (int i=start; i<m_documentWorker->lines().count(); i++) {
@@ -537,14 +560,16 @@ void DrawingArea::redrawBackbuffer(QRectF part)
     }
 }
 
-void DrawingArea::onBackgroundChanged()
+void DrawingArea::onRedrawRequested()
 {
+    qDebug() << "background changed";
     if (Q_UNLIKELY(!m_documentWorker)) {
         qWarning() << "No document set";
         return;
     }
 
     if (!m_documentWorker->pageContents.isNull()) {
+        qWarning() << "Page contents not null";
         return;
     }
 
@@ -559,6 +584,7 @@ void DrawingArea::onBackgroundChanged()
 
 void DrawingArea::drawBackground(QPainter *painter, const QRectF part)
 {
+    qDebug() << "Drawing background";
     Q_UNUSED(part); // FIXME
     if (!m_documentWorker) {
         return;

@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QTimer>
 
 #define CACHE_COUNT 2 // Cache this many before and after
 
@@ -35,15 +36,16 @@ DocumentWorker::DocumentWorker(Document *document) :
     m_suspended(false),
     m_pdfRenderer(nullptr)
 {
-    connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)));
+    connect(document, SIGNAL(currentPageChanged(int)), this, SLOT(onPageChanged(int)), Qt::DirectConnection);
     connect(document, SIGNAL(missingThumbnailRequested(int)), this, SLOT(onMissingThumbnailRequested(int)));
     connect(document, SIGNAL(pagesDeleted(QList<int>)), this, SLOT(deletePages(QList<int>)));
-    connect(document, SIGNAL(templateChanged()), this, SLOT(onTemplateChanged()));
+    connect(document, SIGNAL(templateChanged()), this, SLOT(onTemplateChanged()), Qt::DirectConnection);
     connect(this, SIGNAL(backgroundsLoaded(int,QImage)), this, SLOT(onBackgroundLoaded(int,QImage)));
     connect(this, SIGNAL(pageLoaded(int,QImage)), this, SLOT(onPageLoaded(int,QImage)));
     connect(this, SIGNAL(thumbnailUpdated(int)), document, SIGNAL(thumbnailUpdated(int)));
 
     m_currentPage = m_document->currentPage();
+    m_currentTemplate = m_document->currentTemplate();
 
 
     if (document->path().endsWith(".pdf")) {
@@ -61,14 +63,9 @@ DocumentWorker::DocumentWorker(Document *document) :
 
 DocumentWorker::~DocumentWorker()
 {
-    qDebug() << "Waiting for thread to die...";
-    wait();
-    qDebug() << "thred ded";
-
     if (m_pdfRenderer) {
         m_pdfRenderer->deleteLater();
     }
-    qDebug() << "document worker nuked";
 }
 
 void DocumentWorker::suspend()
@@ -87,13 +84,15 @@ void DocumentWorker::wake()
 QImage DocumentWorker::background()
 {
     if (m_pdfRenderer) {
+        qDebug() << "Cached backgrounds contain this page?:" << m_cachedBackgrounds.contains(m_currentPage);
         return m_cachedBackgrounds.value(m_currentPage);
     }
 
-    QImage background = s_templateLoader.templates.value(m_document->currentTemplate());
+    qDebug() << "current template:" <<  m_currentTemplate << "valid?" << s_templateLoader.templates.keys().contains(m_document->currentTemplate());
+    QImage background = s_templateLoader.templates.value(m_currentTemplate);
 
     QString thumbnailPath = m_document->getThumbnailPath(m_currentPage);
-    if (!QFile::exists(thumbnailPath)) {
+    if (!QFile::exists(thumbnailPath) && !hasLinesForPage(m_currentPage)) {
         background.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight()).save(thumbnailPath);
         emit thumbnailUpdated(m_currentPage);
     }
@@ -103,6 +102,8 @@ QImage DocumentWorker::background()
 
 void DocumentWorker::onPageChanged(int newPage)
 {
+    qDebug() << "Page changed" << newPage << m_currentPage;
+
     if (newPage == m_currentPage) {
         return;
     }
@@ -111,40 +112,51 @@ void DocumentWorker::onPageChanged(int newPage)
 
     // If we have drawn on the current page, we need to store it
     if (pageDirty) {
+        qDebug() << "Dirty page, storing";
+        m_cachedContents.insert(m_currentPage, pageContents);
         m_pagesToStore.insert(m_currentPage, pageContents);
-        pageDirty = false;
         pageContents = QImage();
+        pageDirty = false;
         m_waitCondition.wakeAll();
     }
+    qDebug() << "Changing page";
 
     const int cacheMin = qMax(newPage - CACHE_COUNT, 0);
     const int cacheMax = newPage + CACHE_COUNT;
 
     foreach(int page, m_cachedBackgrounds.keys()) {
-        if (page > cacheMin && page < cacheMax) {
+        if (page >= cacheMin && page <= cacheMax) {
             continue;
         }
         m_cachedBackgrounds.remove(page);
     }
 
     foreach(int page, m_cachedContents.keys()) {
-        if (page > cacheMin && page < cacheMax) {
+        if (page >= cacheMin && page <= cacheMax) {
             continue;
         }
         m_cachedContents.remove(page);
     }
 
+    // Ensure that we aren't currently trying to load anything
     clearLoadQueue();
 
     m_currentPage = newPage;
-
-    locker.unlock();
+    m_currentTemplate = m_document->templateForPage(newPage);
 
     if (m_cachedContents.contains(newPage)) {
-        emit currentPageLoaded();
-    } else if (m_cachedBackgrounds.contains(newPage) && !QFile::exists(m_document->getStoredPagePath(m_currentPage))) {
-        emit currentPageLoaded();
+        pageContents = m_cachedContents.value(newPage);
+        qDebug() << "Cache contains page";// << pageContents.isNull();
+        emit updateNeeded();
+    } else if (!hasLinesForPage(newPage)) {
+        if (m_pdfRenderer) {
+            if (m_cachedBackgrounds.contains(m_currentPage)) {
+                emit redrawingNeeded();
+            }
+        }
     }
+
+    locker.unlock();
 
     preload();
 }
@@ -177,7 +189,7 @@ Line DocumentWorker::popLine()
 void DocumentWorker::storeThumbnail()
 {
     QMutexLocker locker(&m_lock);
-    qDebug() << "page contents changed";
+    qDebug() << "Storing thumbnail";
 
     QFile::remove(m_document->getThumbnailPath(m_currentPage));
     m_thumbnailsToCreate.insert(m_currentPage, pageContents);
@@ -186,6 +198,7 @@ void DocumentWorker::storeThumbnail()
 
 void DocumentWorker::stop()
 {
+    qDebug() << "Someone stopped us";
     QMutexLocker locker(&m_lock);
     clearLoadQueue();
     m_waitCondition.wakeAll();
@@ -208,7 +221,9 @@ void DocumentWorker::run()
         QMutexLocker locker(&m_lock);
 
         if (m_suspended) {
+            qDebug() << "We're suspended";
             m_suspendCondition.wait(&m_lock);
+            qDebug() << "Woken up again";
             continue;
         }
 
@@ -221,13 +236,16 @@ void DocumentWorker::run()
         }
 
         if (!m_pagesToLoad.isEmpty()) { // Prioritize loading pages
-            while (!m_pagesToLoad.isEmpty()) {
-                int page = m_pagesToLoad.keys().first();
-                QString path = m_pagesToLoad.take(page);
-                locker.unlock();
-                emit pageLoaded(page, QImage(path));
-                locker.relock();
+            int page = m_pagesToLoad.keys().first();
+            QString path = m_pagesToLoad.take(page);
+            locker.unlock();
+
+            qDebug() << "loading path:" << path;
+            QImage image(path);
+            if (QFile::exists(path) && image.isNull()) {
+                QFile::remove(path); // Nuke invalid image
             }
+            emit pageLoaded(page, image);
         } else if (!m_backgroundsToLoad.isEmpty()) {
             if (!m_pdfRenderer) {
                 m_backgroundsToLoad.clear();
@@ -237,7 +255,9 @@ void DocumentWorker::run()
             int page = m_backgroundsToLoad.takeFirst();
             locker.unlock();
 
+            qDebug() << "Rendering pdf page";
             QImage image = m_pdfRenderer->renderPage(page, QSize(1200, 1600));
+            qDebug() << "PDF page is null?:" << image.isNull();
             emit backgroundsLoaded(page, image);
             QString thumbnailPath = m_document->getThumbnailPath(page);
             if (!QFile::exists(thumbnailPath)) {
@@ -245,16 +265,25 @@ void DocumentWorker::run()
                 emit thumbnailUpdated(page);
             }
         } else if (!m_pagesToStore.isEmpty()) {
+            qDebug() << "Storing page...";
             while (!m_pagesToStore.isEmpty()) {
                 int page = m_pagesToStore.keys().first();
                 QImage image = m_pagesToStore.take(page);
+                QString path = m_document->getStoredPagePath(page);
+
+                if (image.isNull() && QFile::exists(path)) {
+                    qWarning() << "Refusing to store null page";
+                    QFile::remove(path);
+                    continue;
+                }
 
                 locker.unlock();
 
-                image.save(m_document->getStoredPagePath(page));
+                image.save(path);
                 locker.relock();
             }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
+            qDebug() << "Creating thumbnailo";
             int page = m_thumbnailsToCreate.keys().first();
             QImage contents = m_thumbnailsToCreate.take(page);
 
@@ -278,25 +307,49 @@ void DocumentWorker::run()
                         continue;
                     }
 
-                    contents = QImage(contentPath).scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
+                    contents = QImage(contentPath).scaled(Settings::thumbnailWidth(),
+                                                          Settings::thumbnailHeight(),
+                                                          Qt::KeepAspectRatioByExpanding,
+                                                          Qt::SmoothTransformation);
                 }
             } else {
-                contents = contents.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
+                    contents = contents.scaled(Settings::thumbnailWidth(),
+                                                          Settings::thumbnailHeight(),
+                                                          Qt::KeepAspectRatioByExpanding,
+                                                          Qt::SmoothTransformation);
             }
 
+            if (contents.isNull()) {
+                qWarning() << "Impossible situation, got null image";
+            }
             contents.save(thumbnailPath);
+            qDebug() << "Stored thumbnail to" << thumbnailPath;
             emit thumbnailUpdated(page);
         }
     }
+    qDebug() << "Dying...";
 
     QMutexLocker locker(&m_lock);
 
-    if (!pageContents.isNull()) {
+    if (pageDirty) {
         // Store cached page content
-        pageContents.save(m_document->getStoredPagePath(m_currentPage));
+        QString path = m_document->getStoredPagePath(m_currentPage);
+        qDebug() << "Page dirty, storing in" << path;
+        if (pageContents.isNull()) {
+            QFile::remove(path);
+        } else {
+            pageContents.save(path);
+        }
+        qDebug() << pageContents.size();
 
-        // Store thumbnail
-        QImage thumbnail = pageContents.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
+    }
+
+    // Store thumbnail
+    if (!pageContents.isNull()) {
+        QImage thumbnail = pageContents.scaled(Settings::thumbnailWidth(),
+                                               Settings::thumbnailHeight(),
+                                               Qt::KeepAspectRatioByExpanding,
+                                               Qt::SmoothTransformation);
         thumbnail.save(m_document->getThumbnailPath(m_currentPage));
         emit thumbnailUpdated(m_currentPage);
     }
@@ -309,27 +362,39 @@ void DocumentWorker::run()
 void DocumentWorker::onPageLoaded(int page, QImage contents)
 {
     if (page == m_currentPage) {
-        if (pageDirty) {
+        if (pageDirty || m_cachedContents.contains(page)) {
             qWarning() << "Loaded page, after page dirty";
             return;
         }
+        qDebug() << "contents are null?:" << contents.isNull();
         pageContents = contents;
-        emit currentPageLoaded();
+        qDebug() << "page loaded, requesting update";
+        if (pageContents.isNull()) {
+            emit redrawingNeeded();
+        } else {
+            emit updateNeeded();
+        }
         return;
     }
 
-    m_cachedContents[page] = contents;
+    if (contents.isNull()) {
+        m_cachedContents.remove(page);
+    } else {
+        m_cachedContents[page] = contents;
+    }
 }
 
 void DocumentWorker::onBackgroundLoaded(int page, QImage contents)
 {
     m_cachedBackgrounds[page] = contents;
 
-    if (page == m_currentPage && pageContents.isNull()) {
+    qDebug() << "Background loaded for page" << page << "current page:" << m_currentPage;
+    if (page == m_currentPage && !QFile::exists(m_document->getStoredPagePath(page))) {
+        qDebug() << "Current background loaded, cached document doesn't exist";
         if (pageContents.isNull()) {
-            emit currentPageLoaded();
+            emit redrawingNeeded();
         } else {
-            emit backgroundChanged();
+            emit updateNeeded();
         }
     }
 }
@@ -339,10 +404,12 @@ void DocumentWorker::preload()
     QMutexLocker locker(&m_lock);
 
     if (!m_cachedContents.contains(m_currentPage)) {
+        qDebug() << "We don't have the current page cached, loading";
         m_pagesToLoad.insert(m_currentPage, m_document->getStoredPagePath(m_currentPage));
     }
 
     if (m_pdfRenderer && !m_cachedBackgrounds.contains(m_currentPage) && !m_backgroundsToLoad.contains(m_currentPage)) {
+        qDebug() << "Loading PDF background for page" << m_currentPage;
         m_backgroundsToLoad.append(m_currentPage);
     }
 
@@ -432,8 +499,20 @@ void DocumentWorker::clearLoadQueue()
     m_pagesToLoad.clear();
 }
 
+bool DocumentWorker::hasLinesForPage(int page)
+{
+    if (page > 0 && page < m_lines.count()) {
+        if (!m_lines.value(page).isEmpty()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void DocumentWorker::deletePages(QList<int> pagesToRemove)
 {
+    qDebug() << "Deleting pages:" << pagesToRemove;
     if (m_document->pageCount() < pagesToRemove.count()) {
         return;
     }
@@ -455,28 +534,40 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
     for (int i=0; i<m_document->pageCount(); i++) {
         oldPages[i] = i;
     }
+    qDebug() << m_lines.count() << oldPages.count();
 
     QVector<QVector<Line>> newLines;
     int pagesTaken = 0;
     for (int oldPage : oldPages.keys()) {
         if (pagesToRemove.contains(oldPage)) {
             QFile::remove(m_document->getThumbnailPath(oldPage));
+            QFile::remove(m_document->getStoredPagePath(oldPage));
             continue;
         }
 
+        // Move thumbnail
         QString oldPath(m_document->getThumbnailPath(oldPages[oldPage]));
         QString newPath(m_document->getThumbnailPath(pagesTaken));
         QFile::rename(oldPath, newPath);
-        newLines.append(m_lines[oldPage]);
+
+        // Move cached page content
+        oldPath = m_document->getStoredPagePath(oldPages[oldPage]);
+        newPath = m_document->getStoredPagePath(pagesTaken);
+        QFile::rename(oldPath, newPath);
+
+        newLines.append(m_lines.value(oldPage));
 
         pagesTaken++;
     }
 
     m_lines = newLines;
+    qDebug() << "Removed pages";
 }
 
 void DocumentWorker::onMissingThumbnailRequested(int page)
 {
+    qDebug() << "Missing thumbnail requested";
+
     QMutexLocker locker(&m_lock);
     if (m_thumbnailsToCreate.contains(page)) {
         return;
@@ -492,14 +583,31 @@ void DocumentWorker::onMissingThumbnailRequested(int page)
         }
     }
 
-    m_thumbnailsToCreate.insert(page, QImage());
+    m_thumbnailsToCreate.insert(page, contents);
     m_waitCondition.wakeAll();
 }
 
 void DocumentWorker::onTemplateChanged()
 {
+    qDebug() << "Template changed";
+    // PDF documents don't care about templates
+    if (m_pdfRenderer) {
+        return;
+    }
+    QString newTemplate = m_document->currentTemplate();
+    if (newTemplate == m_currentTemplate) {
+        qDebug() << "Not a new template";
+        return;
+    }
+    qDebug() << newTemplate << m_currentTemplate;
+    m_currentTemplate = newTemplate;
+
+    // Invalidate this page
     QFile::remove(m_document->getThumbnailPath(m_currentPage));
-    emit backgroundChanged();
+    pageContents = QImage();
+    m_cachedContents.remove(m_currentPage);
+
+    emit redrawingNeeded();
 }
 
 void DocumentWorker::loadLines()
@@ -593,7 +701,18 @@ void DocumentWorker::storeLines()
         QElapsedTimer timer;
         timer.start();
         for (const QVector<Line> &pageLines : m_lines) {
-            for (const Line &line : pageLines) {
+
+            // Skip all lines before a clear, to ensure that we don't store more lines than necessary to redraw.
+            int linesStart = 0;
+            for (int i=0; i<pageLines.count(); i++) {
+                if (pageLines[i].brush == Line::InvalidBrush) {
+                    linesStart = i + 1;
+                }
+            }
+
+            for (int i = linesStart; i < pageLines.count(); i++) {
+                const Line &line = pageLines[i];
+
                 lineFile.write("linestart ");
                 lineFile.write(QByteArray::number(line.brush) + ' ');
                 lineFile.write(QByteArray::number(line.color) + ' ');
@@ -615,6 +734,9 @@ void DocumentWorker::storeLines()
         lineFile.close();
 
         // Ensure that we don't delete the existing file in case of a failure
+        if (QFile::exists(linePath + ".old")) {
+            QFile::remove(linePath + ".old");
+        }
         if (!QFile::rename(linePath, linePath + ".old")) {
             qWarning() << "Unable to move old lines";
         }

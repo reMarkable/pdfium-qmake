@@ -1,4 +1,7 @@
 #include "document.h"
+#include "collection.h"
+#include "settings.h"
+#include <QImage>
 #include <QFileInfo>
 #include <QMutexLocker>
 #include <QDebug>
@@ -10,40 +13,23 @@
 
 Document::Document(QString path, QObject *parent)
     : QObject(parent),
-      m_path(path),
       m_currentPage(0),
-      m_pageCount(0),
+      m_pageCount(1),
       m_openCount(0)
 {
     DEBUG_BLOCK;
 
-    QFile metadataFile(path + ".metadata");
+    if (!path.endsWith(".pdf") && !path.endsWith('/')) {
+        path += '/';
+    }
+    m_path = path;
+
+
+    QFile metadataFile(getMetadataPath());
     if (metadataFile.open(QIODevice::ReadOnly)) {
         m_currentPage = metadataFile.readLine().trimmed().toInt();
         m_pageCount = metadataFile.readLine().trimmed().toInt();
         m_openCount = metadataFile.readLine().trimmed().toInt();
-    }
-
-    if (path.endsWith(".pdf")) {
-        return;
-    }
-
-    m_templates.fill("Sketch", pageCount());
-
-    QFile templatesFile(path + ".pagedata");
-    if (!templatesFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Unable to open" << templatesFile.fileName();
-        return;
-    }
-
-    int page = 0;
-    while (!templatesFile.atEnd()) {
-        QString pageTemplate = templatesFile.readLine().trimmed();
-        if (pageTemplate.isEmpty()) {
-            break;
-        }
-        m_templates[page] = pageTemplate;
-        page++;
     }
 
     connect(this, SIGNAL(currentPageChanged(int)), this, SLOT(storeMetadata()));
@@ -51,6 +37,37 @@ Document::Document(QString path, QObject *parent)
     connect(this, SIGNAL(pageCountChanged()), this, SLOT(storeMetadata()));
     connect(this, SIGNAL(pageCountChanged()), this, SLOT(storeTemplates()));
     connect(this, SIGNAL(templateChanged()), this, SLOT(storeTemplates()));
+
+    // We don't need to load anything more for PDFs
+    if (path.endsWith(".pdf")) {
+        return;
+    }
+
+    QFile templatesFile(path + ".pagedata");
+    if (templatesFile.open(QIODevice::ReadOnly)) {
+        while (!templatesFile.atEnd()) {
+            QString pageTemplate = templatesFile.readLine().trimmed();
+            if (pageTemplate.isEmpty()) {
+                break;
+            }
+            m_templates.append(pageTemplate);
+        }
+    }
+
+    QString defaultTemplate;
+    if (!m_templates.isEmpty()) {
+        defaultTemplate = m_templates.last();
+    }
+
+    if (defaultTemplate.isEmpty()) {
+        defaultTemplate = "Sketch";
+    }
+
+    if (m_templates.count() < pageCount()) {
+        for (int i=0; i < (pageCount() - m_templates.count()); i++) {
+            m_templates.append(defaultTemplate);
+        }
+    }
 }
 
 Document::~Document()
@@ -67,6 +84,10 @@ bool Document::createDocument(QString defaultTemplate, QString path)
 {
     if (defaultTemplate.isEmpty()) {
         defaultTemplate = "Sketch";
+    }
+
+    if (!path.endsWith('/')) {
+        path += '/';
     }
 
     if (!QDir(path).mkpath(path)) {
@@ -88,6 +109,12 @@ bool Document::createDocument(QString defaultTemplate, QString path)
         templatesFile.close();
     }
 
+    QImage templateImage(Collection::collectionPath() + "/templates/" + defaultTemplate + ".png");
+    if (!templateImage.isNull()) {
+        QImage thumbnail = templateImage.scaled(Settings::thumbnailWidth(), Settings::thumbnailHeight());
+        thumbnail.save(path + ".0.thumbnail.jpg");
+    }
+
     return true;
 }
 
@@ -103,11 +130,12 @@ void Document::setCurrentPage(int newPage)
 
     m_currentPage = newPage;
 
-    emit templateChanged();
     emit currentPageChanged(newPage);
+    emit templateChanged();
 }
 void Document::setPageCount(int pageCount)
 {
+    qDebug() << "Setting page count to" << pageCount;
     if (pageCount == m_pageCount) {
         return;
     }
@@ -118,11 +146,12 @@ void Document::setPageCount(int pageCount)
     if (m_currentPage >= m_pageCount) {
         setCurrentPage(m_pageCount - 1);
     }
+    storeMetadata();
 }
 
 void Document::storeMetadata()
 {
-    QFile metadataFile(m_path + ".metadata");
+    QFile metadataFile(getMetadataPath());
     if (metadataFile.open(QIODevice::WriteOnly)) {
         metadataFile.write(QByteArray::number(m_currentPage) + "\n");
         metadataFile.write(QByteArray::number(m_pageCount) + "\n");
@@ -132,6 +161,10 @@ void Document::storeMetadata()
 
 void Document::storeTemplates()
 {
+    if (m_path.endsWith(".pdf")) {
+        return;
+    }
+
     QFile templateFile(m_path + ".pagedata");
     if (templateFile.open(QIODevice::WriteOnly)) {
         for (const QString pageTemplate : m_templates) {
@@ -146,7 +179,18 @@ void Document::deletePages(QList<int> pagesToRemove)
         return;
     }
 
+    qDebug() << "Pruning pages" << pagesToRemove;
+    QVector<QString> prunedTemplates;
+    for(int i=0; i<m_templates.count(); i++) {
+        if (!pagesToRemove.contains(i)) {
+            prunedTemplates.append(m_templates[i]);
+        }
+    }
+    m_templates = prunedTemplates;
+    qDebug() << "Setting page count";
     setPageCount(m_pageCount - pagesToRemove.count());
+    qDebug() << "Pages nuked";
+    emit pagesDeleted(pagesToRemove);
 }
 
 void Document::addPage()
@@ -158,23 +202,24 @@ void Document::addPage()
 
 QString Document::currentTemplate()
 {
-    if (m_path.endsWith(".pdf")) {
-        return "Document";
-    }
-    if  (m_currentPage > m_templates.count()) {
-        return "Sketch";
-    }
-
-    return m_templates.value(m_currentPage);
+    return templateForPage(m_currentPage);
 }
 
 QString Document::templateForPage(int page)
 {
+    if (m_path.endsWith(".pdf")) {
+        return "Document";
+    }
+
    if (page < 0 || page > m_templates.count()) {
        qWarning() << "Asked for template for invalid page" << page;
-       return QString();
+       return QString("Sketch");
    }
-   return m_templates.value(page);
+   QString pageTemplate = m_templates.value(page);
+   if (pageTemplate.isEmpty()) {
+       pageTemplate = "Sketch";
+   }
+   return pageTemplate;
 }
 
 void Document::setCurrentTemplate(QString newTemplate)
@@ -185,6 +230,27 @@ void Document::setCurrentTemplate(QString newTemplate)
 
     m_templates[m_currentPage] = newTemplate;
     emit templateChanged();
+}
+
+QStringList Document::availableTemplates() const
+{
+    if (m_path.endsWith(".pdf")) { // PDFs have no templates
+        qDebug() << "This document is a pdf, no templates";
+        return QStringList();
+    } else {
+        QDir templatesDir(Collection::collectionPath() + "/templates/");
+        qDebug() << templatesDir.canonicalPath();
+        QFileInfoList templatesInfo = templatesDir.entryInfoList(QStringList() << "*.png",
+                                                   QDir::Files | QDir::Readable
+                                                   );
+        QStringList templates;
+        for (const QFileInfo &templateInfo : templatesInfo) {
+            qDebug() << templateInfo.absoluteFilePath();
+            templates.append(templateInfo.baseName());
+        }
+        qDebug() << "We have these templates:" << templates;
+        return templates;
+    }
 }
 
 QString Document::getThumbnail(int index)
@@ -200,5 +266,11 @@ QString Document::getThumbnail(int index)
 
 QString Document::title()
 {
-    return QFileInfo(m_path).completeBaseName();
+    const QFileInfo pathInfo(m_path);
+
+    if (pathInfo.isDir()) {
+        return QDir(m_path).dirName();
+    } else {
+        return pathInfo.completeBaseName();
+    }
 }
