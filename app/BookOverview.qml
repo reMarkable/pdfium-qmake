@@ -213,6 +213,12 @@ Item {
                                 if (bookItem.selected) {
                                     selectedPages.splice(selectedPages.indexOf(bookItem.pageNumber), 1)
                                 } else {
+
+                                    // Don't allow deleting all pages in document
+                                    if (selectedPages.length >= archiveBook.documentPagecount - 1) {
+                                        selectedPages.splice(0, 1)
+                                    }
+
                                     selectedPages.push(bookItem.pageNumber)
                                 }
                                 archiveBook.selectedPages = selectedPages
