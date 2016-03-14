@@ -61,21 +61,13 @@ void DrawingArea::paint(QPainter *painter)
     if (m_documentWorker) {
         // Paint the cached page contents
         if (!m_documentWorker->pageContents.isNull()) {
-            qDebug() << "Have page contents, drawing page contents";
+            qDebug() << "Have page contents, drawing page contents, size:" << m_documentWorker->pageContents.size();
             painter->drawImage(x(), y(), m_documentWorker->pageContents);
             return;
         }
         qDebug() << "page not loaded";
-
-        // No page contents loaded, paint the background
-        QImage background = m_documentWorker->background();
-        if (!background.isNull()) {
-            painter->drawImage(x(), y(), background);
-            return;
-        }
-        qDebug() << "background not loaded";
     } else {
-        qWarning() << "No worker?";
+        qWarning() << "No worker set when paint() called!";
     }
     qDebug() << "couldn't get either page contents or background";
 
@@ -510,11 +502,8 @@ void DrawingArea::redrawBackbuffer(QRectF part)
     }
 
     part = mapRectFromScene(part);
-    if (m_documentWorker->pageContents.isNull()) {
-        qDebug() << "Empty page contents, recreating with dimensions" << width() << height();
-        m_documentWorker->pageContents = QImage(width(), height(), QImage::Format_RGB16);
-        m_documentWorker->pageDirty = true;
-    }
+    m_documentWorker->pageContents = QImage(width(), height(), QImage::Format_RGB16);
+    m_documentWorker->pageContents.fill(Qt::white);
 
     QPainter painter(&m_documentWorker->pageContents);
     if (!part.isEmpty()) {
@@ -525,7 +514,6 @@ void DrawingArea::redrawBackbuffer(QRectF part)
 
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.fillRect(m_documentWorker->pageContents.rect(), Qt::white);
     drawBackground(&painter, part);
 
     int start = 0;
@@ -681,6 +669,10 @@ QRectF DrawingArea::lineBoundingRect(const QPointF &point1, const QPointF &point
 
 QRectF DrawingArea::drawLine(QPainter *painter, const Line::Brush brush, const Line::Color color, const QPointF &point, const QPointF &prevPoint, qreal pressure)
 {
+    if (pressure > 1) {
+        pressure = 1;
+    }
+
     const QLineF line(point, prevPoint);
 
     QPen pen;
