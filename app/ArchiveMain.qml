@@ -148,7 +148,7 @@ Item {
                 Image {
                     id: bookSelectedIcon
                     anchors.centerIn: bookSelectionOverlay
-                    width: mainScreen.bigIconSize
+                    width: parent.width - 20
                     height: width
                     asynchronous: true
 
