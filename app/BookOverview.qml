@@ -12,7 +12,7 @@ Item {
             pageCount = 0
             pageRepeater.model = 0
         } else {
-            pageCount = Qt.binding(function() { return Math.ceil(document.pageCount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
+            pageCount = Qt.binding(function() { return Math.ceil(documentPagecount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
             currentPage = 0
             reloadModel()
         }
@@ -28,21 +28,21 @@ Item {
         }
     }
 
-    property int documentPageCount: document === null ? 0 : document.pageCount
+    property int documentPagecount: document === null ? 0 : document.pageCount
+    onDocumentPagecountChanged: reloadModel()
 
     function reloadModel() {
         if (!document) {
             return
         }
 
-        var visiblePages = Math.min(document.pageCount - currentPage * editActionsItem.maxDisplayItemCount, editActionsItem.maxDisplayItemCount)
+        var visiblePages = Math.min(documentPagecount - currentPage * editActionsItem.maxDisplayItemCount, editActionsItem.maxDisplayItemCount)
         if (visiblePages != pageRepeater.count) {
             pageRepeater.model = 0
             pageRepeater.model = visiblePages
         }
     }
 
-    onDocumentPageCountChanged: reloadModel()
 
     onCurrentPageChanged: {
         console.log("reloading")
@@ -66,7 +66,7 @@ Item {
             return
         }
 
-        if (selectedPages.length >= pageCount) {
+        if (selectedPages.length >= documentPagecount) {
             return
         }
 
@@ -85,7 +85,7 @@ Item {
 
     function deletePage(index) {
         console.log(index)
-        if (index < 0 || index > archiveBook.document.pageCount) {
+        if (index < 0 || index > archiveBook.documentPagecount) {
             return
         }
 
@@ -332,7 +332,7 @@ Item {
                 margins: 100
             }
 
-            source: visible ? archiveBook.document.getThumbnail(previewBackground.index) : ""//visible ? "file://" + archiveBook.document.path() + "-" + previewBackground.index + ".thumbnail.jpg" : ""
+            source: visible ?  "file://" + archiveBook.document.path + "." + previewBackground.index + ".cached.png" : ""
             sourceSize.width: width
             sourceSize.height: height
             asynchronous: true
@@ -344,7 +344,7 @@ Item {
                     rightMargin: 50
                 }
                 icon: "qrc:///icons/forward_white.svg"
-                visible: (archiveBook.document !== null) ? (previewBackground.index < archiveBook.document.pageCount - 1) : false
+                visible: (archiveBook.document !== null) ? (previewBackground.index < archiveBook.documentPagecount - 1) : false
                 onClicked: previewBackground.index++
             }
 
