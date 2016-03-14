@@ -115,10 +115,10 @@ void DocumentWorker::onPageChanged(int newPage)
         qDebug() << "Dirty page, storing";
         m_cachedContents.insert(m_currentPage, pageContents);
         m_pagesToStore.insert(m_currentPage, pageContents);
-        pageContents = QImage();
         pageDirty = false;
         m_waitCondition.wakeAll();
     }
+    pageContents = QImage();
     qDebug() << "Changing page";
 
     const int cacheMin = qMax(newPage - CACHE_COUNT, 0);
@@ -147,7 +147,6 @@ void DocumentWorker::onPageChanged(int newPage)
     if (m_cachedContents.contains(newPage)) {
         pageContents = m_cachedContents.value(newPage);
         qDebug() << "Cache contains page";// << pageContents.isNull();
-        emit updateNeeded();
     } else if (!hasLinesForPage(newPage)) {
         if (m_pdfRenderer) {
             if (m_cachedBackgrounds.contains(m_currentPage)) {
@@ -155,6 +154,7 @@ void DocumentWorker::onPageChanged(int newPage)
             }
         }
     }
+    emit updateNeeded();
 
     locker.unlock();
 
