@@ -671,16 +671,20 @@ void DocumentWorker::loadLines()
                 qWarning() << "Invalid point.x in" << lineFile.fileName() << bytes;
                 break;
             }
+
             point.y = parts[1].toDouble(&ok);
             if (!ok) {
                 qWarning() << "Invalid point.y in" << lineFile.fileName() << bytes;
                 break;
             }
-            point.pressure = parts[1].toDouble(&ok);
+
+            point.pressure = parts[2].toDouble(&ok);
             if (!ok) {
                 qWarning() << "Invalid point.pressure in" << lineFile.fileName() << bytes;
                 break;
             }
+            point.pressure = qBound(0, point.pressure, 1);
+
             line.points.append(point);
         }
     }
