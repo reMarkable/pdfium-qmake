@@ -116,7 +116,6 @@ Item {
         anchors {
             top: editActionsItem.bottom
             bottom: parent.bottom
-            topMargin: 25
             horizontalCenter: parent.horizontalCenter
         }
 
@@ -128,8 +127,8 @@ Item {
             
             delegate: Item {
                 id: bookItem
-                width: (editActionsItem.maxDisplayItemCount === 9 ) ? 320 : 150
-                height: (editActionsItem.maxDisplayItemCount === 9 ) ? 400 : 200
+                width: (editActionsItem.maxDisplayItemCount === 9 ) ? 320 : 175
+                height: width * 1.25
                 property int pageNumber: index + archiveBook.currentPage * editActionsItem.maxDisplayItemCount
                 property bool selected: (archiveBook.selectedPages.indexOf(pageNumber) !== -1)
 
@@ -150,10 +149,10 @@ Item {
                 Rectangle {
                     anchors {
                         fill: parent
-                        topMargin: 50
-                        bottomMargin: 20
-                        rightMargin: 30
-                        leftMargin: 30
+                        topMargin: 15
+                        bottomMargin: 15
+                        rightMargin: 15
+                        leftMargin: 15
                     }
                     
                     border.width: 1
@@ -238,6 +237,7 @@ Item {
                             bottom: parent.bottom
                             right: parent.right
                         }
+                        width: (editActionsItem.maxDisplayItemCount === 9 ) ? 75 : 45
                         icon: "qrc:///icons/xoom+_white.svg"
                         visible: !editActionsItem.selectionModeActive
 
@@ -254,9 +254,10 @@ Item {
                             bottom: parent.bottom
                             left: parent.left
                         }
+                        width: (editActionsItem.maxDisplayItemCount === 9 ) ? 75 : 45
+                        icon: "qrc:///icons/Delete_white.svg"
                         visible: !editActionsItem.selectionModeActive
                         
-                        icon: "qrc:///icons/Delete_white.svg"
                         onClicked: archiveBook.deletePage(pageNumber)
                     }
                 }
@@ -267,8 +268,9 @@ Item {
     ArchiveButton {
         anchors {
             right: parent.right
+            rightMargin: 50
             bottom: parent.bottom
-            margins: 50
+            bottomMargin: 25
         }
 
         visible: archiveBook.currentPage < archiveBook.pageCount - 1
@@ -280,8 +282,9 @@ Item {
     ArchiveButton {
         anchors {
             left: parent.left
+            leftMargin: 50
             bottom: parent.bottom
-            margins: 50
+            bottomMargin: 25
         }
         visible: archiveBook.currentPage > 0
         icon: "qrc:///icons/back_white.svg"
@@ -294,7 +297,7 @@ Item {
 
         anchors {
             bottom: parent.bottom
-            bottomMargin: 80
+            bottomMargin: 60
             right: parent.right
             rightMargin: 200
             left: parent.left
