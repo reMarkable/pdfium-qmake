@@ -89,7 +89,6 @@ void EPRenderer::drawRects()
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         Q_ASSERT(rect.get());
         if (rect->dirty) {
-            //painter.setClipRect(rect->transformedRect, );
             totalDamaged = totalDamaged.united(rect->transformedRect);
             damagedAreas.append(rect->transformedRect);
         }
@@ -99,7 +98,6 @@ void EPRenderer::drawRects()
     QVector<std::shared_ptr<EPNode::Content>> drawnItems;
 #endif
 
-    QRect painterClipRect = totalDamaged;
     // Rects are sorted in z-order
     for(std::shared_ptr<EPNode::Content> rect : currentRects) {
         if (rect->dirty) {
@@ -119,8 +117,6 @@ void EPRenderer::drawRects()
                 rect->draw(&painter);
 #endif
                 damagedAreas.append(rect->transformedRect);
-                painterClipRect = painterClipRect.united(rect->transformedRect);
-                painter.setClipRect(painterClipRect);
                 break;
             }
         }
