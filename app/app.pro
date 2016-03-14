@@ -48,6 +48,7 @@ OTHER_FILES += \
     ArchiveTab.qml \
     ColorButton.qml \
     Dialog.qml \
+    DocumentPositionBar.qml \
     main.qml \
     MainScreen.qml \
     MainScreenPreviews.qml \
