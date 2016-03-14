@@ -154,8 +154,8 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
 
     if (offset == 0) {
         count -= 2; // For the default documents
-        sortedPaths.append(collectionPath() + "Default notebook");
-        sortedPaths.append(collectionPath() + "Default sketchbook");
+        sortedPaths.append(defaultDocumentPath("Note"));
+        sortedPaths.append(defaultDocumentPath("Sketch"));
     } else {
         offset -= 2;
     }
