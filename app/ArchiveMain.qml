@@ -213,8 +213,8 @@ Item {
         }
 
         visible: archiveMain.currentPage < pageRowRepeater.count - 1
-        icon: "qrc:///icons/forward_white.svg"
-        color: "black"
+        icon: "qrc:///icons/forward.svg"
+        color: "white"
         onClicked: archiveMain.currentPage++
     }
     
@@ -225,8 +225,8 @@ Item {
             margins: 50
         }
         visible: archiveMain.currentPage > 0
-        icon: "qrc:///icons/back_white.svg"
-        color: "black"
+        icon: "qrc:///icons/back.svg"
+        color: "white"
         onClicked: archiveMain.currentPage--
     }
 
