@@ -13,6 +13,8 @@ Item {
     Item {
         anchors.fill: parent
 
+        visible: positionBar.pageCount >= 100
+
         Rectangle {
             anchors {
                 left: parent.left
@@ -24,8 +26,6 @@ Item {
             color: "#999"
             radius: 2
 
-            visible: positionBar.pageCount >= 100
-
             Rectangle {
                 anchors {
                     left: parent.left
@@ -36,10 +36,10 @@ Item {
                 color: "#333"
                 radius: 2
             }
-
         }
         MouseArea {
             anchors.fill: parent
+            enabled: parent.visible
             onClicked: {
                 positionBar.pageClicked(Math.floor(positionBar.pageCount * mouse.x / width))
             }
@@ -53,8 +53,6 @@ Item {
             bottom: parent.bottom
         }
         
-        spacing: 2
-        
         visible: positionBar.pageCount < 100 && positionBar.pageCount > 1
         
         Repeater {
@@ -67,7 +65,9 @@ Item {
                 Rectangle {
                     anchors {
                         right: parent.right
+                        rightMargin: 1
                         left: parent.left
+                        leftMargin: 1
                         bottom: parent.bottom
                     }
                     
