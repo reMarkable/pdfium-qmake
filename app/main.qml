@@ -197,6 +197,7 @@ Window {
 
                 onNewBookClicked: {
                     if (tabBar.objectList.length > 4) {
+                        tooManyTabsDialog.visible = true
                         return
                     }
 
