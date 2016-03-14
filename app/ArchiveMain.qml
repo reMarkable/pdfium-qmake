@@ -105,6 +105,8 @@ Item {
             delegate: BookThumbnail {
                 id: bookItem
 
+                property bool isDefault: (modelData.indexOf("Default ") !== -1)
+
                 width: (editActionsItem.maxDisplayItemCount === 9 ) ? 320 : 150
                 height: (editActionsItem.maxDisplayItemCount === 9 ) ? 400 : 200
 
@@ -112,6 +114,11 @@ Item {
 
                 onClicked: {
                     if (editActionsItem.selectionModeActive) {
+                        // Default books can't be deleted
+                        if (isDefault) {
+                            return;
+                        }
+
                         var selectedBooks = archiveMain.selectedBooks
                         if (bookItem.selected) {
                             selectedBooks.splice(selectedBooks.indexOf(modelData), 1)
@@ -132,7 +139,7 @@ Item {
                     }
 
                     color: "#7f000000"
-                    visible: editActionsItem.selectionModeActive && !bookItem.selected
+                    visible: !isDefault && editActionsItem.selectionModeActive && !bookItem.selected
                     width: parent.width - 20
                     height: parent.height - 20
 
@@ -147,7 +154,7 @@ Item {
 
                     sourceSize.width: width
                     sourceSize.height: width
-                    visible: editActionsItem.selectionModeActive
+                    visible: !isDefault && editActionsItem.selectionModeActive
                     source: bookItem.selected ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white-2.svg"
                 }
 
