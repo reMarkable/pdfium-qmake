@@ -269,7 +269,7 @@ Item {
                         }
                         width: (editActionsItem.maxDisplayItemCount === 9 ) ? 75 : 45
                         icon: "qrc:///icons/Delete_white.svg"
-                        visible: !editActionsItem.selectionModeActive
+                        visible: archiveBook.canDeletePages && !editActionsItem.selectionModeActive
                         
                         onClicked: archiveBook.deletePage(pageNumber)
                     }
