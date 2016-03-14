@@ -15,10 +15,11 @@ Item {
             pageCount = Qt.binding(function() { return Math.ceil(documentPagecount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
             currentPage = 0
             reloadModel()
+            canDeletePages = Qt.binding(function() { return ((document.path.indexOf(".pdf") === -1) && documentPagecount > 1); })
         }
     }
 
-    property bool canDeletePages: (document.path.indexOf(".pdf") === -1) && documentPagecount > 1
+    property bool canDeletePages: false
 
     property var selectedPages: []
 
