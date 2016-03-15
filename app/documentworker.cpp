@@ -256,7 +256,7 @@ void DocumentWorker::run()
             locker.unlock();
 
             qDebug() << "Rendering pdf page";
-            QImage image = m_pdfRenderer->renderPage(page, QSize(1200, 1600));
+            QImage image = m_pdfRenderer->renderPage(page, QSize(1200, 1525));
             qDebug() << "PDF page is null?:" << image.isNull();
             emit backgroundsLoaded(page, image);
             QString thumbnailPath = m_document->getThumbnailPath(page);
