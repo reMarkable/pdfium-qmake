@@ -15,11 +15,9 @@ Item {
             pageCount = Qt.binding(function() { return Math.ceil(documentPagecount / (thumbnailGrid.rows * thumbnailGrid.columns)); })
             currentPage = 0
             reloadModel()
-            canDeletePages = Qt.binding(function() { return ((document.path.indexOf(".pdf") === -1) && documentPagecount > 1); })
+            editActionsItem.canDeletePages = Qt.binding(function() { return ((document.path.indexOf(".pdf") === -1) && documentPagecount > 1); })
         }
     }
-
-    property bool canDeletePages: false
 
     property var selectedPages: []
 
@@ -108,7 +106,6 @@ Item {
             topMargin: 25
             rightMargin: 50
         }
-        visible: archiveBook.canDeletePages
         onSelectionModeActiveChanged: {
             selectedPages = []
         }
@@ -269,7 +266,7 @@ Item {
                         }
                         width: (editActionsItem.maxDisplayItemCount === 9 ) ? 75 : 45
                         icon: "qrc:///icons/Delete_white.svg"
-                        visible: archiveBook.canDeletePages && !editActionsItem.selectionModeActive
+                        visible: editActionsItem.canDeletePages && !editActionsItem.selectionModeActive
                         
                         onClicked: archiveBook.deletePage(pageNumber)
                     }

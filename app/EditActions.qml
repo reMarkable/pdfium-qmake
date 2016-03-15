@@ -6,6 +6,7 @@ Item {
     
     height: 75
 
+    property bool canDeletePages: false
     property bool selectionModeActive: false
     signal deleteItems()
     property int maxDisplayItemCount: 9
@@ -21,7 +22,17 @@ Item {
         height: 75
         color: "#666"
         radius: 5
-        
+
+        ArchiveButton {
+            anchors {
+                left: parent.left
+                verticalCenter: parent.verticalCenter
+            }
+            color: "#666"
+            icon: "qrc:///icons/Grid 36_white.svg"
+            onClicked: editActionsItem.maxDisplayItemCount = 36
+        }
+
         ArchiveButton {
             anchors {
                 right: parent.right
@@ -31,16 +42,6 @@ Item {
             icon: "qrc:///icons/Grid 9.svg"
 
             onClicked: editActionsItem.maxDisplayItemCount = 9
-        }
-        
-        ArchiveButton {
-            anchors {
-                left: parent.left
-                verticalCenter: parent.verticalCenter
-            }
-            color: "#666"
-            icon: "qrc:///icons/Grid 36_white.svg"
-            onClicked: editActionsItem.maxDisplayItemCount = 36
         }
     }
     
@@ -53,6 +54,7 @@ Item {
         }
         color: "#666"
         icon: editActionsRow.visible ? "qrc:///icons/yes.svg" : "qrc:///icons/yes_white.svg"
+        visible: editActionsItem.canDeletePages
         onClicked: {
             editActionsItem.selectionModeActive = !editActionsItem.selectionModeActive
         }
