@@ -58,7 +58,7 @@ Window {
 
                 } else if(homeRecentlyClicked) {
                     homeButtonTimer.stop()
-                    mainScreen.newNoteClicked()
+                    mainScreen.newPageClicked("Sketch")
                     homeRecentlyClicked = false
                 } else {
                     homeRecentlyClicked = true
