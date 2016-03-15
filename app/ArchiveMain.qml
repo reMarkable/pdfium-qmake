@@ -78,7 +78,7 @@ Item {
         property int pageItemCount: columns * rows
         
         function reloadDocuments() {
-            pageRowRepeater.reloadModel()
+            pageRow.reloadModel()
             documentRepeater.model = Collection.getDocumentPaths(mainArchiveGrid.pageItemCount, archiveMain.currentPage * mainArchiveGrid.pageItemCount)
         }
 
@@ -176,42 +176,27 @@ Item {
         }
     }
     
-    Row {
+
+    DocumentPositionBar {
         id: pageRow
+
         anchors {
             bottom: parent.bottom
-            bottomMargin: 80
-            horizontalCenter: parent.horizontalCenter
+            bottomMargin: 60
+            right: parent.right
+            rightMargin: 200
+            left: parent.left
+            leftMargin: 200
         }
-        
-        spacing: 20
-        visible: pageRowRepeater.count > 1
-        
-        Repeater {
-            id: pageRowRepeater
-            function reloadModel() {
-                model = Collection.documentCount() > editActionsItem.maxDisplayItemCount ? Math.ceil(Collection.documentCount() / editActionsItem.maxDisplayItemCount) : 0
-            }
-
-            onCountChanged: {
-                if (archiveMain.currentPage >= count) {
-                    archiveMain.currentPage = count
-                }
-            }
-
-            delegate: Rectangle {
-                width: 30
-                height: width
-                radius: 2
-                color: archiveMain.currentPage === index ? "black" : "gray"
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: archiveMain.currentPage = index
-                }
-            }
+        function reloadModel() {
+            pageCount = Collection.documentCount() > editActionsItem.maxDisplayItemCount ? Math.ceil(Collection.documentCount() / editActionsItem.maxDisplayItemCount) : 0
+        }
+        currentPage: archiveMain.currentPage
+        onPageClicked:{
+            archiveMain.currentPage = page
         }
     }
+
 
     ArchiveButton {
         anchors {
@@ -220,7 +205,7 @@ Item {
             margins: 50
         }
 
-        visible: archiveMain.currentPage < pageRowRepeater.count - 1
+        visible: archiveMain.currentPage < pageRow.pageCount - 1
         icon: "qrc:///icons/forward.svg"
         color: "white"
         onClicked: archiveMain.currentPage++

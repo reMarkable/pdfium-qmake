@@ -6,7 +6,7 @@ Item {
     
     height: 75
 
-    property bool canDeletePages: false
+    property bool canDeletePages: true
     property bool selectionModeActive: false
     signal deleteItems()
     property int maxDisplayItemCount: 9
