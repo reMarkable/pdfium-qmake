@@ -117,13 +117,14 @@ Rectangle {
         Text {
             anchors {
                 left: archiveHeaderIcon.right
+                leftMargin: 20
                 right: parent.right
                 verticalCenter: parent.verticalCenter
             }
             font.bold: true
             font.pixelSize: 25
             color: "white"
-            text: "Main archive"
+            text: "Archive"
         }
 
         MouseArea {
