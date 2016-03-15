@@ -107,7 +107,7 @@ QString Collection::createDocument(const QString &defaultTemplate)
 
     QString path;
     for (int i=0; i<1000; i++) {
-        path = collectionPath() + "/Local/" + defaultTemplate + ' ' + QString::number(i);
+        path = collectionPath() + "/Local/" + defaultTemplate + ' ' + QString::number(i) + '/';
         if (!QFile::exists(path)) {
             break;
         }
