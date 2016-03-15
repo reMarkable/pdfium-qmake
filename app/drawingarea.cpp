@@ -112,24 +112,26 @@ void DrawingArea::undo()
 
     m_hasEdited = true;
 
-    QPolygonF lastLine;
-    foreach(const PenPoint &penPoint, m_undoneLines.last().points) {
-        QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
-                   (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
-        lastLine.append(point);
-    }
-
-    QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
-    redrawBackbuffer(updateRect);
-
+    if (m_undoneLines.last().brush == Line::InvalidBrush) {
+        redrawBackbuffer();
+        update();
+    } else {
+        QPolygonF lastLine;
+        foreach(const PenPoint &penPoint, m_undoneLines.last().points) {
+            QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
+                          (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
+            lastLine.append(point);
+        }
+        QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
+        redrawBackbuffer(updateRect);
 #ifdef Q_PROCESSOR_ARM
-    QPainter painter(EPFrameBuffer::instance()->framebuffer());
-    painter.setClipRect(updateRect);
-    painter.setTransform(m_lastTransform);
-    painter.drawImage(0, 0, m_documentWorker->pageContents);
-//    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
-    sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
+        QPainter painter(EPFrameBuffer::instance()->framebuffer());
+        painter.setClipRect(updateRect);
+        painter.setTransform(m_lastTransform);
+        painter.drawImage(0, 0, m_documentWorker->pageContents);
+        sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
 #endif
+    }
 }
 
 void DrawingArea::redo()
@@ -142,24 +144,28 @@ void DrawingArea::redo()
 
     m_hasEdited = true;
 
-    QPolygonF lastLine;
-    foreach(const PenPoint &penPoint, m_documentWorker->lines().last().points) {
-        QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
-                   (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
-        lastLine.append(point);
-    }
+    if (m_documentWorker->lines().last().brush == Line::InvalidBrush) {
+        redrawBackbuffer();
+        update();
+    } else {
+        QPolygonF lastLine;
+        foreach(const PenPoint &penPoint, m_documentWorker->lines().last().points) {
+            QPointF point((penPoint.x - m_zoomRect.x()) / m_zoomRect.width(),
+                          (penPoint.y - m_zoomRect.y()) / m_zoomRect.height());
+            lastLine.append(point);
+        }
 
-    QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
-    redrawBackbuffer(updateRect);
+        QRectF updateRect = lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16));
+        redrawBackbuffer(updateRect);
 
 #ifdef Q_PROCESSOR_ARM
-    QPainter painter(EPFrameBuffer::instance()->framebuffer());
-    painter.setClipRect(lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16)));
-    painter.setTransform(m_lastTransform);
-    painter.drawImage(0, 0, m_documentWorker->pageContents);
-//    sendUpdate(QRectF(0, 0, 1600, 1200), EPFrameBuffer::Grayscale);
-    sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
+        QPainter painter(EPFrameBuffer::instance()->framebuffer());
+        painter.setClipRect(lastLine.boundingRect().marginsAdded(QMarginsF(12, 16, 12, 16)));
+        painter.setTransform(m_lastTransform);
+        painter.drawImage(0, 0, m_documentWorker->pageContents);
+        sendUpdate(lastLine.boundingRect(), EPFrameBuffer::Grayscale);
 #endif
+    }
 }
 
 void DrawingArea::setZoom(double x, double y, double width, double height)
