@@ -62,7 +62,12 @@ Rectangle {
         event.accepted = true
     }
 
-    Keys.forwardTo: rootItem
+    Keys.onPressed: {
+        if (event.key === Qt.Key_Home && thumbnailGrid.visible) {
+            thumbnailGrid.visible = false
+            event.accepted = true
+        }
+    }
 
     DrawingArea {
         id: drawingArea
