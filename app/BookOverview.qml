@@ -284,8 +284,8 @@ Item {
         }
 
         visible: archiveBook.currentPage < archiveBook.pageCount - 1
-        icon: "qrc:///icons/forward_white.svg"
-        color: "#666"
+        icon: "qrc:///icons/forward.svg"
+        color: "white"
         onClicked: archiveBook.currentPage++
     }
 
@@ -297,8 +297,8 @@ Item {
             bottomMargin: 25
         }
         visible: archiveBook.currentPage > 0
-        icon: "qrc:///icons/back_white.svg"
-        color: "#666"
+        icon: "qrc:///icons/back.svg"
+        color: "white"
         onClicked: archiveBook.currentPage--
     }
 
