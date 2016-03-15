@@ -45,7 +45,7 @@ Item  {
                     anchors.top: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     font.pointSize: 18
-                    text: "New note"
+                    text: "Quick note"
                 }
 
                 MouseArea {
@@ -65,7 +65,7 @@ Item  {
             Text {
                 anchors.top: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "New sketch"
+                text: "Quick sketch"
                 font.pointSize: 18
             }
 
