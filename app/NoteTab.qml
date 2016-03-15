@@ -206,7 +206,7 @@ Rectangle {
             document: noteTab.document
             anchors {
                 fill: parent
-                topMargin: 75
+                topMargin: 50
             }
             onPageClicked:{
                 thumbnailGrid.visible = false

@@ -119,6 +119,7 @@ Item {
         id: thumbnailGrid
         anchors {
             top: editActionsItem.bottom
+            topMargin: 25
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
         }
