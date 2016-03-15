@@ -190,6 +190,18 @@ Rectangle {
             onClicked: thumbnailGrid.visible = false
         }
 
+        ArchiveButton {
+            anchors {
+                top: parent.top
+                topMargin: 75
+                left: parent.left
+                leftMargin: 50
+            }
+            icon: "qrc:///icons/no.svg"
+            color: "white"
+            onClicked: thumbnailGrid.visible = false
+        }
+
         BookOverview {
             document: noteTab.document
             anchors {
