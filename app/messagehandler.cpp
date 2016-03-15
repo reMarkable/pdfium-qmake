@@ -53,28 +53,33 @@ void MessageHandler::messageHandler(QtMsgType type, const QMessageLogContext &co
         return;
     }
 
-    { // Print to stdout
-        QString outputText;
+    // Print to stdout
+    {
+        std::cout << QTime::currentTime().toString("mm:ss.zzz").toStdString() << " "
+                  << typeColor.toStdString();
+
+        // std::cout/std::string doesn't handle nullptrs well
+        std::string fileName;
+        if (context.file) {
+            fileName = context.file;
+        }
         QString functionName(context.function);
 
-        QString className;
         // If it is a class,
         int classIndex = functionName.indexOf("::");
         if (classIndex != -1) {
-            className = functionName.left(classIndex).split(' ').last().leftJustified(20);
+            QString className = functionName.left(classIndex).split(' ').last().leftJustified(20);
             functionName = functionName.mid(classIndex + 2);
-            std::cout << QTime::currentTime().toString("mm:ss.zzz").toStdString() << " "
-                      << typeColor.toStdString()
-                      << className.leftJustified(20).toStdString()
-                      << msg.toStdString() << " "
-                      << context.file << ":" << context.line << " "
-                      << "(" << functionName.toStdString() << ")"
-                      << "\033[0m"
-                      << std::endl;
+            std::cout << className.leftJustified(20).toStdString();
         } else {
-            outputText = QTime::currentTime().toString("mm:ss.zzz") + QStringLiteral(" %1%2\033[01;37m:\t%3 \033[00;37m (%4:%5, %6)\033[0m").arg(typeColor).arg(typeText).arg(msg).arg(context.file).arg(context.line).arg(context.function);
-            std::cout << outputText.toStdString() << std::endl;
+            std::cout << QStringLiteral("").leftJustified(20).toStdString();
         }
+
+        std::cout << msg.toStdString() << " "
+                  << fileName << context.line << " "
+                  << "(" << functionName.toStdString() << ")"
+                  << "\033[0m"
+                  << std::endl;
     }
 }
 
