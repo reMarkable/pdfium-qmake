@@ -28,8 +28,8 @@ Item {
                 left: parent.left
                 verticalCenter: parent.verticalCenter
             }
-            color: "#666"
-            icon: "qrc:///icons/Grid 36_white.svg"
+            color: editActionsItem.maxDisplayItemCount === 36 ? "white" : "#666"
+            icon: "qrc:///icons/Grid 36.svg"
             onClicked: editActionsItem.maxDisplayItemCount = 36
         }
 
@@ -38,7 +38,7 @@ Item {
                 right: parent.right
                 verticalCenter: parent.verticalCenter
             }
-            color: "#666"
+            color: editActionsItem.maxDisplayItemCount === 9 ? "white" : "#666"
             icon: "qrc:///icons/Grid 9.svg"
 
             onClicked: editActionsItem.maxDisplayItemCount = 9
