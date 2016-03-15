@@ -18,14 +18,16 @@ Item {
             right: parent.right
         }
         
-        width: 150
-        height: 75
+        width: 152
+        height: 77
         color: "#666"
         radius: 5
+        border.width: 1
 
         ArchiveButton {
             anchors {
                 left: parent.left
+                leftMargin: 1
                 verticalCenter: parent.verticalCenter
             }
             color: editActionsItem.maxDisplayItemCount === 36 ? "white" : "#666"
@@ -36,6 +38,7 @@ Item {
         ArchiveButton {
             anchors {
                 right: parent.right
+                rightMargin: 1
                 verticalCenter: parent.verticalCenter
             }
             color: editActionsItem.maxDisplayItemCount === 9 ? "white" : "#666"
