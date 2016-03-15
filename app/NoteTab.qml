@@ -165,6 +165,7 @@ Rectangle {
         pageCount: noteTab.document.pageCount
         currentPage: noteTab.document.currentPage
         onPageClicked: noteTab.document.currentPage = page
+        visible: !thumbnailGrid.visible
     }
 
     Rectangle {
