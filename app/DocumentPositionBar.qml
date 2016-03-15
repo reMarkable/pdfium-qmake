@@ -21,19 +21,21 @@ Item {
                 right: parent.right
                 bottom: parent.bottom
             }
-            height: 7
+            height: 10
 
-            color: "#999"
+            border.width: 1
+            color: "white"
             radius: 2
 
             Rectangle {
                 anchors {
                     left: parent.left
-                    top: parent.top
-                    bottom: parent.bottom
+                    leftMargin: 1
+                    verticalCenter: parent.verticalCenter
                 }
+                height: parent.height - 2
                 width: positionBar.pageCount > 0 ? parent.width * (positionBar.currentPage / positionBar.pageCount) : 0
-                color: "#333"
+                color: "#aaa"
                 radius: 2
             }
         }
@@ -70,9 +72,10 @@ Item {
                         leftMargin: 1
                         bottom: parent.bottom
                     }
+                    border.width: 1
                     
-                    height: positionBar.currentPage === index ? 14 : 7
-                    color: positionBar.currentPage < index ? "#999" : "#333"
+                    height: 14
+                    color: positionBar.currentPage < index ? "white" : "#aaa"
                     radius: 2
                 }
                 MouseArea {
