@@ -46,7 +46,7 @@ Rectangle {
             leftMargin: 30
         }
 
-        width: 250
+        width: 450
         height: 75
         color: "#666"
         radius: 5
@@ -80,6 +80,18 @@ Rectangle {
             font.pixelSize: 25
             color: "white"
             text: archiveBook.document === null ? "" : archiveBook.document.title
+        }
+
+        ArchiveButton {
+            id: showBookButton
+            anchors {
+                verticalCenter: parent.verticalCenter
+                right: parent.right
+            }
+            color: "transparent"
+            width: 75
+            icon: "qrc:///icons/Open-book_white.svg"
+            onClicked: archiveView.openBook(archiveView.currentBook)
         }
     }
 
