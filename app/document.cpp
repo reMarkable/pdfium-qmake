@@ -1,6 +1,7 @@
 #include "document.h"
 #include "collection.h"
 #include "settings.h"
+#include "documentworker.h"
 #include <QImage>
 #include <QFileInfo>
 #include <QMutexLocker>
@@ -15,7 +16,9 @@ Document::Document(QString path, QObject *parent)
     : QObject(parent),
       m_currentPage(0),
       m_pageCount(1),
-      m_openCount(0)
+      m_openCount(0),
+      m_worker(nullptr),
+      m_workerReferences(0)
 {
     DEBUG_BLOCK;
 
@@ -116,6 +119,36 @@ bool Document::createDocument(QString defaultTemplate, QString path)
     }
 
     return true;
+}
+
+DocumentWorker *Document::acquireWorker()
+{
+    m_workerReferences++;
+
+    if (!m_worker) {
+        m_worker = new DocumentWorker(this);
+    }
+
+    return m_worker;
+}
+
+void Document::releaseWorker()
+{
+    m_workerReferences--;
+    if (m_workerReferences < 0) {
+        qWarning() << "Unbalanced calls to acquireWorker/releaseWorker, refs:" << m_workerReferences;
+        m_workerReferences = 0;
+    }
+
+    if (!m_worker) {
+        qWarning() << "Tried to release dead worker";
+        return;
+    }
+
+    if (m_workerReferences == 0) {
+        m_worker->stop();
+        m_worker = nullptr;
+    }
 }
 
 void Document::setCurrentPage(int newPage)

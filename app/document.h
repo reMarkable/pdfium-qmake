@@ -5,6 +5,7 @@
 #include <QVector>
 
 class PdfRenderer;
+class DocumentWorker;
 
 class Document : public QObject
 {
@@ -26,7 +27,12 @@ public:
     // Creates a new document
     static bool createDocument(QString defaultTemplate, QString path);
 
+
 public slots:
+    // Used for generating thumbnails, or loading/storing data
+    DocumentWorker *acquireWorker();
+    void releaseWorker();
+
     void setCurrentPage(int newPage);
 
     int pageCount() { return m_pageCount; }
@@ -79,6 +85,8 @@ private:
     int m_pageCount;
     int m_openCount;
     QVector<QString> m_templates;
+    DocumentWorker *m_worker;
+    int m_workerReferences;
 };
 
 #endif // DOCUMENT_H

@@ -13,15 +13,22 @@ Rectangle {
     property string currentBook: ""
     onCurrentBookChanged: {
         if (currentBook === "") {
+            if (archiveBook.document) {
+                archiveBook.document.releaseWorker()
+            }
+
             archiveBook.document = null
-            Collection.archiveBookClosed()
         } else {
-            Collection.archiveBookOpened(currentBook)
             archiveBook.document = Collection.getDocument(archiveView.currentBook)
+            archiveBook.document.acquireWorker()
         }
     }
 
-    Component.onDestruction: Collection.archiveBookClosed()
+    Component.onDestruction:{
+        if (archiveBook.document) {
+            archiveBook.document.releaseWorker()
+        }
+    }
 
     Rectangle {
         anchors {

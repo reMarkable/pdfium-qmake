@@ -26,6 +26,8 @@ Q_IMPORT_PLUGIN(QsgEpaperPlugin)
 static int s_crashRecursingCounter = 0;
 static char *s_programPath = nullptr;
 
+class DocumentWorker;
+
 static void s_crashHandler(int sig)
 {
     //Q_UNUSED(sig);
@@ -126,6 +128,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    qmlRegisterType<DocumentWorker>();
     qmlRegisterType<DrawingArea>("com.magmacompany", 1, 0, "DrawingArea");
     qmlRegisterSingletonType<SystemMonitor>("com.magmacompany", 1, 0, "SystemMonitor", [](QQmlEngine *, QJSEngine*) -> QObject* {
         return new SystemMonitor;

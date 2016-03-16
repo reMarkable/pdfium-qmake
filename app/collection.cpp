@@ -246,24 +246,6 @@ QString Collection::defaultDocumentPath(const QString &type) const
     }
 }
 
-void Collection::archiveBookOpened(const QString path)
-{
-    if (!m_documents.contains(path)) {
-        qWarning() << "Invalid book opened in archive";
-    }
-    if (m_archiveBookWorker)  {
-        m_archiveBookWorker->stop();
-    }
-    m_archiveBookWorker = new DocumentWorker(m_documents.value(path));
-}
-
-void Collection::archiveBookClosed()
-{
-    if (m_archiveBookWorker)  {
-        m_archiveBookWorker->stop();
-    }
-}
-
 void Collection::loadDocument(const QString path)
 {
     if (!QFile::exists(path)) {

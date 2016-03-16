@@ -31,7 +31,8 @@ DrawingArea::DrawingArea() :
     m_documentWorker(nullptr),
     m_predict(true),
     m_smoothFactor(314),
-    m_doublePredict(false)
+    m_doublePredict(false),
+    m_document(nullptr)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
 
@@ -42,8 +43,8 @@ DrawingArea::DrawingArea() :
 DrawingArea::~DrawingArea()
 {
     qWarning() << "Drawing area dying";
-    if (m_documentWorker) {
-        m_documentWorker->stop();
+    if (m_document) {
+        m_document->releaseWorker();
     }
 }
 
@@ -178,18 +179,23 @@ void DrawingArea::setZoom(double x, double y, double width, double height)
 
 void DrawingArea::setDocument(Document *document)
 {
+    if (document == m_document) {
+        qWarning() << "Tried to set the same document!";
+        return;
+    }
+    if (m_document) {
+        m_document->releaseWorker();
+    }
+
     m_document = document;
     if (!document) {
+        qWarning() << "Set null document";
         return;
     }
 
     document->addOpenCount();
 
-    if (m_documentWorker) {
-        m_documentWorker->stop();
-    }
-
-    m_documentWorker = new DocumentWorker(document);
+    m_documentWorker = document->acquireWorker();
     m_documentWorker->preload();
 
     m_undoneLines.clear();

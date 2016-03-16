@@ -44,8 +44,6 @@ class DocumentWorker : public QThread
 {
     Q_OBJECT
 public:
-    DocumentWorker(Document *document);
-
     void suspend();
     void wake();
 
@@ -65,8 +63,6 @@ public:
     bool pageDirty;
 
     void storeThumbnail();
-
-    void stop();
 
 signals:
     void backgroundsLoaded(int page, QImage contents);
@@ -91,6 +87,11 @@ private slots:
     void onTemplateChanged();
 
 private:
+    // We should only be created and stopped from Document
+    friend class Document;
+    DocumentWorker(Document *document);
+    void stop();
+
     ~DocumentWorker();
 
     void loadLines();

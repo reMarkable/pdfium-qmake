@@ -66,6 +66,7 @@ DocumentWorker::~DocumentWorker()
     if (m_pdfRenderer) {
         m_pdfRenderer->deleteLater();
     }
+    qDebug() << "Document worker destroyed";
 }
 
 void DocumentWorker::suspend()
