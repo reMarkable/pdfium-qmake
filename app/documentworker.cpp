@@ -116,6 +116,7 @@ void DocumentWorker::onPageChanged(int newPage)
         qDebug() << "Dirty page, storing";
         m_cachedContents.insert(m_currentPage, pageContents);
         m_pagesToStore.insert(m_currentPage, pageContents);
+        m_thumbnailsToCreate.insert(m_currentPage, pageContents);
         pageDirty = false;
         m_waitCondition.wakeAll();
     }
@@ -301,7 +302,6 @@ void DocumentWorker::run()
                 locker.unlock();
                 image.save(path);
                 locker.relock();
-                m_thumbnailsToCreate.insert(page, image);
             }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
             qDebug() << "Creating thumbnailo";
@@ -540,12 +540,6 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
     }
 
     QMutexLocker locker(&m_lock);
-    // If we have drawn on the current page, we need to store it
-    if (pageDirty) {
-        m_pagesToStore.insert(m_currentPage, pageContents);
-        m_waitCondition.wakeAll();
-        pageDirty = false;
-    }
 
     // So we avoid having to move everything around
     m_cachedBackgrounds.clear();
@@ -553,7 +547,7 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
     clearLoadQueue();
 
     QMap<int, int> oldPages;
-    for (int i=0; i<m_document->pageCount(); i++) {
+    for (int i=0; i<m_lines.count(); i++) {
         oldPages[i] = i;
     }
     qDebug() << m_lines.count() << oldPages.count();
@@ -571,11 +565,20 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
         QString oldPath(m_document->getThumbnailPath(oldPages[oldPage]));
         QString newPath(m_document->getThumbnailPath(pagesTaken));
         QFile::rename(oldPath, newPath);
+        emit thumbnailUpdated(pagesTaken);
 
-        // Move cached page content
-        oldPath = m_document->getStoredPagePath(oldPages[oldPage]);
-        newPath = m_document->getStoredPagePath(pagesTaken);
-        QFile::rename(oldPath, newPath);
+        // If we have drawn on the current page, we need to store it
+        if (pageDirty && oldPage == m_currentPage) {
+            m_pagesToStore.insert(pagesTaken, pageContents);
+            m_waitCondition.wakeAll();
+            pageContents = QImage();
+            pageDirty = false;
+        } else {
+            // Move cached page content
+            oldPath = m_document->getStoredPagePath(oldPages[oldPage]);
+            newPath = m_document->getStoredPagePath(pagesTaken);
+            QFile::rename(oldPath, newPath);
+        }
 
         newLines.append(m_lines.value(oldPage));
 
@@ -583,7 +586,14 @@ void DocumentWorker::deletePages(QList<int> pagesToRemove)
     }
 
     m_lines = newLines;
+
+    m_currentPage = m_document->currentPage();
+    m_currentTemplate = m_document->currentTemplate();
+
     qDebug() << "Removed pages";
+
+    locker.unlock();
+    preload();
 }
 
 void DocumentWorker::onMissingThumbnailRequested(int page)
