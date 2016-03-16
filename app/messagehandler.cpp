@@ -76,7 +76,7 @@ void MessageHandler::messageHandler(QtMsgType type, const QMessageLogContext &co
         }
 
         std::cout << msg.toStdString() << " "
-                  << fileName << context.line << " "
+                  << fileName << ":" << context.line << " "
                   << "(" << functionName.toStdString() << ")"
                   << "\033[0m"
                   << std::endl;
