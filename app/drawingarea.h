@@ -83,7 +83,6 @@ private:
     bool m_doublePredict;
     QTransform m_lastTransform;
     Document *m_document;
-    QElapsedTimer m_drawTimer;
 };
 
 #endif // DRAWINGAREA_H

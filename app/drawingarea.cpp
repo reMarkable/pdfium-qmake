@@ -36,7 +36,7 @@ DrawingArea::DrawingArea() :
     setAcceptedMouseButtons(Qt::LeftButton);
 
     timingDebug.setEnabled(QtDebugMsg, false);
-    m_drawTimer.start();
+    qDebug() << "Drawing area created";
 }
 
 DrawingArea::~DrawingArea()
@@ -49,12 +49,6 @@ DrawingArea::~DrawingArea()
 
 void DrawingArea::paint(QPainter *painter)
 {
-    qDebug() << "Painting";
-    if (m_drawTimer.isValid()) {
-        qDebug() << "Time from creation to drawing:" << m_drawTimer.elapsed();
-        m_drawTimer.invalidate();
-    }
-
     // Needed for being able to getting the proper coordinates when undoing/redoing.
     m_lastTransform = painter->transform();
 
@@ -69,7 +63,7 @@ void DrawingArea::paint(QPainter *painter)
     } else {
         qWarning() << "No worker set when paint() called!";
     }
-    qDebug() << "Still loading";
+    qDebug() << "Still loading, showing loading screen";
 
     // Nothing appropriate loaded yet.
     painter->setPen(Qt::black);
