@@ -222,13 +222,13 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         return;
     }
 
+#ifdef Q_PROCESSOR_ARM
     {
         QElapsedTimer suspensionTimer;
         suspensionTimer.start();
         m_documentWorker->suspend();
         qDebug() << "Worker suspended in" << suspensionTimer.elapsed() << "ms";
     }
-#ifdef Q_PROCESSOR_ARM
 
     Digitizer *digitizer = Digitizer::instance();
 
