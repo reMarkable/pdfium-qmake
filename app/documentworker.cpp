@@ -299,9 +299,9 @@ void DocumentWorker::run()
                 }
 
                 locker.unlock();
-
                 image.save(path);
                 locker.relock();
+                m_thumbnailsToCreate.insert(page, image);
             }
         } else if (!m_thumbnailsToCreate.isEmpty()) {
             qDebug() << "Creating thumbnailo";
@@ -618,7 +618,7 @@ void DocumentWorker::onTemplateChanged()
     }
     QString newTemplate = m_document->currentTemplate();
     if (newTemplate == m_currentTemplate) {
-        qDebug() << "Not a new template";
+        qDebug() << "Template" << newTemplate << "is same as current:" << m_currentTemplate;
         return;
     }
     qDebug() << newTemplate << m_currentTemplate;
