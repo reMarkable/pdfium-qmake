@@ -102,7 +102,7 @@ QImage DocumentWorker::background()
 
 void DocumentWorker::onPageChanged(int newPage)
 {
-    qDebug() << "Page changed" << newPage << m_currentPage;
+    qDebug() << "Page changed from" << m_currentPage << "to" << newPage;
 
     if (newPage == m_currentPage) {
         return;
@@ -693,7 +693,7 @@ void DocumentWorker::loadLines()
     m_lines = pages;
     m_lock.unlock();
 
-    qDebug() << "lines loaded in" << timer.elapsed() << "ms";
+    qDebug() << "Lines from" << lineFile.fileName() << " loaded in" << timer.elapsed() << "ms";
 }
 
 void DocumentWorker::storeLines()

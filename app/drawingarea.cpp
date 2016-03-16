@@ -69,7 +69,7 @@ void DrawingArea::paint(QPainter *painter)
     } else {
         qWarning() << "No worker set when paint() called!";
     }
-    qDebug() << "couldn't get either page contents or background";
+    qDebug() << "Still loading";
 
     // Nothing appropriate loaded yet.
     painter->setPen(Qt::black);
