@@ -208,6 +208,26 @@ void DocumentWorker::stop()
 
 void DocumentWorker::run()
 {
+    { // Try to load cached initial page, so we don't have to wait for loading the lines
+        QElapsedTimer timer;
+        timer.start();
+        QMutexLocker locker(&m_lock);
+        int page = m_currentPage;
+        QString pagePath = m_document->getStoredPagePath(page);
+        locker.unlock();
+
+        QImage pageImage(pagePath);
+
+        if (!pageImage.isNull()) {
+            locker.relock();
+            m_cachedContents[page] = pageImage;
+            pageContents = pageImage;
+            m_pagesToLoad.remove(page);
+            qDebug() << "Initial page loaded in" << timer.elapsed() << "ms";
+            emit updateNeeded();
+        }
+    }
+
     loadLines();
 
     if (m_pdfRenderer) {
