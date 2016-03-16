@@ -381,6 +381,7 @@ void DocumentWorker::run()
 
 void DocumentWorker::onPageLoaded(int page, QImage contents)
 {
+    qDebug() << "Page" << page << "loaded";
     if (page == m_currentPage) {
         if (pageDirty || m_cachedContents.contains(page)) {
             qWarning() << "Loaded page, after page dirty";
@@ -394,12 +395,12 @@ void DocumentWorker::onPageLoaded(int page, QImage contents)
         } else {
             emit updateNeeded();
         }
-        return;
     }
 
     if (contents.isNull()) {
         m_cachedContents.remove(page);
     } else {
+        qDebug() << "Storing page" << page << "into cache";
         m_cachedContents[page] = contents;
     }
 }
