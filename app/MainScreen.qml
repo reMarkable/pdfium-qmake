@@ -50,7 +50,7 @@ Item  {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: mainScreen.newPageClicked("Lined")
+                    onClicked: mainScreen.newPageClicked("Notebook")
                 }
             }
         }
@@ -71,7 +71,7 @@ Item  {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: mainScreen.newPageClicked("Sketch")
+                onClicked: mainScreen.newPageClicked("Sketchbook")
             }
         }
 
@@ -109,7 +109,7 @@ Item  {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: mainScreen.newBookClicked("Lined")
+                    onClicked: mainScreen.newBookClicked("Notebook")
                 }
             }
         }
@@ -148,7 +148,7 @@ Item  {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: mainScreen.newBookClicked("Sketch")
+                    onClicked: mainScreen.newBookClicked("Sketchbook")
                 }
             }
         }

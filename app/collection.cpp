@@ -58,17 +58,17 @@ Collection::Collection(QObject *parent) : QObject(parent)
         m_sortedPaths.append(documentPath);
     }
 
-    QString defaultPath = defaultDocumentPath("Sketch");
+    QString defaultPath = defaultDocumentPath("Sketchbook");
     if (!QFile::exists(defaultPath)) {
-        if (!Document::createDocument("Sketch", defaultPath)) {
+        if (!Document::createDocument("Sketchbook", defaultPath)) {
             qWarning() << "Unable to create default sketch document";
         }
     }
     loadDocument(defaultPath);
 
-    defaultPath = defaultDocumentPath("Lined");
+    defaultPath = defaultDocumentPath("Notebook");
     if (!QFile::exists(defaultPath)) {
-        if (!Document::createDocument("Lined", defaultPath)) {
+        if (!Document::createDocument("Notebook", defaultPath)) {
             qWarning() << "Unable to create default note document";
         }
     }
@@ -101,13 +101,13 @@ QObject *Collection::getDocument(const QString &path)
     return m_documents.value(path).data();
 }
 
-QString Collection::createDocument(const QString &defaultTemplate)
+QString Collection::createDocument(const QString &documentType)
 {
     DEBUG_BLOCK;
 
     QString path;
     for (int i=0; i<1000; i++) {
-        path = collectionPath() + "/Local/" + defaultTemplate + ' ' + QString::number(i) + '/';
+        path = collectionPath() + "/Local/" + documentType + ' ' + QString::number(i) + '/';
         if (!QFile::exists(path)) {
             break;
         }
@@ -118,7 +118,7 @@ QString Collection::createDocument(const QString &defaultTemplate)
         return QString();
     }
 
-    if (!Document::createDocument(defaultTemplate, path)) {
+    if (!Document::createDocument(documentType, path)) {
         qWarning() << "Unable to create document";
         return QString();
     }
@@ -138,8 +138,8 @@ QStringList Collection::getDocumentPaths(int count, int offset) const
     QStringList paths;
     if (offset == 0) {
         count -= 2; // For the default documents
-        paths.append(defaultDocumentPath("Sketch"));
-        paths.append(defaultDocumentPath("Lined"));
+        paths.append(defaultDocumentPath("Sketchbook"));
+        paths.append(defaultDocumentPath("Notebook"));
     } else {
         offset -= 2;
     }
@@ -158,8 +158,8 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
 
     if (offset == 0) {
         count -= 2; // For the default documents
-        sortedPaths.append(defaultDocumentPath("Note"));
-        sortedPaths.append(defaultDocumentPath("Sketch"));
+        sortedPaths.append(defaultDocumentPath("Sketchbook"));
+        sortedPaths.append(defaultDocumentPath("Notebook"));
     } else {
         offset -= 2;
     }
@@ -170,7 +170,7 @@ QStringList Collection::getFrequentlyOpenedPaths(int count, int offset) const
 
     QList<QPointer<Document>> documents;
     for (const QString &path : m_documents.keys()) {
-        if (path == defaultDocumentPath("Sketch") || path == defaultDocumentPath("Lined")) {
+        if (path == defaultDocumentPath("Sketchbook") || path == defaultDocumentPath("Notebook")) {
             continue;
         }
         documents.append(m_documents.value(path));
@@ -239,7 +239,7 @@ void Collection::deleteDocument(const QString documentPath)
 
 QString Collection::defaultDocumentPath(const QString &type) const
 {
-    if (type == "Sketch") {
+    if (type == "Sketchbook") {
         return collectionPath() + "Default sketchbook/";
     } else {
         return collectionPath() + "Default notebook/";

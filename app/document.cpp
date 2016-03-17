@@ -63,7 +63,7 @@ Document::Document(QString path, QObject *parent)
     }
 
     if (defaultTemplate.isEmpty()) {
-        defaultTemplate = "Sketch";
+        defaultTemplate = "Blank";
     }
 
     if (m_templates.count() < pageCount()) {
@@ -83,10 +83,10 @@ void Document::addOpenCount()
     m_openCount++;
 }
 
-bool Document::createDocument(QString defaultTemplate, QString path)
+bool Document::createDocument(QString documentType, QString path)
 {
-    if (defaultTemplate.isEmpty()) {
-        defaultTemplate = "Sketch";
+    if (documentType.isEmpty()) {
+        documentType = "Sketchbook";
     }
 
     if (!path.endsWith('/')) {
@@ -104,6 +104,13 @@ bool Document::createDocument(QString defaultTemplate, QString path)
         metadataFile.write(QByteArray::number(1) + "\n");
         metadataFile.write(QByteArray::number(0) + "\n");
         metadataFile.close();
+    }
+
+    QString defaultTemplate;
+    if (documentType == "Sketchbook") {
+        defaultTemplate = "Blank";
+    } else {
+        defaultTemplate = "Lined";
     }
 
     QFile templatesFile(path + ".pagedata");
@@ -246,11 +253,11 @@ QString Document::templateForPage(int page)
 
    if (page < 0 || page > m_templates.count()) {
        qWarning() << "Asked for template for invalid page" << page;
-       return QString("Sketch");
+       return QString("Blank");
    }
    QString pageTemplate = m_templates.value(page);
    if (pageTemplate.isEmpty()) {
-       pageTemplate = "Sketch";
+       pageTemplate = "Blank";
    }
    return pageTemplate;
 }

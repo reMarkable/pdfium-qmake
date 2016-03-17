@@ -25,7 +25,7 @@ public:
     int openCount() { return m_openCount; }
 
     // Creates a new document
-    static bool createDocument(QString defaultTemplate, QString path);
+    static bool createDocument(QString documentType, QString path);
 
 
 public slots:

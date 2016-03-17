@@ -21,7 +21,7 @@ public:
 
 public slots:
     QObject *getDocument(const QString &path);
-    QString createDocument(const QString &defaultTemplate);
+    QString createDocument(const QString &documentType);
     void deleteDocument(const QString documentPath);
 
     QStringList getDocumentPaths(int count, int offset = 0) const;
