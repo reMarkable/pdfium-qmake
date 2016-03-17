@@ -29,20 +29,13 @@ Column {
         if (!document) {
             return
         }
-        if (currentTemplate === "Sketch") {
-            buttonRepeater.model = [ "Brush", "Pencil", "Eraser", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
-            if (drawingArea.currentBrush === DrawingArea.Pen) {
-                drawingArea.currentBrush = DrawingArea.Paintbrush
-            }
-        } else if (currentTemplate === "Document") {
+        if (currentTemplate === "Document") {
             buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index" ]
-            if (drawingArea.currentBrush === DrawingArea.Paintbrush || drawingArea.currentBrush == DrawingArea.Pencil) {
-                drawingArea.currentBrush = DrawingArea.Pen
-            }
+            drawingArea.currentBrush = DrawingArea.Pen
         } else {
-            buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index", "TemplateSelect", "NewPage" ]
-            if (drawingArea.currentBrush === DrawingArea.Paintbrush || drawingArea.currentBrush == DrawingArea.Pencil) {
-                drawingArea.currentBrush = DrawingArea.Pen
+            buttonRepeater.model = [ "Brush", "Pencil", "Pen", "Eraser", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
+            if (currentTemplate === "Sketch") {
+                drawingArea.currentBrush = DrawingArea.Paintbrush
             }
         }
     }

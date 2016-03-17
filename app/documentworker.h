@@ -52,7 +52,7 @@ public:
     /// We should preload pages into our cache
     void preload();
 
-    /// We should clear our cache
+    /// We should minimize our cache usage
     void pruneCache();
 
     const QVector<Line> &lines();
