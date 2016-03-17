@@ -18,7 +18,8 @@ Column {
         "Focus": focusComponent,
         "TemplateSelect": templateSelectComponent,
         "NewPage": newPageComponent,
-        "Index": indexComponent
+        "Index": indexComponent,
+        "Separator": separatorComponent
     }
 
     property QtObject document
@@ -33,7 +34,8 @@ Column {
             buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index" ]
             drawingArea.currentBrush = DrawingArea.Pen
         } else {
-            buttonRepeater.model = [ "Brush", "Pencil", "Pen", "Eraser", "Clear", "Undo", "Redo", "Focus","Index", "TemplateSelect", "NewPage" ]
+            buttonRepeater.model = [ "Brush", "Pencil", "Pen", "Eraser", "Separator",
+                                    "Clear", "Undo", "Redo", "Separator", "Focus", "Index", "TemplateSelect", "NewPage" ]
             if (currentTemplate === "Sketch") {
                 drawingArea.currentBrush = DrawingArea.Paintbrush
             }
@@ -278,6 +280,15 @@ Column {
             icon: "qrc:/icons/Index.svg"
             active: thumbnailGrid.visible
             onClicked: thumbnailGrid.visible = true
+        }
+    }
+
+    Component {
+        id: separatorComponent
+
+        Item {
+            height: 64
+            width: height
         }
     }
 }
