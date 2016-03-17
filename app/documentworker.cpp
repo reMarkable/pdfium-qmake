@@ -21,6 +21,11 @@ struct TemplateLoader {
         for (QFileInfo fileInfo : files) {
             templates.insert(fileInfo.baseName(), QImage(fileInfo.absoluteFilePath()).convertToFormat(QImage::Format_RGB16));
         }
+
+        // Dummy template image, TODO: do something better
+        QImage blankTemplate(1, 1, QImage::Format_RGB16);
+        blankTemplate.fill(Qt::white);
+        templates.insert("Blank", blankTemplate);
     }
 
     QMap<QString, QImage> templates;

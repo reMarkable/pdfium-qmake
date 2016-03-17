@@ -284,6 +284,7 @@ QStringList Document::availableTemplates() const
                                                    QDir::Files | QDir::Readable
                                                    );
         QStringList templates;
+        templates << "Blank";
         for (const QFileInfo &templateInfo : templatesInfo) {
             qDebug() << templateInfo.absoluteFilePath();
             templates.append(templateInfo.baseName());
