@@ -328,7 +328,6 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
     while (digitizer->getPoint(&penPoint)) {
         handlingTimer.restart();
-        eventsHandled++;
 #ifdef DEBUG_PREDICTION
         PenPoint realPoint = point;
         painter.setPen(debugPen);
@@ -403,6 +402,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
             if (freeLuts < 1) {
                 totalHandlingTime += handlingTimer.nsecsElapsed();
+                eventsHandled++;
                 continue;
             }
 
@@ -435,6 +435,7 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
 
             if (updateRect.isEmpty()) {
                 totalHandlingTime += handlingTimer.nsecsElapsed();
+                eventsHandled++;
                 continue;
             }
 
@@ -452,8 +453,9 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
             freeLuts--;
             lutTimer.restart();
             sendUpdate(updateRect, EPFrameBuffer::Grayscale);
-            totalHandlingTime += handlingTimer.nsecsElapsed();
         }
+        totalHandlingTime += handlingTimer.nsecsElapsed();
+        eventsHandled++;
     }
     if (eventsHandled > 0) {
         qDebug() << "average handling time:" << ((totalHandlingTime / 1000000.0) / eventsHandled) << "ms";
