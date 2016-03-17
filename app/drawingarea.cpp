@@ -313,6 +313,19 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
     qint64 totalHandlingTime = 0;
     int eventsHandled = 0;
     QElapsedTimer handlingTimer;
+
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    {
+        QRectF rect = mapRectToScene(contentsBoundingRect());
+        minX = rect.x();
+        minY = rect.y();
+        maxX = rect.x() + rect.width();
+        maxY = rect.y() + rect.height();
+    }
+
     while (digitizer->getPoint(&penPoint)) {
         handlingTimer.restart();
         eventsHandled++;
@@ -340,6 +353,11 @@ void DrawingArea::mousePressEvent(QMouseEvent *)
         // Get the predicted/smoothed position, scale it up
         penPoint.x = kalmanPrediction(0, 0) * 1600;
         penPoint.y = kalmanPrediction(1, 0) * 1200;
+
+        if (penPoint.x < minX || penPoint.y < minY || penPoint.x > maxX || penPoint.y > maxY) {
+            prevPenPoint = penPoint;
+            continue;
+        }
 
         // Store the point in the line
         drawnLine.points.append(PenPoint(penPoint.x * m_zoomRect.width() + m_zoomRect.x(),
