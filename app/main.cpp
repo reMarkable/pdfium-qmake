@@ -10,6 +10,7 @@
 #include "drawingarea.h"
 #include "systemmonitor.h"
 #include "collection.h"
+#include "pagepreview.h"
 #include "settings.h"
 #include "messagehandler.h"
 
@@ -130,6 +131,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<DocumentWorker>();
     qmlRegisterType<DrawingArea>("com.magmacompany", 1, 0, "DrawingArea");
+    qmlRegisterType<PagePreview>("com.magmacompany", 1, 0, "PagePreview");
     qmlRegisterSingletonType<SystemMonitor>("com.magmacompany", 1, 0, "SystemMonitor", [](QQmlEngine *, QJSEngine*) -> QObject* {
         return new SystemMonitor;
     });

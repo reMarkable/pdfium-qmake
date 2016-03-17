@@ -13,20 +13,9 @@ Rectangle {
     property string currentBook: ""
     onCurrentBookChanged: {
         if (currentBook === "") {
-            if (archiveBook.document) {
-                archiveBook.document.releaseWorker()
-            }
-
             archiveBook.document = null
         } else {
             archiveBook.document = Collection.getDocument(archiveView.currentBook)
-            archiveBook.document.acquireWorker()
-        }
-    }
-
-    Component.onDestruction:{
-        if (archiveBook.document) {
-            archiveBook.document.releaseWorker()
         }
     }
 

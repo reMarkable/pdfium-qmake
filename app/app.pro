@@ -2,6 +2,8 @@ TEMPLATE = app
 
 QT += qml quick widgets gui_private
 CONFIG += c++11
+#QMAKE_LFLAGS += -fsanitize=undefined
+#QMAKE_CXXFLAGS += -fsanitize=undefined
 
 # QMAKE_CXXFLAGS += -funwind-tables -Wl,--export-dynamic
 # QMAKE_CXXFLAGS += -O3
@@ -16,7 +18,8 @@ SOURCES += main.cpp \
     messagehandler.cpp \
     line.cpp \
     documentworker.cpp \
-    pdfrenderer.cpp
+    pdfrenderer.cpp \
+    pagepreview.cpp
 
 RESOURCES += qml.qrc
 
@@ -40,7 +43,8 @@ HEADERS += \
     debug.h \
     messagehandler.h \
     documentworker.h \
-    pdfrenderer.h
+    pdfrenderer.h \
+    pagepreview.h
 
 OTHER_FILES += \
     ArchiveButton.qml \

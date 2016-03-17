@@ -253,7 +253,7 @@ Item {
                         visible: !editActionsItem.selectionModeActive
 
                         onClicked: {
-                            previewBackground.index = pageNumber
+                            previewImage.document.currentPage = pageNumber
                             previewBackground.visible = true
                         }
                     }
@@ -332,24 +332,19 @@ Item {
 
         color: "#7f000000"
 
-        property int index: 0
-
         MouseArea {
             anchors.fill: parent
             onClicked: previewBackground.visible = false
         }
 
-        Image {
+        PagePreview {
             id: previewImage
             anchors {
                 fill: parent
                 margins: 100
             }
 
-            source: visible ?  "file://" + archiveBook.document.path + "." + previewBackground.index + ".cached.png" : ""
-            sourceSize.width: width
-            sourceSize.height: height
-            asynchronous: true
+            document: archiveBook.document
 
             ArchiveButton {
                 anchors {
@@ -358,8 +353,8 @@ Item {
                     rightMargin: 50
                 }
                 icon: "qrc:///icons/forward_white.svg"
-                visible: (archiveBook.document !== null) ? (previewBackground.index < archiveBook.documentPagecount - 1) : false
-                onClicked: previewBackground.index++
+                visible: (previewImage.document !== null) ? (previewImage.document.currentPage < previewImage.document.pageCount - 1) : false
+                onClicked: previewImage.document.currentPage++
             }
 
             ArchiveButton {
@@ -369,8 +364,8 @@ Item {
                     leftMargin: 50
                 }
                 icon: "qrc:///icons/back_white.svg"
-                visible: previewBackground.index > 0
-                onClicked: previewBackground.index--
+                onClicked: previewImage.document.currentPage--
+                visible: previewImage.document !== null ? previewImage.document.currentPage > 0 : false
             }
 
             ArchiveButton {
@@ -389,7 +384,7 @@ Item {
                 }
 
                 icon: "qrc:///icons/Open-book_white.svg"
-                onClicked: archiveBook.pageClicked(previewBackground.index)
+                onClicked: archiveBook.pageClicked(previewImage.document.currentPage)
             }
         }
     }
