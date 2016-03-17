@@ -24,19 +24,21 @@ Column {
 
     property QtObject document
 
-    property string currentTemplate: document.currentTemplate
-
-    onCurrentTemplateChanged: {
+    onDocumentChanged: {
         if (!document) {
             return
         }
-        if (currentTemplate === "Document") {
-            buttonRepeater.model = [ "Pen", "Clear", "Undo", "Redo", "Focus", "Index" ]
+        if (document.currentTemplate === "Document") {
+            buttonRepeater.model = [ "Pen", "Separator",
+                                    "Clear", "Undo", "Redo", "Separator",
+                                    "Focus", "Index" ]
             drawingArea.currentBrush = DrawingArea.Pen
         } else {
             buttonRepeater.model = [ "Brush", "Pencil", "Pen", "Eraser", "Separator",
-                                    "Clear", "Undo", "Redo", "Separator", "Focus", "Index", "TemplateSelect", "NewPage" ]
-            if (currentTemplate === "Sketch") {
+                                    "Clear", "Undo", "Redo", "Separator",
+                                    "Focus", "Index", "TemplateSelect", "NewPage" ]
+
+            if (document.currentTemplate === "Sketch") {
                 drawingArea.currentBrush = DrawingArea.Paintbrush
             }
         }
