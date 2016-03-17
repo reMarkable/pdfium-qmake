@@ -94,7 +94,9 @@ QImage DocumentWorker::background()
         return m_cachedBackgrounds.value(m_currentPage);
     }
 
-    qDebug() << "current template:" <<  m_currentTemplate << "valid?" << s_templateLoader.templates.keys().contains(m_document->currentTemplate());
+    if (!s_templateLoader.templates.keys().contains(m_currentTemplate)) {
+        m_currentTemplate = "Blank";
+    }
     QImage background = s_templateLoader.templates.value(m_currentTemplate);
 
     QString thumbnailPath = m_document->getThumbnailPath(m_currentPage);
