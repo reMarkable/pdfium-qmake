@@ -1,5 +1,6 @@
 TEMPLATE = lib
 CONFIG += c++11 warn_off
+QT -= core gui
 QMAKE_CXXFLAGS += -Wall -Wno-unused-parameter
 DEFINES += _FX_OS_=_FX_LINUX_DESKTOP_
 DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_LINUX_
