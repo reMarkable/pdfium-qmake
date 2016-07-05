@@ -2,6 +2,7 @@
 # Put custom options in config.pri.
 
 TARGET = pdfium
+TEMPLATE = library
 
 include(config.pri)
 
