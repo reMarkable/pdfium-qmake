@@ -1,0 +1,22 @@
+{
+  "name": "no.remarkable.pdfium-qmake",
+  "description": "",
+  "author": {
+    "name": "Martin T. H. Sandsmark",
+    "email": "martin.sandsmark@remarkable.no"
+  },
+  "repository": {
+    "type": "GITHUB",
+    "url": "git@github.com:remarkableno/pdfium-qmake.git"
+  },
+  "version": {
+    "label": "0.0.1",
+    "revision": "",
+    "fingerprint": ""
+  },
+  "dependencies": [
+  ],
+  "license": "BSD_3_CLAUSE",
+  "pri_filename": "pdfium.pri",
+  "webpage": ""
+}
