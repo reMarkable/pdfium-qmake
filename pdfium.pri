@@ -69,5 +69,6 @@ SOURCES += \
 
 INCLUDEPATH += \
     $$PWD/pdfium/ \
+    $$PWD/pdfium/public/ \
     $$PWD/pdfium/third_party/freetype/include \
     $$PWD/pdfium/third_party/freetype/include/freetype \
