@@ -16,4 +16,8 @@ macx {
 win32 {
     DEFINES += _FX_OS_=_FX_WIN32_DESKTOP_
     DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_WINDOWS_
+    DEFINES += FPDFSDK_EXPORTS
+    CONFIG -= pdfiumsources
+    LIBS += -L$$PWD/win32precompiled -lpdfium.dll
+    INCLUDEPATH += $$PWD/pdfium/public
 }
