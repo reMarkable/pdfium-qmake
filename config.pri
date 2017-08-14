@@ -19,6 +19,7 @@ macx {
     QMAKE_BUNDLE_DATA += pdfium_framework
     LIBS += -F$$PWD/macosxprecompiled -framework Pdfium
     INCLUDEPATH += $$PWD/pdfium/public
+    QMAKE_RPATHDIR += @executable_path/../Frameworks
 }
 win32 {
     DEFINES += _FX_OS_=_FX_WIN32_DESKTOP_
