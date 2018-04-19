@@ -14,12 +14,8 @@ macx {
     DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_APPLE_
     QMAKE_CXXFLAGS += -Wno-unused-parameter
     CONFIG -= pdfiumsources
-    pdfium_framework.files = $$PWD/macosxprecompiled/Pdfium.framework
-    pdfium_framework.path = Contents/Frameworks
-    QMAKE_BUNDLE_DATA += pdfium_framework
-    LIBS += -F$$PWD/macosxprecompiled -framework Pdfium
-    INCLUDEPATH += $$PWD/pdfium/public
-    QMAKE_RPATHDIR += @executable_path/../Frameworks
+    LIBS += -L$$PWD/macosxprecompiled -lpdfium
+    INCLUDEPATH += $$PWD/prebuilt-headers/
 }
 win32 {
     DEFINES += _FX_OS_=_FX_WIN32_DESKTOP_
