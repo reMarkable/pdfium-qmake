@@ -40,7 +40,7 @@ win32 {
             -lsimd_asm \
             -lyasm_utils \
             -lchrome_zlib \
-            -lzlib_x86_simd \
+            -lzlib_x86_simd
 
             INCLUDEPATH += $$PWD/prebuilt-headers/
     } else {
