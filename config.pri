@@ -8,6 +8,8 @@ unix:!macx {
     DEFINES += _FX_OS_=_FX_LINUX_DESKTOP_
     DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_LINUX_
     QMAKE_CXXFLAGS += -Wno-unused-parameter
+    LIBS += -L$$PWD/linuxprecompiled -lpdfium
+    INCLUDEPATH += $$PWD/prebuilt-headers-linux/
 }
 macx {
     DEFINES += _FX_OS_=_FX_MACOSX_
