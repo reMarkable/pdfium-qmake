@@ -16,7 +16,7 @@ macx {
     DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_APPLE_
     QMAKE_CXXFLAGS += -Wno-unused-parameter
     CONFIG -= pdfiumsources
-    LIBS += -L$$PWD/macosxprecompiled -lpdfium
+    LIBS += -L$$PWD/macosxprecompiled -lpdfium -lfdrm -lformfiller -lfpdfapi -lfpdfdoc -lfpdftext -lfxcodec -lfxcrt -lfxge -lfxjs -lpwl
     INCLUDEPATH += $$PWD/prebuilt-headers/
 }
 win32 {
@@ -24,6 +24,6 @@ win32 {
     DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_WINDOWS_
     DEFINES += FPDFSDK_EXPORTS
     CONFIG -= pdfiumsources
-    LIBS += -L$$PWD/win32precompiled -lpdfium.dll
+    LIBS += -L$$PWD/win32precompiled -lpdfium
     INCLUDEPATH += $$PWD/pdfium/public
 }
