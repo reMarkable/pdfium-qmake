@@ -10,7 +10,7 @@
     "url": "git@github.com:reMarkable/pdfium-qmake.git"
   },
   "version": {
-    "label": "0.0.28",
+    "label": "0.0.29",
     "revision": "",
     "fingerprint": ""
   },
