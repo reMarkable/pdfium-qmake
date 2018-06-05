@@ -4,7 +4,7 @@ win32 {
     DEFINES += _FX_OS_=_FX_WIN32_DESKTOP_
     DEFINES += _FXM_PLATFORM_=_FXM_PLATFORM_WINDOWS_
     DEFINES += FPDFSDK_EXPORTS
-    LIBS += -L$$PWD/win32precompiled -lpdfium
+    LIBS += $$PWD/win32precompiled/pdfium.lib
     INCLUDEPATH += $$PWD/prebuilt-headers/
 } else {
     macx {
