@@ -1,0 +1,91 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index c771b8191..990275e49 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -24,6 +24,7 @@ config("pdfium_common_config") {
+     "OPJ_STATIC",
+     "PNG_PREFIX",
+     "PNG_USE_READ_MACROS",
++    "MEMORY_TOOL_REPLACES_ALLOCATOR"
+   ]
+ 
+   if (pdf_enable_v8) {
+@@ -1108,7 +1109,7 @@ jumbo_static_library("fxge") {
+     deps += [ "third_party:fx_agg" ]
+   }
+ 
+-  if (is_mac) {
++  if (is_mac || is_ios) {
+     sources += [ "core/fxge/apple/fx_apple_platform.cpp" ]
+   }
+ 
+@@ -1129,7 +1130,7 @@ jumbo_static_library("fxge") {
+     configs -= [ "//build/config/win:lean_and_mean" ]
+   }
+ 
+-  if (is_mac) {
++  if (is_mac || is_ios) {
+     sources += [
+       "core/fxge/apple/apple_int.h",
+       "core/fxge/apple/fx_mac_imp.cpp",
+diff --git a/core/fxcrt/fx_system.h b/core/fxcrt/fx_system.h
+index 8ad23a19c..f7cfc9f90 100644
+--- a/core/fxcrt/fx_system.h
++++ b/core/fxcrt/fx_system.h
+@@ -71,7 +71,8 @@
+ #endif  // _FX_PLATFORM_ == _FX_PLATFORM_WINDOWS_
+ 
+ #if _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+-#include <Carbon/Carbon.h>
++#include <CoreGraphics/CoreGraphics.h>
++#include <CoreFoundation/CFString.h>
+ #include <libkern/OSAtomic.h>
+ #endif  // _FX_PLATFORM_ == _FX_PLATFORM_APPLE_
+ 
+diff --git a/core/fxge/apple/apple_int.h b/core/fxge/apple/apple_int.h
+index 82415ec07..c6715037b 100644
+--- a/core/fxge/apple/apple_int.h
++++ b/core/fxge/apple/apple_int.h
+@@ -15,8 +15,6 @@
+ #include "core/fxge/fx_dib.h"
+ #include "core/fxge/ifx_renderdevicedriver.h"
+ 
+-#include <Carbon/Carbon.h>
+-
+ class CQuartz2D {
+  public:
+   void* createGraphics(const RetainPtr<CFX_DIBitmap>& bitmap);
+diff --git a/build/secondary/third_party/libjpeg_turbo/BUILD.gn b/build/secondary/third_party/libjpeg_turbo/BUILD.gn
+index 265d30b07..99960c8ff 100644
+--- a/build/secondary/third_party/libjpeg_turbo/BUILD.gn
++++ b/build/secondary/third_party/libjpeg_turbo/BUILD.gn
+@@ -10,8 +10,6 @@ if (current_cpu == "arm") {
+   import("//build/config/arm.gni")
+ }
+ 
+-assert(!is_ios, "This is not used on iOS, don't drag it in unintentionally")
+-
+ if (current_cpu == "x86" || current_cpu == "x64") {
+   import("//third_party/yasm/yasm_assemble.gni")
+ 
+@@ -118,7 +116,6 @@ static_library("simd") {
+              (arm_use_neon || arm_optionally_use_neon)) {
+     sources = [
+       "simd/jsimd_arm.c",
+-      "simd/jsimd_arm_neon.S",
+     ]
+   } else if (current_cpu == "arm64") {
+     sources = [
+diff --git a/build/config/ios/rules.gni b/build/config/ios/rules.gni
+index e6f45b26d..a8c2faae9 100644
+--- a/build/config/ios/rules.gni
++++ b/build/config/ios/rules.gni
+@@ -864,7 +864,7 @@ template("ios_app_bundle") {
+           if (!defined(data_deps)) {
+             data_deps = []
+           }
+-          data_deps += [ "//testing/iossim" ]
++          #data_deps += [ "//testing/iossim" ]
+         }
+       }
+     }

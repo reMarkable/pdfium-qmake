@@ -1,0 +1,19 @@
+# Build arguments go here.
+# See "gn args <out_dir> --list" for available build arguments.
+is_debug = false # Debugging features
+pdf_use_skia = false # Set true to enable experimental skia backend
+pdf_use_skia_paths = false # Set true to enable experimental skia backend (paths only)
+pdf_enable_xfa = false # Set false to remove XFA support (implies JS support)
+pdf_enable_v8 = false # Set false to remove Javascript support
+pdf_is_standalone = true # Set for a non-embedded build
+is_component_build = false # Disable component build (must be false)
+clang_use_chrome_plugins = false # Currently must be false
+use_sysroot = false # Currently must be false on Linux
+symbol_level=0
+strip_debug_info=true
+enable_stripping=true
+target_os = "ios"
+target_cpu = "arm64"
+additional_target_cpus = ["x86", "arm", "x64"]
+ios_enable_code_signing = false
+pdf_is_complete_lib = true
