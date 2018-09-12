@@ -55,27 +55,6 @@ index 82415ec07..c6715037b 100644
  class CQuartz2D {
   public:
    void* createGraphics(const RetainPtr<CFX_DIBitmap>& bitmap);
-diff --git a/build/secondary/third_party/libjpeg_turbo/BUILD.gn b/build/secondary/third_party/libjpeg_turbo/BUILD.gn
-index 265d30b07..99960c8ff 100644
---- a/build/secondary/third_party/libjpeg_turbo/BUILD.gn
-+++ b/build/secondary/third_party/libjpeg_turbo/BUILD.gn
-@@ -10,8 +10,6 @@ if (current_cpu == "arm") {
-   import("//build/config/arm.gni")
- }
- 
--assert(!is_ios, "This is not used on iOS, don't drag it in unintentionally")
--
- if (current_cpu == "x86" || current_cpu == "x64") {
-   import("//third_party/yasm/yasm_assemble.gni")
- 
-@@ -118,7 +116,6 @@ static_library("simd") {
-              (arm_use_neon || arm_optionally_use_neon)) {
-     sources = [
-       "simd/jsimd_arm.c",
--      "simd/jsimd_arm_neon.S",
-     ]
-   } else if (current_cpu == "arm64") {
-     sources = [
 diff --git a/build/config/ios/rules.gni b/build/config/ios/rules.gni
 index e6f45b26d..a8c2faae9 100644
 --- a/build/config/ios/rules.gni
