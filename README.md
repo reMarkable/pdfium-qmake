@@ -1,4 +1,13 @@
-# Building for iOS
+# iOS
+
+## Fetching binary
+
+The binaries are stored using git-lfs. To replace the SHA1 links with real files, do
+
+    git lfs fetch
+    git lfs checkout
+
+## Building binary
 
 `libpdfium.a` for iOS is no longer built via qmake, but rather directly from pdfium with a few patches applied and one revert;
 
