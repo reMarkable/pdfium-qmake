@@ -1,0 +1,14 @@
+# Build arguments go here.
+# See "gn args <out_dir> --list" for available build arguments.
+is_debug = false
+symbol_level = 0
+pdf_bundle_freetype = true
+pdf_enable_v8 = false
+pdf_enable_xfa = false
+pdf_use_skia = false
+use_system_zlib = false
+use_system_freetype = false
+is_official_build = true
+clang_use_chrome_plugins = false
+pdf_is_standalone = true
+is_component_build = false
