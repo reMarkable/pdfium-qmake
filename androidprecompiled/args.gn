@@ -1,0 +1,14 @@
+target_os = "android"
+target_cpu = "arm"
+is_component_build = false
+pdf_enable_v8 = false
+pdf_enable_xfa = false
+pdf_use_skia = false
+pdf_use_skia_paths = false
+pdf_is_standalone = false
+pdf_is_complete_lib = true
+pdf_bundle_freetype = true
+is_debug = false
+use_goma = false
+symbol_level = 0
+x
