@@ -1,0 +1,115 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index 27e4b2615..a9b3213cc 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -24,6 +24,7 @@ config("pdfium_common_config") {
+     "OPJ_STATIC",
+     "PNG_PREFIX",
+     "PNG_USE_READ_MACROS",
++    "FPDFSDK_EXPORTS"
+   ]
+ 
+   if (pdf_enable_v8) {
+@@ -99,7 +100,7 @@ config("xfa_warnings") {
+   }
+ }
+ 
+-jumbo_static_library("pdfium") {
++shared_library("pdfium") {
+   sources = [
+     "fpdfsdk/cfx_systemhandler.cpp",
+     "fpdfsdk/cfx_systemhandler.h",
+@@ -227,6 +228,9 @@ jumbo_static_library("pdfium") {
+       "gdi32.lib",
+       "user32.lib",
+     ]
++    sources += [
++      "resources.rc"
++    ]
+   }
+ 
+   if (is_mac) {
+diff --git a/public/cpp/fpdf_deleters.h b/public/cpp/fpdf_deleters.h
+index d9d95cda3..04d74a970 100644
+--- a/public/cpp/fpdf_deleters.h
++++ b/public/cpp/fpdf_deleters.h
+@@ -5,13 +5,13 @@
+ #ifndef PUBLIC_CPP_FPDF_DELETERS_H_
+ #define PUBLIC_CPP_FPDF_DELETERS_H_
+ 
+-#include "public/fpdf_annot.h"
+-#include "public/fpdf_dataavail.h"
+-#include "public/fpdf_edit.h"
+-#include "public/fpdf_formfill.h"
+-#include "public/fpdf_structtree.h"
+-#include "public/fpdf_text.h"
+-#include "public/fpdfview.h"
++#include "../fpdf_annot.h"
++#include "../fpdf_dataavail.h"
++#include "../fpdf_edit.h"
++#include "../fpdf_formfill.h"
++#include "../fpdf_structtree.h"
++#include "../fpdf_text.h"
++#include "../fpdfview.h"
+ 
+ // Custom deleters for using FPDF_* types with std::unique_ptr<>.
+ 
+diff --git a/public/fpdfview.h b/public/fpdfview.h
+index ac109b9b3..96ef68555 100644
+--- a/public/fpdfview.h
++++ b/public/fpdfview.h
+@@ -154,13 +154,22 @@ typedef int FPDF_ANNOT_APPEARANCEMODE;
+ // Dictionary value types.
+ typedef int FPDF_OBJECT_TYPE;
+ 
+-#if defined(_WIN32) && defined(FPDFSDK_EXPORTS)
+-// On Windows system, functions are exported in a DLL
+-#define FPDF_EXPORT __declspec(dllexport)
+-#define FPDF_CALLCONV __stdcall
++#ifdef FPDFSDK_EXPORTS
++# if defined(_WIN32)
++#  define FPDF_EXPORT __declspec(dllexport)
++#  define FPDF_CALLCONV __stdcall
++# else
++#  define FPDF_EXPORT __attribute__((visibility("default")))
++#  define FPDF_CALLCONV
++# endif
+ #else
+-#define FPDF_EXPORT
+-#define FPDF_CALLCONV
++# if defined(_WIN32)
++#  define FPDF_EXPORT __declspec(dllimport)
++#  define FPDF_CALLCONV __stdcall
++# else
++#  define FPDF_EXPORT
++#  define FPDF_CALLCONV
++# endif
+ #endif
+ 
+ // Exported Functions
+diff --git a/resources.rc b/resources.rc
+new file mode 100644
+index 000000000..37113eeb7
+--- /dev/null
++++ b/resources.rc
+@@ -0,0 +1,20 @@
++1 VERSIONINFO
++BEGIN
++    BLOCK "StringFileInfo"
++    BEGIN
++        BLOCK "040904E4"
++        BEGIN
++            VALUE "CompanyName",      "Google Inc."
++            VALUE "FileDescription",  "PDFium (compiled by reMarkable AS)"
++            VALUE "InternalName",     "pdfium"
++            VALUE "OriginalFilename", "pdfium.dll"
++            VALUE "ProductName",      "pdfium"
++            VALUE "LegalCopyright",   "Copyright 2018 PDFium Authors. All rights reserved."
++        END
++    END
++
++    BLOCK "VarFileInfo"
++    BEGIN
++        VALUE "Translation", 0x409, 1252
++    END
++END
