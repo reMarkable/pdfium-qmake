@@ -10,6 +10,8 @@
 #ifndef PUBLIC_FPDFVIEW_H_
 #define PUBLIC_FPDFVIEW_H_
 
+#include <stddef.h>
+
 #if defined(_WIN32) && !defined(__WINDOWS__)
 #include <windows.h>
 #endif
@@ -32,31 +34,32 @@
 #define FPDF_OBJECT_NULLOBJ 8
 #define FPDF_OBJECT_REFERENCE 9
 
-// PDF types
-typedef void* FPDF_ACTION;
-typedef void* FPDF_ANNOTATION;
-typedef void* FPDF_ATTACHMENT;
-typedef void* FPDF_BITMAP;
-typedef void* FPDF_BOOKMARK;
-typedef void* FPDF_CLIPPATH;
-typedef void* FPDF_DEST;
-typedef void* FPDF_DOCUMENT;
-typedef void* FPDF_FONT;
-typedef void* FPDF_LINK;
-typedef void* FPDF_PAGE;
-typedef void* FPDF_PAGELINK;
-typedef void* FPDF_PAGEOBJECT;  // Page object(text, path, etc)
-typedef void* FPDF_PAGERANGE;
-typedef void* FPDF_RECORDER;
-typedef void* FPDF_SCHHANDLE;
-typedef void* FPDF_STRUCTELEMENT;
-typedef void* FPDF_STRUCTTREE;
-typedef void* FPDF_TEXTPAGE;
-typedef void const* FPDF_PATHSEGMENT;
+// PDF types - use incomplete types for type safety.
+typedef const struct fpdf_action_t__* FPDF_ACTION;
+typedef struct fpdf_annotation_t__* FPDF_ANNOTATION;
+typedef struct fpdf_attachment_t__* FPDF_ATTACHMENT;
+typedef struct fpdf_bitmap_t__* FPDF_BITMAP;
+typedef const struct fpdf_bookmark_t__* FPDF_BOOKMARK;
+typedef struct fpdf_clippath_t__* FPDF_CLIPPATH;
+typedef const struct fpdf_dest_t__* FPDF_DEST;
+typedef struct fpdf_document_t__* FPDF_DOCUMENT;
+typedef struct fpdf_font_t__* FPDF_FONT;
+typedef struct fpdf_form_handle_t__* FPDF_FORMHANDLE;
+typedef struct fpdf_link_t__* FPDF_LINK;
+typedef struct fpdf_page_t__* FPDF_PAGE;
+typedef struct fpdf_pagelink_t__* FPDF_PAGELINK;
+typedef struct fpdf_pageobject_t__* FPDF_PAGEOBJECT;  // (text, path, etc.)
+typedef struct fpdf_pageobjectmark_t__* FPDF_PAGEOBJECTMARK;
+typedef const struct fpdf_pagerange_t__* FPDF_PAGERANGE;
+typedef const struct fpdf_pathsegment_t* FPDF_PATHSEGMENT;
+typedef void* FPDF_RECORDER;  // Passed into skia.
+typedef struct fpdf_schhandle_t__* FPDF_SCHHANDLE;
+typedef struct fpdf_structelement_t__* FPDF_STRUCTELEMENT;
+typedef struct fpdf_structtree_t__* FPDF_STRUCTTREE;
+typedef struct fpdf_textpage_t__* FPDF_TEXTPAGE;
 
 #ifdef PDF_ENABLE_XFA
-typedef void* FPDF_STRINGHANDLE;
-typedef void* FPDF_WIDGET;
+typedef struct fpdf_widget_t__* FPDF_WIDGET;
 #endif  // PDF_ENABLE_XFA
 
 // Basic data types
@@ -151,12 +154,29 @@ typedef int FPDF_ANNOT_APPEARANCEMODE;
 // Dictionary value types.
 typedef int FPDF_OBJECT_TYPE;
 
-#if defined(_WIN32) && defined(FPDFSDK_EXPORTS)
-// On Windows system, functions are exported in a DLL
-#define FPDF_EXPORT __attribute__ ((visibility ("default"))) __declspec(dllexport)
+#if defined(COMPONENT_BUILD)
+// FPDF_EXPORT should be consistent with |export| in the pdfium_fuzzer
+// template in testing/fuzzers/BUILD.gn.
+#if defined(WIN32)
+#if defined(FPDF_IMPLEMENTATION)
+#define FPDF_EXPORT __declspec(dllexport)
+#else
+#define FPDF_EXPORT __declspec(dllimport)
+#endif  // defined(FPDF_IMPLEMENTATION)
+#else
+#if defined(FPDF_IMPLEMENTATION)
+#define FPDF_EXPORT __attribute__((visibility("default")))
+#else
+#define FPDF_EXPORT
+#endif  // defined(FPDF_IMPLEMENTATION)
+#endif  // defined(WIN32)
+#else
+#define FPDF_EXPORT
+#endif  // defined(COMPONENT_BUILD)
+
+#if defined(WIN32) && defined(FPDFSDK_EXPORTS)
 #define FPDF_CALLCONV __stdcall
 #else
-#define FPDF_EXPORT __attribute__ ((visibility ("default")))
 #define FPDF_CALLCONV
 #endif
 
@@ -267,19 +287,6 @@ FPDF_SetTypefaceAccessibleFunc(PDFiumEnsureTypefaceCharactersAccessible func);
 FPDF_EXPORT void FPDF_CALLCONV FPDF_SetPrintTextWithGDI(FPDF_BOOL use_gdi);
 #endif  // PDFIUM_PRINT_TEXT_WITH_GDI
 
-// Function: FPDF_SetPrintPostscriptLevel
-//          Set postscript printing level when printing on Windows.
-//          Experimental API.
-// Parameters:
-//          postscript_level- 0 to disable postscript printing,
-//                            2 to print with postscript level 2,
-//                            3 to print with postscript level 3.
-//                            All other values are invalid.
-// Return value:
-//          True if successful, false if unsuccessful (typically invalid input).
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
-FPDF_SetPrintPostscriptLevel(int postscript_level);
-
 // Function: FPDF_SetPrintMode
 //          Set printing mode when printing on Windows.
 //          Experimental API.
@@ -287,8 +294,14 @@ FPDF_SetPrintPostscriptLevel(int postscript_level);
 //          mode - FPDF_PRINTMODE_EMF to output EMF (default)
 //                 FPDF_PRINTMODE_TEXTONLY to output text only (for charstream
 //                 devices)
-//                 FPDF_PRINTMODE_POSTSCRIPT2 to output level 2 postscript
-//                 FPDF_PRINTMODE_POSTSCRIPT3 to output level 3 postscript
+//                 FPDF_PRINTMODE_POSTSCRIPT2 to output level 2 PostScript into
+//                 EMF as a series of GDI comments.
+//                 FPDF_PRINTMODE_POSTSCRIPT3 to output level 3 PostScript into
+//                 EMF as a series of GDI comments.
+//                 FPDF_PRINTMODE_POSTSCRIPT2_PASSTHROUGH to output level 2
+//                 PostScript via ExtEscape() in PASSTHROUGH mode.
+//                 FPDF_PRINTMODE_POSTSCRIPT3_PASSTHROUGH to output level 3
+//                 PostScript via ExtEscape() in PASSTHROUGH mode.
 // Return value:
 //          True if successful, false if unsuccessful (typically invalid input).
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode);
@@ -300,12 +313,19 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode);
 //          file_path -  Path to the PDF file (including extension).
 //          password  -  A string used as the password for the PDF file.
 //                       If no password is needed, empty or NULL can be used.
+//                       See comments below regarding the encoding.
 // Return value:
 //          A handle to the loaded document, or NULL on failure.
 // Comments:
 //          Loaded document can be closed by FPDF_CloseDocument().
 //          If this function fails, you can use FPDF_GetLastError() to retrieve
 //          the reason why it failed.
+//
+//          The encoding for |password| can be either UTF-8 or Latin-1. PDFs,
+//          depending on the security handler revision, will only accept one or
+//          the other encoding. If |password|'s encoding and the PDF's expected
+//          encoding do not match, FPDF_LoadDocument() will automatically
+//          convert |password| to the other encoding.
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV
 FPDF_LoadDocument(FPDF_STRING file_path, FPDF_BYTESTRING password);
 
@@ -323,6 +343,9 @@ FPDF_LoadDocument(FPDF_STRING file_path, FPDF_BYTESTRING password);
 //          The loaded document can be closed by FPDF_CloseDocument.
 //          If this function fails, you can use FPDF_GetLastError() to retrieve
 //          the reason why it failed.
+//
+//          See the comments for FPDF_LoadDocument() regarding the encoding for
+//          |password|.
 // Notes:
 //          If PDFium is built with the XFA module, the application should call
 //          FPDF_LoadXFA() function after the PDF document loaded to support XFA
@@ -337,6 +360,7 @@ typedef struct {
 
   // A function pointer for getting a block of data from a specific position.
   // Position is specified by byte offset from the beginning of the file.
+  // The pointer to the buffer is never NULL and the size is never 0.
   // The position and size will never go out of range of the file length.
   // It may be possible for FPDFSDK to call this function multiple times for
   // the same position.
@@ -436,7 +460,8 @@ typedef struct _FPDF_FILEHANDLER {
   FPDF_RESULT (*Truncate)(FPDF_LPVOID clientData, FPDF_DWORD size);
 } FPDF_FILEHANDLER, *FPDF_LPFILEHANDLER;
 
-#endif
+#endif  // PDF_ENABLE_XFA
+
 // Function: FPDF_LoadCustomDocument
 //          Load PDF document from a custom access descriptor.
 // Parameters:
@@ -445,10 +470,14 @@ typedef struct _FPDF_FILEHANDLER {
 // Return value:
 //          A handle to the loaded document, or NULL on failure.
 // Comments:
-//          The application must keep the file resources valid until the PDF
-//          document is closed.
+//          The application must keep the file resources |pFileAccess| points to
+//          valid until the returned FPDF_DOCUMENT is closed. |pFileAccess|
+//          itself does not need to outlive the FPDF_DOCUMENT.
 //
-//          The loaded document can be closed with FPDF_CloseDocument.
+//          The loaded document can be closed with FPDF_CloseDocument().
+//
+//          See the comments for FPDF_LoadDocument() regarding the encoding for
+//          |password|.
 // Notes:
 //          If PDFium is built with the XFA module, the application should call
 //          FPDF_LoadXFA() function after the PDF document loaded to support XFA
@@ -492,6 +521,21 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_GetFileVersion(FPDF_DOCUMENT doc,
 //          If the previous SDK call succeeded, the return value of this
 //          function is not defined.
 FPDF_EXPORT unsigned long FPDF_CALLCONV FPDF_GetLastError();
+
+// Function: FPDF_DocumentHasValidCrossReferenceTable
+//          Whether the document's cross reference table is valid or not.
+//          Experimental API.
+// Parameters:
+//          document    -   Handle to a document. Returned by FPDF_LoadDocument.
+// Return value:
+//          True if the PDF parser did not encounter problems parsing the cross
+//          reference table. False if the parser could not parse the cross
+//          reference table and the table had to be rebuild from other data
+//          within the document.
+// Comments:
+//          The return value can change over time as the PDF parser evolves.
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDF_DocumentHasValidCrossReferenceTable(FPDF_DOCUMENT document);
 
 // Function: FPDF_GetDocPermission
 //          Get file permission flags of the document.
@@ -749,7 +793,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_CloseDocument(FPDF_DOCUMENT document);
 //          page_y      -   A pointer to a double receiving the converted Y
 //                          value in page coordinates.
 // Return value:
-//          None.
+//          Returns true if the conversion succeeds, and |page_x| and |page_y|
+//          successfully receives the converted coordinates.
 // Comments:
 //          The page coordinate system has its origin at the left-bottom corner
 //          of the page, with the X-axis on the bottom going to the right, and
@@ -767,16 +812,16 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_CloseDocument(FPDF_DOCUMENT document);
 //          You must make sure the start_x, start_y, size_x, size_y
 //          and rotate parameters have exactly same values as you used in
 //          the FPDF_RenderPage() function call.
-FPDF_EXPORT void FPDF_CALLCONV FPDF_DeviceToPage(FPDF_PAGE page,
-                                                 int start_x,
-                                                 int start_y,
-                                                 int size_x,
-                                                 int size_y,
-                                                 int rotate,
-                                                 int device_x,
-                                                 int device_y,
-                                                 double* page_x,
-                                                 double* page_y);
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_DeviceToPage(FPDF_PAGE page,
+                                                      int start_x,
+                                                      int start_y,
+                                                      int size_x,
+                                                      int size_y,
+                                                      int rotate,
+                                                      int device_x,
+                                                      int device_y,
+                                                      double* page_x,
+                                                      double* page_y);
 
 // Function: FPDF_PageToDevice
 //          Convert the page coordinates of a point to screen coordinates.
@@ -800,19 +845,20 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_DeviceToPage(FPDF_PAGE page,
 //          device_y    -   A pointer to an integer receiving the result Y
 //                          value in device coordinates.
 // Return value:
-//          None.
+//          Returns true if the conversion succeeds, and |device_x| and
+//          |device_y| successfully receives the converted coordinates.
 // Comments:
 //          See comments for FPDF_DeviceToPage().
-FPDF_EXPORT void FPDF_CALLCONV FPDF_PageToDevice(FPDF_PAGE page,
-                                                 int start_x,
-                                                 int start_y,
-                                                 int size_x,
-                                                 int size_y,
-                                                 int rotate,
-                                                 double page_x,
-                                                 double page_y,
-                                                 int* device_x,
-                                                 int* device_y);
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_PageToDevice(FPDF_PAGE page,
+                                                      int start_x,
+                                                      int start_y,
+                                                      int size_x,
+                                                      int size_y,
+                                                      int rotate,
+                                                      double page_x,
+                                                      double page_y,
+                                                      int* device_x,
+                                                      int* device_y);
 
 // Function: FPDFBitmap_Create
 //          Create a device independent bitmap (FXDIB).
@@ -1019,6 +1065,28 @@ FPDF_VIEWERREF_GetNumCopies(FPDF_DOCUMENT document);
 FPDF_EXPORT FPDF_PAGERANGE FPDF_CALLCONV
 FPDF_VIEWERREF_GetPrintPageRange(FPDF_DOCUMENT document);
 
+// Function: FPDF_VIEWERREF_GetPrintPageRangeCount
+//          Returns the number of elements in a FPDF_PAGERANGE.
+//          Experimental API.
+// Parameters:
+//          pagerange   -   Handle to the page range.
+// Return value:
+//          The number of elements in the page range. Returns 0 on error.
+FPDF_EXPORT size_t FPDF_CALLCONV
+FPDF_VIEWERREF_GetPrintPageRangeCount(FPDF_PAGERANGE pagerange);
+
+// Function: FPDF_VIEWERREF_GetPrintPageRangeElement
+//          Returns an element from a FPDF_PAGERANGE.
+//          Experimental API.
+// Parameters:
+//          pagerange   -   Handle to the page range.
+//          index       -   Index of the element.
+// Return value:
+//          The value of the element in the page range at a given index.
+//          Returns -1 on error.
+FPDF_EXPORT int FPDF_CALLCONV
+FPDF_VIEWERREF_GetPrintPageRangeElement(FPDF_PAGERANGE pagerange, size_t index);
+
 // Function: FPDF_VIEWERREF_GetDuplex
 //          Returns the paper handling option to be used when printing from
 //          the print dialog.
@@ -1094,6 +1162,19 @@ FPDF_EXPORT FPDF_DEST FPDF_CALLCONV FPDF_GetNamedDest(FPDF_DOCUMENT document,
                                                       int index,
                                                       void* buffer,
                                                       long* buflen);
+
+#ifdef PDF_ENABLE_V8
+// Function: FPDF_GetRecommendedV8Flags
+//          Returns a space-separated string of command line flags that are
+//          recommended to be passed into V8 via V8::SetFlagsFromString()
+//          prior to initializing the PDFium library.
+// Parameters:
+//          None.
+// Return value:
+//          NUL-terminated string of the form "--flag1 --flag2".
+//          The caller must not attempt to modify or free the result.
+FPDF_EXPORT const char* FPDF_CALLCONV FPDF_GetRecommendedV8Flags();
+#endif  // PDF_ENABLE_V8
 
 #ifdef PDF_ENABLE_XFA
 // Function: FPDF_BStr_Init

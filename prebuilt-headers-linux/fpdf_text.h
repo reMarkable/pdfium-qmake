@@ -87,6 +87,31 @@ FPDFText_GetUnicode(FPDF_TEXTPAGE text_page, int index);
 FPDF_EXPORT double FPDF_CALLCONV FPDFText_GetFontSize(FPDF_TEXTPAGE text_page,
                                                       int index);
 
+// Experimental API.
+// Function: FPDFText_GetFontInfo
+//          Get the font name and flags of a particular character.
+// Parameters:
+//          text_page - Handle to a text page information structure.
+//          Returned by FPDFText_LoadPage function.
+//          index     - Zero-based index of the character.
+//          buffer    - A buffer receiving the font name.
+//          buflen    - The length of |buffer| in bytes.
+//          flags     - Optional pointer to an int receiving the font flags.
+//          These flags should be interpreted per PDF spec 1.7 Section 5.7.1
+//          Font Descriptor Flags.
+// Return value:
+//          On success, return the length of the font name, including the
+//          trailing NUL character, in bytes. If this length is less than or
+//          equal to |length|, |buffer| is set to the font name, |flags| is
+//          set to the font flags. |buffer| is in UTF-8 encoding. Return 0 on
+//          failure.
+FPDF_EXPORT unsigned long FPDF_CALLCONV
+FPDFText_GetFontInfo(FPDF_TEXTPAGE text_page,
+                     int index,
+                     void* buffer,
+                     unsigned long buflen,
+                     int* flags);
+
 // Function: FPDFText_GetCharBox
 //          Get bounding box of a particular character.
 // Parameters:
@@ -222,9 +247,9 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFText_CountRects(FPDF_TEXTPAGE text_page,
 //          bottom boundary.
 // Return Value:
 //          On success, return TRUE and fill in |left|, |top|, |right|, and
-//          |bottom|. If |link_page| is invalid then return FALSE, and the out
-//          parameters remain unmodified. If |link_page| is valid but
-//          |link_index| is out of bounds, then return FALSE and set the out
+//          |bottom|. If |text_page| is invalid then return FALSE, and the out
+//          parameters remain unmodified. If |text_page| is valid but
+//          |rect_index| is out of bounds, then return FALSE and set the out
 //          parameters to 0.
 //
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFText_GetRect(FPDF_TEXTPAGE text_page,
@@ -269,10 +294,13 @@ FPDF_EXPORT int FPDF_CALLCONV FPDFText_GetBoundedText(FPDF_TEXTPAGE text_page,
                                                       int buflen);
 
 // Flags used by FPDFText_FindStart function.
-#define FPDF_MATCHCASE \
-  0x00000001  // If not set, it will not match case by default.
-#define FPDF_MATCHWHOLEWORD \
-  0x00000002  // If not set, it will not match the whole word by default.
+//
+// If not set, it will not match case by default.
+#define FPDF_MATCHCASE 0x00000001
+// If not set, it will not match the whole word by default.
+#define FPDF_MATCHWHOLEWORD 0x00000002
+// If not set, it will skip past the current match to look for the next match.
+#define FPDF_CONSECUTIVE 0x00000004
 
 // Function: FPDFText_FindStart
 //          Start a search.
