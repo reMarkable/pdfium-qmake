@@ -1,0 +1,1157 @@
+cmake_minimum_required(VERSION 3.25)
+
+set(CMAKE_CXX_STANDARD 20)
+
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}/pdfium"
+    "${CMAKE_CURRENT_SOURCE_DIR}/pdfium/third_party/abseil-cpp"
+)
+
+if (WIN32)
+    add_compile_definitions(
+        NOMINMAX
+        UNICODE
+        WIN32_LEAN_AND_MEAN
+    )
+endif()
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
+project(Pdfium LANGUAGES CXX C VERSION 133.0.6907.0)
+
+find_package(Freetype REQUIRED)
+find_package(ICU REQUIRED COMPONENTS data uc)
+find_package(JPEG REQUIRED)
+find_package(LCMS2 QUIET)
+find_package(PNG REQUIRED)
+find_package(TIFF REQUIRED)
+find_package(ZLIB REQUIRED)
+
+add_library(
+    fx_abseil
+    STATIC
+        pdfium/third_party/abseil-cpp/absl/base/internal/raw_logging.cc
+        pdfium/third_party/abseil-cpp/absl/base/internal/raw_logging.h
+        pdfium/third_party/abseil-cpp/absl/types/bad_variant_access.cc
+        pdfium/third_party/abseil-cpp/absl/types/bad_variant_access.h
+)
+
+add_library(
+    fx_agg
+    STATIC
+        pdfium/third_party/agg23/agg_array.h
+        pdfium/third_party/agg23/agg_basics.h
+        pdfium/third_party/agg23/agg_clip_liang_barsky.h
+        pdfium/third_party/agg23/agg_conv_adaptor_vcgen.h
+        pdfium/third_party/agg23/agg_conv_dash.h
+        pdfium/third_party/agg23/agg_conv_stroke.h
+        pdfium/third_party/agg23/agg_curves.cpp
+        pdfium/third_party/agg23/agg_curves.h
+        pdfium/third_party/agg23/agg_math.h
+        pdfium/third_party/agg23/agg_math_stroke.h
+        pdfium/third_party/agg23/agg_path_storage.cpp
+        pdfium/third_party/agg23/agg_path_storage.h
+        pdfium/third_party/agg23/agg_pixfmt_gray.h
+        pdfium/third_party/agg23/agg_rasterizer_scanline_aa.cpp
+        pdfium/third_party/agg23/agg_rasterizer_scanline_aa.h
+        pdfium/third_party/agg23/agg_render_scanlines.h
+        pdfium/third_party/agg23/agg_renderer_base.h
+        pdfium/third_party/agg23/agg_renderer_scanline.h
+        pdfium/third_party/agg23/agg_rendering_buffer.h
+        pdfium/third_party/agg23/agg_scanline_u.h
+        pdfium/third_party/agg23/agg_shorten_path.h
+        pdfium/third_party/agg23/agg_vcgen_dash.cpp
+        pdfium/third_party/agg23/agg_vcgen_dash.h
+        pdfium/third_party/agg23/agg_vcgen_stroke.cpp
+        pdfium/third_party/agg23/agg_vcgen_stroke.h
+        pdfium/third_party/agg23/agg_vertex_sequence.h
+)
+
+add_library(
+    fx_libopenjpeg
+    STATIC
+        pdfium/third_party/libopenjpeg/bio.c
+        pdfium/third_party/libopenjpeg/cio.c
+        pdfium/third_party/libopenjpeg/dwt.c
+        pdfium/third_party/libopenjpeg/event.c
+        pdfium/third_party/libopenjpeg/function_list.c
+        pdfium/third_party/libopenjpeg/ht_dec.c
+        pdfium/third_party/libopenjpeg/image.c
+        pdfium/third_party/libopenjpeg/invert.c
+        pdfium/third_party/libopenjpeg/j2k.c
+        pdfium/third_party/libopenjpeg/jp2.c
+        pdfium/third_party/libopenjpeg/mct.c
+        pdfium/third_party/libopenjpeg/mqc.c
+        pdfium/third_party/libopenjpeg/openjpeg.c
+        pdfium/third_party/libopenjpeg/opj_malloc.cc
+        pdfium/third_party/libopenjpeg/opj_malloc.h
+        pdfium/third_party/libopenjpeg/pi.c
+        pdfium/third_party/libopenjpeg/sparse_array.c
+        pdfium/third_party/libopenjpeg/sparse_array.h
+        pdfium/third_party/libopenjpeg/t1.c
+        pdfium/third_party/libopenjpeg/t1_ht_luts.h
+        pdfium/third_party/libopenjpeg/t2.c
+        pdfium/third_party/libopenjpeg/tcd.c
+        pdfium/third_party/libopenjpeg/tgt.c
+        pdfium/third_party/libopenjpeg/thread.c
+)
+
+target_compile_definitions(
+    fx_libopenjpeg
+    PRIVATE
+        OPJ_STATIC
+)
+
+list(APPEND fx_third_party_libs
+    fx_abseil
+    fx_agg
+    fx_libopenjpeg
+)
+
+add_library(Pdfium)
+
+list(APPEND pdfium_install_targets Pdfium)
+
+if (BUILD_SHARED_LIBS)
+    set_property(TARGET ${fx_third_party_libs} PROPERTY POSITION_INDEPENDENT_CODE True)
+
+    target_compile_definitions(
+        Pdfium
+        PUBLIC
+            COMPONENT_BUILD
+    )
+else()
+    list(APPEND pdfium_install_targets ${fx_third_party_libs})
+endif()
+
+
+target_compile_definitions(
+    Pdfium
+    PRIVATE
+        DEFINE_PS_TABLES_DATA
+        FPDF_IMPLEMENTATION
+        OPJ_STATIC
+        USE_SYSTEM_ICUUC
+        USE_SYSTEM_LIBJPEG
+        USE_SYSTEM_LIBPNG
+        USE_SYSTEM_LCMS2
+        USE_SYSTEM_ZLIB
+        USE_SYSTEM_LIBTIFF
+)
+
+target_link_libraries(
+    Pdfium
+    PRIVATE
+        ${fx_third_party_libs}
+        Freetype::Freetype
+        ICU::data
+        ICU::uc
+        JPEG::JPEG
+        PNG::PNG
+        TIFF::TIFF
+        ZLIB::ZLIB
+)
+
+if(LCMS2_FOUND)
+    target_link_libraries(Pdfium PRIVATE lcms2::lcms2)
+else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PC_LCMS2 REQUIRED lcms2)
+
+    target_link_libraries(Pdfium PRIVATE ${PC_LCMS2_LIBRARIES})
+    target_include_directories(Pdfium PRIVATE ${PC_LCMS2_INCLUDE_DIRS})
+    target_compile_options(Pdfium PRIVATE ${PC_LCMS2_CFLAGS_OTHER})
+endif()
+
+
+target_sources(
+    Pdfium
+    PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS pdfium/public
+        FILES
+            pdfium/public/fpdf_annot.h
+            pdfium/public/fpdf_attachment.h
+            pdfium/public/fpdf_catalog.h
+            pdfium/public/fpdf_dataavail.h
+            pdfium/public/fpdf_doc.h
+            pdfium/public/fpdf_edit.h
+            pdfium/public/fpdf_ext.h
+            pdfium/public/fpdf_flatten.h
+            pdfium/public/fpdf_formfill.h
+            pdfium/public/fpdf_fwlevent.h
+            pdfium/public/fpdf_javascript.h
+            pdfium/public/fpdf_ppo.h
+            pdfium/public/fpdf_progressive.h
+            pdfium/public/fpdf_save.h
+            pdfium/public/fpdf_searchex.h
+            pdfium/public/fpdf_signature.h
+            pdfium/public/fpdf_structtree.h
+            pdfium/public/fpdf_sysfontinfo.h
+            pdfium/public/fpdf_text.h
+            pdfium/public/fpdf_transformpage.h
+            pdfium/public/fpdfview.h
+    PRIVATE
+        pdfium/constants/access_permissions.h
+        pdfium/constants/annotation_common.cpp
+        pdfium/constants/annotation_common.h
+        pdfium/constants/annotation_flags.h
+        pdfium/constants/appearance.cpp
+        pdfium/constants/appearance.h
+        pdfium/constants/ascii.h
+        pdfium/constants/font_encodings.cpp
+        pdfium/constants/font_encodings.h
+        pdfium/constants/form_fields.cpp
+        pdfium/constants/form_fields.h
+        pdfium/constants/form_flags.h
+        pdfium/constants/page_object.cpp
+        pdfium/constants/page_object.h
+        pdfium/constants/stream_dict_common.cpp
+        pdfium/constants/stream_dict_common.h
+        pdfium/constants/transparency.cpp
+        pdfium/constants/transparency.h
+
+        pdfium/core/fdrm/fx_crypt.cpp
+        pdfium/core/fdrm/fx_crypt.h
+        pdfium/core/fdrm/fx_crypt_aes.cpp
+        pdfium/core/fdrm/fx_crypt_aes.h
+        pdfium/core/fdrm/fx_crypt_sha.cpp
+        pdfium/core/fdrm/fx_crypt_sha.h
+
+        pdfium/core/fpdfapi/cmaps/CNS1/Adobe-CNS1-UCS2_5.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/B5pc-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/B5pc-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/CNS-EUC-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/CNS-EUC-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/ETen-B5-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/ETen-B5-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/ETenms-B5-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/ETenms-B5-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/HKscs-B5-H_5.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/HKscs-B5-V_5.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/UniCNS-UCS2-H_3.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/UniCNS-UCS2-V_3.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/UniCNS-UTF16-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/CNS1/cmaps_cns1.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/Adobe-GB1-UCS2_5.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GB-EUC-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GB-EUC-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBK-EUC-H_2.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBK-EUC-V_2.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBK2K-H_5.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBK2K-V_5.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBKp-EUC-H_2.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBKp-EUC-V_2.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBpc-EUC-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/GBpc-EUC-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/UniGB-UCS2-H_4.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/UniGB-UCS2-V_4.cpp
+        pdfium/core/fpdfapi/cmaps/GB1/cmaps_gb1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/83pv-RKSJ-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/90ms-RKSJ-H_2.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/90ms-RKSJ-V_2.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/90msp-RKSJ-H_2.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/90msp-RKSJ-V_2.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/90pv-RKSJ-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/Add-RKSJ-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/Add-RKSJ-V_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/Adobe-Japan1-UCS2_4.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/EUC-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/EUC-V_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/Ext-RKSJ-H_2.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/Ext-RKSJ-V_2.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/UniJIS-UCS2-HW-H_4.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/UniJIS-UCS2-HW-V_4.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/UniJIS-UCS2-H_4.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/UniJIS-UCS2-V_4.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/V_1.cpp
+        pdfium/core/fpdfapi/cmaps/Japan1/cmaps_japan1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/Adobe-Korea1-UCS2_2.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSC-EUC-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSC-EUC-V_0.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSCms-UHC-HW-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSCms-UHC-HW-V_1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSCms-UHC-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSCms-UHC-V_1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/KSCpc-EUC-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/UniKS-UCS2-H_1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/UniKS-UCS2-V_1.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/UniKS-UTF16-H_0.cpp
+        pdfium/core/fpdfapi/cmaps/Korea1/cmaps_korea1.cpp
+        pdfium/core/fpdfapi/cmaps/fpdf_cmaps.cpp
+        pdfium/core/fpdfapi/cmaps/fpdf_cmaps.h
+
+        pdfium/core/fpdfapi/edit/cpdf_creator.cpp
+        pdfium/core/fpdfapi/edit/cpdf_creator.h
+        pdfium/core/fpdfapi/edit/cpdf_npagetooneexporter.cpp
+        pdfium/core/fpdfapi/edit/cpdf_npagetooneexporter.h
+        pdfium/core/fpdfapi/edit/cpdf_pagecontentgenerator.cpp
+        pdfium/core/fpdfapi/edit/cpdf_pagecontentgenerator.h
+        pdfium/core/fpdfapi/edit/cpdf_pagecontentmanager.cpp
+        pdfium/core/fpdfapi/edit/cpdf_pagecontentmanager.h
+        pdfium/core/fpdfapi/edit/cpdf_pageexporter.cpp
+        pdfium/core/fpdfapi/edit/cpdf_pageexporter.h
+        pdfium/core/fpdfapi/edit/cpdf_pageorganizer.cpp
+        pdfium/core/fpdfapi/edit/cpdf_pageorganizer.h
+        pdfium/core/fpdfapi/edit/cpdf_stringarchivestream.cpp
+        pdfium/core/fpdfapi/edit/cpdf_stringarchivestream.h
+
+        pdfium/core/fpdfapi/edit/cpdf_contentstream_write_utils.cpp
+        pdfium/core/fpdfapi/edit/cpdf_contentstream_write_utils.h
+
+        pdfium/core/fpdfapi/font/cfx_cttgsubtable.cpp
+        pdfium/core/fpdfapi/font/cfx_cttgsubtable.h
+        pdfium/core/fpdfapi/font/cfx_stockfontarray.cpp
+        pdfium/core/fpdfapi/font/cfx_stockfontarray.h
+        pdfium/core/fpdfapi/font/cpdf_cid2unicodemap.cpp
+        pdfium/core/fpdfapi/font/cpdf_cid2unicodemap.h
+        pdfium/core/fpdfapi/font/cpdf_cidfont.cpp
+        pdfium/core/fpdfapi/font/cpdf_cidfont.h
+        pdfium/core/fpdfapi/font/cpdf_cmap.cpp
+        pdfium/core/fpdfapi/font/cpdf_cmap.h
+        pdfium/core/fpdfapi/font/cpdf_cmapparser.cpp
+        pdfium/core/fpdfapi/font/cpdf_cmapparser.h
+        pdfium/core/fpdfapi/font/cpdf_font.cpp
+        pdfium/core/fpdfapi/font/cpdf_font.h
+        pdfium/core/fpdfapi/font/cpdf_fontencoding.cpp
+        pdfium/core/fpdfapi/font/cpdf_fontencoding.h
+        pdfium/core/fpdfapi/font/cpdf_fontglobals.cpp
+        pdfium/core/fpdfapi/font/cpdf_fontglobals.h
+        pdfium/core/fpdfapi/font/cpdf_simplefont.cpp
+        pdfium/core/fpdfapi/font/cpdf_simplefont.h
+        pdfium/core/fpdfapi/font/cpdf_tounicodemap.cpp
+        pdfium/core/fpdfapi/font/cpdf_tounicodemap.h
+        pdfium/core/fpdfapi/font/cpdf_truetypefont.cpp
+        pdfium/core/fpdfapi/font/cpdf_truetypefont.h
+        pdfium/core/fpdfapi/font/cpdf_type1font.cpp
+        pdfium/core/fpdfapi/font/cpdf_type1font.h
+        pdfium/core/fpdfapi/font/cpdf_type3char.cpp
+        pdfium/core/fpdfapi/font/cpdf_type3char.h
+        pdfium/core/fpdfapi/font/cpdf_type3font.cpp
+        pdfium/core/fpdfapi/font/cpdf_type3font.h
+
+        pdfium/core/fpdfapi/page/cpdf_allstates.cpp
+        pdfium/core/fpdfapi/page/cpdf_allstates.h
+        pdfium/core/fpdfapi/page/cpdf_annotcontext.cpp
+        pdfium/core/fpdfapi/page/cpdf_annotcontext.h
+        pdfium/core/fpdfapi/page/cpdf_basedcs.cpp
+        pdfium/core/fpdfapi/page/cpdf_basedcs.h
+        pdfium/core/fpdfapi/page/cpdf_clippath.cpp
+        pdfium/core/fpdfapi/page/cpdf_clippath.h
+        pdfium/core/fpdfapi/page/cpdf_color.cpp
+        pdfium/core/fpdfapi/page/cpdf_color.h
+        pdfium/core/fpdfapi/page/cpdf_colorspace.cpp
+        pdfium/core/fpdfapi/page/cpdf_colorspace.h
+        pdfium/core/fpdfapi/page/cpdf_colorstate.cpp
+        pdfium/core/fpdfapi/page/cpdf_colorstate.h
+        pdfium/core/fpdfapi/page/cpdf_contentmarkitem.cpp
+        pdfium/core/fpdfapi/page/cpdf_contentmarkitem.h
+        pdfium/core/fpdfapi/page/cpdf_contentmarks.cpp
+        pdfium/core/fpdfapi/page/cpdf_contentmarks.h
+        pdfium/core/fpdfapi/page/cpdf_contentparser.cpp
+        pdfium/core/fpdfapi/page/cpdf_contentparser.h
+        pdfium/core/fpdfapi/page/cpdf_devicecs.cpp
+        pdfium/core/fpdfapi/page/cpdf_devicecs.h
+        pdfium/core/fpdfapi/page/cpdf_dib.cpp
+        pdfium/core/fpdfapi/page/cpdf_dib.h
+        pdfium/core/fpdfapi/page/cpdf_docpagedata.cpp
+        pdfium/core/fpdfapi/page/cpdf_docpagedata.h
+        pdfium/core/fpdfapi/page/cpdf_expintfunc.cpp
+        pdfium/core/fpdfapi/page/cpdf_expintfunc.h
+        pdfium/core/fpdfapi/page/cpdf_form.cpp
+        pdfium/core/fpdfapi/page/cpdf_form.h
+        pdfium/core/fpdfapi/page/cpdf_formobject.cpp
+        pdfium/core/fpdfapi/page/cpdf_formobject.h
+        pdfium/core/fpdfapi/page/cpdf_function.cpp
+        pdfium/core/fpdfapi/page/cpdf_function.h
+        pdfium/core/fpdfapi/page/cpdf_generalstate.cpp
+        pdfium/core/fpdfapi/page/cpdf_generalstate.h
+        pdfium/core/fpdfapi/page/cpdf_graphicstates.cpp
+        pdfium/core/fpdfapi/page/cpdf_graphicstates.h
+        pdfium/core/fpdfapi/page/cpdf_iccprofile.cpp
+        pdfium/core/fpdfapi/page/cpdf_iccprofile.h
+        pdfium/core/fpdfapi/page/cpdf_image.cpp
+        pdfium/core/fpdfapi/page/cpdf_image.h
+        pdfium/core/fpdfapi/page/cpdf_imageloader.cpp
+        pdfium/core/fpdfapi/page/cpdf_imageloader.h
+        pdfium/core/fpdfapi/page/cpdf_imageobject.cpp
+        pdfium/core/fpdfapi/page/cpdf_imageobject.h
+        pdfium/core/fpdfapi/page/cpdf_indexedcs.cpp
+        pdfium/core/fpdfapi/page/cpdf_indexedcs.h
+        pdfium/core/fpdfapi/page/cpdf_meshstream.cpp
+        pdfium/core/fpdfapi/page/cpdf_meshstream.h
+        pdfium/core/fpdfapi/page/cpdf_occontext.cpp
+        pdfium/core/fpdfapi/page/cpdf_occontext.h
+        pdfium/core/fpdfapi/page/cpdf_page.cpp
+        pdfium/core/fpdfapi/page/cpdf_page.h
+        pdfium/core/fpdfapi/page/cpdf_pageimagecache.cpp
+        pdfium/core/fpdfapi/page/cpdf_pageimagecache.h
+        pdfium/core/fpdfapi/page/cpdf_pagemodule.cpp
+        pdfium/core/fpdfapi/page/cpdf_pagemodule.h
+        pdfium/core/fpdfapi/page/cpdf_pageobject.cpp
+        pdfium/core/fpdfapi/page/cpdf_pageobject.h
+        pdfium/core/fpdfapi/page/cpdf_pageobjectholder.cpp
+        pdfium/core/fpdfapi/page/cpdf_pageobjectholder.h
+        pdfium/core/fpdfapi/page/cpdf_path.cpp
+        pdfium/core/fpdfapi/page/cpdf_path.h
+        pdfium/core/fpdfapi/page/cpdf_pathobject.cpp
+        pdfium/core/fpdfapi/page/cpdf_pathobject.h
+        pdfium/core/fpdfapi/page/cpdf_pattern.cpp
+        pdfium/core/fpdfapi/page/cpdf_pattern.h
+        pdfium/core/fpdfapi/page/cpdf_patterncs.cpp
+        pdfium/core/fpdfapi/page/cpdf_patterncs.h
+        pdfium/core/fpdfapi/page/cpdf_psengine.cpp
+        pdfium/core/fpdfapi/page/cpdf_psengine.h
+        pdfium/core/fpdfapi/page/cpdf_psfunc.cpp
+        pdfium/core/fpdfapi/page/cpdf_psfunc.h
+        pdfium/core/fpdfapi/page/cpdf_sampledfunc.cpp
+        pdfium/core/fpdfapi/page/cpdf_sampledfunc.h
+        pdfium/core/fpdfapi/page/cpdf_shadingobject.cpp
+        pdfium/core/fpdfapi/page/cpdf_shadingobject.h
+        pdfium/core/fpdfapi/page/cpdf_shadingpattern.cpp
+        pdfium/core/fpdfapi/page/cpdf_shadingpattern.h
+        pdfium/core/fpdfapi/page/cpdf_stitchfunc.cpp
+        pdfium/core/fpdfapi/page/cpdf_stitchfunc.h
+        pdfium/core/fpdfapi/page/cpdf_streamcontentparser.cpp
+        pdfium/core/fpdfapi/page/cpdf_streamcontentparser.h
+        pdfium/core/fpdfapi/page/cpdf_streamparser.cpp
+        pdfium/core/fpdfapi/page/cpdf_streamparser.h
+        pdfium/core/fpdfapi/page/cpdf_textobject.cpp
+        pdfium/core/fpdfapi/page/cpdf_textobject.h
+        pdfium/core/fpdfapi/page/cpdf_textstate.cpp
+        pdfium/core/fpdfapi/page/cpdf_textstate.h
+        pdfium/core/fpdfapi/page/cpdf_tilingpattern.cpp
+        pdfium/core/fpdfapi/page/cpdf_tilingpattern.h
+        pdfium/core/fpdfapi/page/cpdf_transferfunc.cpp
+        pdfium/core/fpdfapi/page/cpdf_transferfunc.h
+        pdfium/core/fpdfapi/page/cpdf_transferfuncdib.cpp
+        pdfium/core/fpdfapi/page/cpdf_transferfuncdib.h
+        pdfium/core/fpdfapi/page/cpdf_transparency.cpp
+        pdfium/core/fpdfapi/page/cpdf_transparency.h
+        pdfium/core/fpdfapi/page/ipdf_page.h
+
+        pdfium/core/fpdfapi/parser/cfdf_document.cpp
+        pdfium/core/fpdfapi/parser/cfdf_document.h
+        pdfium/core/fpdfapi/parser/cpdf_array.cpp
+        pdfium/core/fpdfapi/parser/cpdf_array.h
+        pdfium/core/fpdfapi/parser/cpdf_boolean.cpp
+        pdfium/core/fpdfapi/parser/cpdf_boolean.h
+        pdfium/core/fpdfapi/parser/cpdf_cross_ref_avail.cpp
+        pdfium/core/fpdfapi/parser/cpdf_cross_ref_avail.h
+        pdfium/core/fpdfapi/parser/cpdf_cross_ref_table.cpp
+        pdfium/core/fpdfapi/parser/cpdf_cross_ref_table.h
+        pdfium/core/fpdfapi/parser/cpdf_crypto_handler.cpp
+        pdfium/core/fpdfapi/parser/cpdf_crypto_handler.h
+        pdfium/core/fpdfapi/parser/cpdf_data_avail.cpp
+        pdfium/core/fpdfapi/parser/cpdf_data_avail.h
+        pdfium/core/fpdfapi/parser/cpdf_dictionary.cpp
+        pdfium/core/fpdfapi/parser/cpdf_dictionary.h
+        pdfium/core/fpdfapi/parser/cpdf_document.cpp
+        pdfium/core/fpdfapi/parser/cpdf_document.h
+        pdfium/core/fpdfapi/parser/cpdf_encryptor.cpp
+        pdfium/core/fpdfapi/parser/cpdf_encryptor.h
+        pdfium/core/fpdfapi/parser/cpdf_flateencoder.cpp
+        pdfium/core/fpdfapi/parser/cpdf_flateencoder.h
+        pdfium/core/fpdfapi/parser/cpdf_hint_tables.cpp
+        pdfium/core/fpdfapi/parser/cpdf_hint_tables.h
+        pdfium/core/fpdfapi/parser/cpdf_indirect_object_holder.cpp
+        pdfium/core/fpdfapi/parser/cpdf_indirect_object_holder.h
+        pdfium/core/fpdfapi/parser/cpdf_linearized_header.cpp
+        pdfium/core/fpdfapi/parser/cpdf_linearized_header.h
+        pdfium/core/fpdfapi/parser/cpdf_name.cpp
+        pdfium/core/fpdfapi/parser/cpdf_name.h
+        pdfium/core/fpdfapi/parser/cpdf_null.cpp
+        pdfium/core/fpdfapi/parser/cpdf_null.h
+        pdfium/core/fpdfapi/parser/cpdf_number.cpp
+        pdfium/core/fpdfapi/parser/cpdf_number.h
+        pdfium/core/fpdfapi/parser/cpdf_object.cpp
+        pdfium/core/fpdfapi/parser/cpdf_object.h
+        pdfium/core/fpdfapi/parser/cpdf_object_avail.cpp
+        pdfium/core/fpdfapi/parser/cpdf_object_avail.h
+        pdfium/core/fpdfapi/parser/cpdf_object_stream.cpp
+        pdfium/core/fpdfapi/parser/cpdf_object_stream.h
+        pdfium/core/fpdfapi/parser/cpdf_object_walker.cpp
+        pdfium/core/fpdfapi/parser/cpdf_object_walker.h
+        pdfium/core/fpdfapi/parser/cpdf_page_object_avail.cpp
+        pdfium/core/fpdfapi/parser/cpdf_page_object_avail.h
+        pdfium/core/fpdfapi/parser/cpdf_parser.cpp
+        pdfium/core/fpdfapi/parser/cpdf_parser.h
+        pdfium/core/fpdfapi/parser/cpdf_read_validator.cpp
+        pdfium/core/fpdfapi/parser/cpdf_read_validator.h
+        pdfium/core/fpdfapi/parser/cpdf_reference.cpp
+        pdfium/core/fpdfapi/parser/cpdf_reference.h
+        pdfium/core/fpdfapi/parser/cpdf_security_handler.cpp
+        pdfium/core/fpdfapi/parser/cpdf_security_handler.h
+        pdfium/core/fpdfapi/parser/cpdf_simple_parser.cpp
+        pdfium/core/fpdfapi/parser/cpdf_simple_parser.h
+        pdfium/core/fpdfapi/parser/cpdf_stream.cpp
+        pdfium/core/fpdfapi/parser/cpdf_stream.h
+        pdfium/core/fpdfapi/parser/cpdf_stream_acc.cpp
+        pdfium/core/fpdfapi/parser/cpdf_stream_acc.h
+        pdfium/core/fpdfapi/parser/cpdf_string.cpp
+        pdfium/core/fpdfapi/parser/cpdf_string.h
+        pdfium/core/fpdfapi/parser/cpdf_syntax_parser.cpp
+        pdfium/core/fpdfapi/parser/cpdf_syntax_parser.h
+        pdfium/core/fpdfapi/parser/fpdf_parser_decode.cpp
+        pdfium/core/fpdfapi/parser/fpdf_parser_decode.h
+        pdfium/core/fpdfapi/parser/fpdf_parser_utility.cpp
+        pdfium/core/fpdfapi/parser/fpdf_parser_utility.h
+        pdfium/core/fpdfapi/parser/object_tree_traversal_util.cpp
+        pdfium/core/fpdfapi/parser/object_tree_traversal_util.h
+
+        pdfium/core/fpdfapi/render/charposlist.cpp
+        pdfium/core/fpdfapi/render/charposlist.h
+        pdfium/core/fpdfapi/render/cpdf_devicebuffer.cpp
+        pdfium/core/fpdfapi/render/cpdf_devicebuffer.h
+        pdfium/core/fpdfapi/render/cpdf_docrenderdata.cpp
+        pdfium/core/fpdfapi/render/cpdf_docrenderdata.h
+        pdfium/core/fpdfapi/render/cpdf_imagerenderer.cpp
+        pdfium/core/fpdfapi/render/cpdf_imagerenderer.h
+        pdfium/core/fpdfapi/render/cpdf_pagerendercontext.cpp
+        pdfium/core/fpdfapi/render/cpdf_pagerendercontext.h
+        pdfium/core/fpdfapi/render/cpdf_progressiverenderer.cpp
+        pdfium/core/fpdfapi/render/cpdf_progressiverenderer.h
+        pdfium/core/fpdfapi/render/cpdf_rendercontext.cpp
+        pdfium/core/fpdfapi/render/cpdf_rendercontext.h
+        pdfium/core/fpdfapi/render/cpdf_renderoptions.cpp
+        pdfium/core/fpdfapi/render/cpdf_renderoptions.h
+        pdfium/core/fpdfapi/render/cpdf_rendershading.cpp
+        pdfium/core/fpdfapi/render/cpdf_rendershading.h
+        pdfium/core/fpdfapi/render/cpdf_renderstatus.cpp
+        pdfium/core/fpdfapi/render/cpdf_renderstatus.h
+        pdfium/core/fpdfapi/render/cpdf_rendertiling.cpp
+        pdfium/core/fpdfapi/render/cpdf_rendertiling.h
+        pdfium/core/fpdfapi/render/cpdf_textrenderer.cpp
+        pdfium/core/fpdfapi/render/cpdf_textrenderer.h
+        pdfium/core/fpdfapi/render/cpdf_type3cache.cpp
+        pdfium/core/fpdfapi/render/cpdf_type3cache.h
+        pdfium/core/fpdfapi/render/cpdf_type3glyphmap.cpp
+        pdfium/core/fpdfapi/render/cpdf_type3glyphmap.h
+
+        pdfium/core/fpdfdoc/cpdf_aaction.cpp
+        pdfium/core/fpdfdoc/cpdf_aaction.h
+        pdfium/core/fpdfdoc/cpdf_action.cpp
+        pdfium/core/fpdfdoc/cpdf_action.h
+        pdfium/core/fpdfdoc/cpdf_annot.cpp
+        pdfium/core/fpdfdoc/cpdf_annot.h
+        pdfium/core/fpdfdoc/cpdf_annotlist.cpp
+        pdfium/core/fpdfdoc/cpdf_annotlist.h
+        pdfium/core/fpdfdoc/cpdf_apsettings.cpp
+        pdfium/core/fpdfdoc/cpdf_apsettings.h
+        pdfium/core/fpdfdoc/cpdf_bafontmap.cpp
+        pdfium/core/fpdfdoc/cpdf_bafontmap.h
+        pdfium/core/fpdfdoc/cpdf_bookmark.cpp
+        pdfium/core/fpdfdoc/cpdf_bookmark.h
+        pdfium/core/fpdfdoc/cpdf_bookmarktree.cpp
+        pdfium/core/fpdfdoc/cpdf_bookmarktree.h
+        pdfium/core/fpdfdoc/cpdf_color_utils.cpp
+        pdfium/core/fpdfdoc/cpdf_color_utils.h
+        pdfium/core/fpdfdoc/cpdf_defaultappearance.cpp
+        pdfium/core/fpdfdoc/cpdf_defaultappearance.h
+        pdfium/core/fpdfdoc/cpdf_dest.cpp
+        pdfium/core/fpdfdoc/cpdf_dest.h
+        pdfium/core/fpdfdoc/cpdf_filespec.cpp
+        pdfium/core/fpdfdoc/cpdf_filespec.h
+        pdfium/core/fpdfdoc/cpdf_formcontrol.cpp
+        pdfium/core/fpdfdoc/cpdf_formcontrol.h
+        pdfium/core/fpdfdoc/cpdf_formfield.cpp
+        pdfium/core/fpdfdoc/cpdf_formfield.h
+        pdfium/core/fpdfdoc/cpdf_generateap.cpp
+        pdfium/core/fpdfdoc/cpdf_generateap.h
+        pdfium/core/fpdfdoc/cpdf_icon.cpp
+        pdfium/core/fpdfdoc/cpdf_icon.h
+        pdfium/core/fpdfdoc/cpdf_iconfit.cpp
+        pdfium/core/fpdfdoc/cpdf_iconfit.h
+        pdfium/core/fpdfdoc/cpdf_interactiveform.cpp
+        pdfium/core/fpdfdoc/cpdf_interactiveform.h
+        pdfium/core/fpdfdoc/cpdf_link.cpp
+        pdfium/core/fpdfdoc/cpdf_link.h
+        pdfium/core/fpdfdoc/cpdf_linklist.cpp
+        pdfium/core/fpdfdoc/cpdf_linklist.h
+        pdfium/core/fpdfdoc/cpdf_metadata.cpp
+        pdfium/core/fpdfdoc/cpdf_metadata.h
+        pdfium/core/fpdfdoc/cpdf_nametree.cpp
+        pdfium/core/fpdfdoc/cpdf_nametree.h
+        pdfium/core/fpdfdoc/cpdf_numbertree.cpp
+        pdfium/core/fpdfdoc/cpdf_numbertree.h
+        pdfium/core/fpdfdoc/cpdf_pagelabel.cpp
+        pdfium/core/fpdfdoc/cpdf_pagelabel.h
+        pdfium/core/fpdfdoc/cpdf_structelement.cpp
+        pdfium/core/fpdfdoc/cpdf_structelement.h
+        pdfium/core/fpdfdoc/cpdf_structtree.cpp
+        pdfium/core/fpdfdoc/cpdf_structtree.h
+        pdfium/core/fpdfdoc/cpdf_viewerpreferences.cpp
+        pdfium/core/fpdfdoc/cpdf_viewerpreferences.h
+        pdfium/core/fpdfdoc/cpvt_floatrect.h
+        pdfium/core/fpdfdoc/cpvt_fontmap.cpp
+        pdfium/core/fpdfdoc/cpvt_fontmap.h
+        pdfium/core/fpdfdoc/cpvt_line.h
+        pdfium/core/fpdfdoc/cpvt_lineinfo.h
+        pdfium/core/fpdfdoc/cpvt_section.cpp
+        pdfium/core/fpdfdoc/cpvt_section.h
+        pdfium/core/fpdfdoc/cpvt_variabletext.cpp
+        pdfium/core/fpdfdoc/cpvt_variabletext.h
+        pdfium/core/fpdfdoc/cpvt_word.h
+        pdfium/core/fpdfdoc/cpvt_wordinfo.cpp
+        pdfium/core/fpdfdoc/cpvt_wordinfo.h
+        pdfium/core/fpdfdoc/cpvt_wordplace.h
+        pdfium/core/fpdfdoc/cpvt_wordrange.h
+        pdfium/core/fpdfdoc/ipvt_fontmap.h
+
+        pdfium/core/fpdftext/cpdf_linkextract.cpp
+        pdfium/core/fpdftext/cpdf_linkextract.h
+        pdfium/core/fpdftext/cpdf_textpage.cpp
+        pdfium/core/fpdftext/cpdf_textpage.h
+        pdfium/core/fpdftext/cpdf_textpagefind.cpp
+        pdfium/core/fpdftext/cpdf_textpagefind.h
+        pdfium/core/fpdftext/unicodenormalizationdata.cpp
+        pdfium/core/fpdftext/unicodenormalizationdata.h
+
+        pdfium/core/fxcodec/basic/basicmodule.cpp
+        pdfium/core/fxcodec/basic/basicmodule.h
+        pdfium/core/fxcodec/data_and_bytes_consumed.cpp
+        pdfium/core/fxcodec/data_and_bytes_consumed.h
+        pdfium/core/fxcodec/fax/faxmodule.cpp
+        pdfium/core/fxcodec/fax/faxmodule.h
+        pdfium/core/fxcodec/flate/flatemodule.cpp
+        pdfium/core/fxcodec/flate/flatemodule.h
+        pdfium/core/fxcodec/fx_codec.cpp
+        pdfium/core/fxcodec/fx_codec.h
+        pdfium/core/fxcodec/fx_codec_def.h
+        pdfium/core/fxcodec/icc/icc_transform.cpp
+        pdfium/core/fxcodec/icc/icc_transform.h
+        pdfium/core/fxcodec/jbig2/JBig2_ArithDecoder.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_ArithDecoder.h
+        pdfium/core/fxcodec/jbig2/JBig2_ArithIntDecoder.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_ArithIntDecoder.h
+        pdfium/core/fxcodec/jbig2/JBig2_BitStream.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_BitStream.h
+        pdfium/core/fxcodec/jbig2/JBig2_Context.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_Context.h
+        pdfium/core/fxcodec/jbig2/JBig2_Define.h
+        pdfium/core/fxcodec/jbig2/JBig2_DocumentContext.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_DocumentContext.h
+        pdfium/core/fxcodec/jbig2/JBig2_GrdProc.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_GrdProc.h
+        pdfium/core/fxcodec/jbig2/JBig2_GrrdProc.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_GrrdProc.h
+        pdfium/core/fxcodec/jbig2/JBig2_HtrdProc.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_HtrdProc.h
+        pdfium/core/fxcodec/jbig2/JBig2_HuffmanDecoder.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_HuffmanDecoder.h
+        pdfium/core/fxcodec/jbig2/JBig2_HuffmanTable.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_HuffmanTable.h
+        pdfium/core/fxcodec/jbig2/JBig2_Image.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_Image.h
+        pdfium/core/fxcodec/jbig2/JBig2_Page.h
+        pdfium/core/fxcodec/jbig2/JBig2_PatternDict.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_PatternDict.h
+        pdfium/core/fxcodec/jbig2/JBig2_PddProc.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_PddProc.h
+        pdfium/core/fxcodec/jbig2/JBig2_SddProc.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_SddProc.h
+        pdfium/core/fxcodec/jbig2/JBig2_Segment.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_Segment.h
+        pdfium/core/fxcodec/jbig2/JBig2_SymbolDict.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_SymbolDict.h
+        pdfium/core/fxcodec/jbig2/JBig2_TrdProc.cpp
+        pdfium/core/fxcodec/jbig2/JBig2_TrdProc.h
+        pdfium/core/fxcodec/jbig2/jbig2_decoder.cpp
+        pdfium/core/fxcodec/jbig2/jbig2_decoder.h
+        pdfium/core/fxcodec/jpeg/jpeg_common.c
+        pdfium/core/fxcodec/jpeg/jpeg_common.h
+        pdfium/core/fxcodec/jpeg/jpegmodule.cpp
+        pdfium/core/fxcodec/jpeg/jpegmodule.h
+        pdfium/core/fxcodec/jpx/cjpx_decoder.cpp
+        pdfium/core/fxcodec/jpx/cjpx_decoder.h
+        pdfium/core/fxcodec/jpx/jpx_decode_utils.cpp
+        pdfium/core/fxcodec/jpx/jpx_decode_utils.h
+        pdfium/core/fxcodec/scanlinedecoder.cpp
+        pdfium/core/fxcodec/scanlinedecoder.h
+
+        pdfium/core/fxcrt/autonuller.h
+        pdfium/core/fxcrt/autorestorer.h
+        pdfium/core/fxcrt/binary_buffer.cpp
+        pdfium/core/fxcrt/binary_buffer.h
+        pdfium/core/fxcrt/byteorder.h
+        pdfium/core/fxcrt/bytestring.cpp
+        pdfium/core/fxcrt/bytestring.h
+        pdfium/core/fxcrt/cfx_bitstream.cpp
+        pdfium/core/fxcrt/cfx_bitstream.h
+        pdfium/core/fxcrt/cfx_datetime.cpp
+        pdfium/core/fxcrt/cfx_datetime.h
+        pdfium/core/fxcrt/cfx_read_only_span_stream.cpp
+        pdfium/core/fxcrt/cfx_read_only_span_stream.h
+        pdfium/core/fxcrt/cfx_read_only_string_stream.cpp
+        pdfium/core/fxcrt/cfx_read_only_string_stream.h
+        pdfium/core/fxcrt/cfx_read_only_vector_stream.cpp
+        pdfium/core/fxcrt/cfx_read_only_vector_stream.h
+        pdfium/core/fxcrt/cfx_seekablestreamproxy.cpp
+        pdfium/core/fxcrt/cfx_seekablestreamproxy.h
+        pdfium/core/fxcrt/cfx_timer.cpp
+        pdfium/core/fxcrt/cfx_timer.h
+        pdfium/core/fxcrt/check.h
+        pdfium/core/fxcrt/check_op.h
+        pdfium/core/fxcrt/code_point_view.h
+        pdfium/core/fxcrt/component_export.h
+        pdfium/core/fxcrt/containers/adapters.h
+        pdfium/core/fxcrt/containers/contains.h
+        pdfium/core/fxcrt/data_vector.h
+        pdfium/core/fxcrt/debug/alias.cc
+        pdfium/core/fxcrt/debug/alias.h
+        pdfium/core/fxcrt/fileaccess_iface.h
+        pdfium/core/fxcrt/fixed_size_data_vector.h
+        pdfium/core/fxcrt/fx_2d_size.h
+        pdfium/core/fxcrt/fx_bidi.cpp
+        pdfium/core/fxcrt/fx_bidi.h
+        pdfium/core/fxcrt/fx_codepage.cpp
+        pdfium/core/fxcrt/fx_codepage.h
+        pdfium/core/fxcrt/fx_codepage_forward.h
+        pdfium/core/fxcrt/fx_coordinates.cpp
+        pdfium/core/fxcrt/fx_coordinates.h
+        pdfium/core/fxcrt/fx_extension.cpp
+        pdfium/core/fxcrt/fx_extension.h
+        pdfium/core/fxcrt/fx_folder.h
+        pdfium/core/fxcrt/fx_memcpy_wrappers.h
+        pdfium/core/fxcrt/fx_memory.cpp
+        pdfium/core/fxcrt/fx_memory.h
+        pdfium/core/fxcrt/fx_memory_malloc.cpp
+        pdfium/core/fxcrt/fx_memory_wrappers.h
+        pdfium/core/fxcrt/fx_number.cpp
+        pdfium/core/fxcrt/fx_number.h
+        pdfium/core/fxcrt/fx_random.cpp
+        pdfium/core/fxcrt/fx_random.h
+        pdfium/core/fxcrt/fx_safe_types.h
+        pdfium/core/fxcrt/fx_stream.cpp
+        pdfium/core/fxcrt/fx_stream.h
+        pdfium/core/fxcrt/fx_string.cpp
+        pdfium/core/fxcrt/fx_string.h
+        pdfium/core/fxcrt/fx_string_wrappers.h
+        pdfium/core/fxcrt/fx_system.cpp
+        pdfium/core/fxcrt/fx_system.h
+        pdfium/core/fxcrt/fx_types.h
+        pdfium/core/fxcrt/fx_unicode.cpp
+        pdfium/core/fxcrt/fx_unicode.h
+        pdfium/core/fxcrt/immediate_crash.h
+        pdfium/core/fxcrt/mask.h
+        pdfium/core/fxcrt/maybe_owned.h
+        pdfium/core/fxcrt/notreached.h
+        pdfium/core/fxcrt/numerics/checked_math.h
+        pdfium/core/fxcrt/numerics/checked_math_impl.h
+        pdfium/core/fxcrt/numerics/clamped_math.h
+        pdfium/core/fxcrt/numerics/clamped_math_impl.h
+        pdfium/core/fxcrt/numerics/safe_conversions.h
+        pdfium/core/fxcrt/numerics/safe_conversions_arm_impl.h
+        pdfium/core/fxcrt/numerics/safe_conversions_impl.h
+        pdfium/core/fxcrt/numerics/safe_math.h
+        pdfium/core/fxcrt/numerics/safe_math_arm_impl.h
+        pdfium/core/fxcrt/numerics/safe_math_clang_gcc_impl.h
+        pdfium/core/fxcrt/numerics/safe_math_shared_impl.h
+        pdfium/core/fxcrt/observed_ptr.cpp
+        pdfium/core/fxcrt/observed_ptr.h
+        pdfium/core/fxcrt/pauseindicator_iface.h
+        pdfium/core/fxcrt/ptr_util.h
+        pdfium/core/fxcrt/raw_span.h
+        pdfium/core/fxcrt/retain_ptr.h
+        pdfium/core/fxcrt/scoped_set_insertion.h
+        pdfium/core/fxcrt/shared_copy_on_write.h
+        pdfium/core/fxcrt/span.h
+        pdfium/core/fxcrt/span_util.h
+        pdfium/core/fxcrt/stl_util.h
+        pdfium/core/fxcrt/string_data_template.cpp
+        pdfium/core/fxcrt/string_data_template.h
+        pdfium/core/fxcrt/string_pool_template.h
+        pdfium/core/fxcrt/string_template.cpp
+        pdfium/core/fxcrt/string_template.h
+        pdfium/core/fxcrt/string_view_template.h
+        pdfium/core/fxcrt/template_util.h
+        pdfium/core/fxcrt/tree_node.h
+        pdfium/core/fxcrt/unowned_ptr.h
+        pdfium/core/fxcrt/utf16.h
+        pdfium/core/fxcrt/weak_ptr.h
+        pdfium/core/fxcrt/widestring.cpp
+        pdfium/core/fxcrt/widestring.h
+        pdfium/core/fxcrt/widetext_buffer.cpp
+        pdfium/core/fxcrt/widetext_buffer.h
+        pdfium/core/fxcrt/xml/cfx_xmlchardata.cpp
+        pdfium/core/fxcrt/xml/cfx_xmlchardata.h
+        pdfium/core/fxcrt/xml/cfx_xmldocument.cpp
+        pdfium/core/fxcrt/xml/cfx_xmldocument.h
+        pdfium/core/fxcrt/xml/cfx_xmlelement.cpp
+        pdfium/core/fxcrt/xml/cfx_xmlelement.h
+        pdfium/core/fxcrt/xml/cfx_xmlinstruction.cpp
+        pdfium/core/fxcrt/xml/cfx_xmlinstruction.h
+        pdfium/core/fxcrt/xml/cfx_xmlnode.cpp
+        pdfium/core/fxcrt/xml/cfx_xmlnode.h
+        pdfium/core/fxcrt/xml/cfx_xmlparser.cpp
+        pdfium/core/fxcrt/xml/cfx_xmlparser.h
+        pdfium/core/fxcrt/xml/cfx_xmltext.cpp
+        pdfium/core/fxcrt/xml/cfx_xmltext.h
+        pdfium/core/fxcrt/zip.h
+
+        pdfium/core/fxge/agg/cfx_agg_bitmapcomposer.cpp
+        pdfium/core/fxge/agg/cfx_agg_bitmapcomposer.h
+        pdfium/core/fxge/agg/cfx_agg_cliprgn.cpp
+        pdfium/core/fxge/agg/cfx_agg_cliprgn.h
+        pdfium/core/fxge/agg/cfx_agg_devicedriver.cpp
+        pdfium/core/fxge/agg/cfx_agg_devicedriver.h
+        pdfium/core/fxge/agg/cfx_agg_imagerenderer.cpp
+        pdfium/core/fxge/agg/cfx_agg_imagerenderer.h
+        pdfium/core/fxge/calculate_pitch.cpp
+        pdfium/core/fxge/calculate_pitch.h
+        pdfium/core/fxge/cfx_color.cpp
+        pdfium/core/fxge/cfx_color.h
+        pdfium/core/fxge/cfx_defaultrenderdevice.cpp
+        pdfium/core/fxge/cfx_defaultrenderdevice.h
+        pdfium/core/fxge/cfx_drawutils.cpp
+        pdfium/core/fxge/cfx_drawutils.h
+        pdfium/core/fxge/cfx_face.cpp
+        pdfium/core/fxge/cfx_face.h
+        pdfium/core/fxge/cfx_fillrenderoptions.h
+        pdfium/core/fxge/cfx_folderfontinfo.cpp
+        pdfium/core/fxge/cfx_folderfontinfo.h
+        pdfium/core/fxge/cfx_font.cpp
+        pdfium/core/fxge/cfx_font.h
+        pdfium/core/fxge/cfx_fontcache.cpp
+        pdfium/core/fxge/cfx_fontcache.h
+        pdfium/core/fxge/cfx_fontmapper.cpp
+        pdfium/core/fxge/cfx_fontmapper.h
+        pdfium/core/fxge/cfx_fontmgr.cpp
+        pdfium/core/fxge/cfx_fontmgr.h
+        pdfium/core/fxge/cfx_gemodule.cpp
+        pdfium/core/fxge/cfx_gemodule.h
+        pdfium/core/fxge/cfx_glyphbitmap.cpp
+        pdfium/core/fxge/cfx_glyphbitmap.h
+        pdfium/core/fxge/cfx_glyphcache.cpp
+        pdfium/core/fxge/cfx_glyphcache.h
+        pdfium/core/fxge/cfx_graphstate.cpp
+        pdfium/core/fxge/cfx_graphstate.h
+        pdfium/core/fxge/cfx_graphstatedata.cpp
+        pdfium/core/fxge/cfx_graphstatedata.h
+        pdfium/core/fxge/cfx_path.cpp
+        pdfium/core/fxge/cfx_path.h
+        pdfium/core/fxge/cfx_renderdevice.cpp
+        pdfium/core/fxge/cfx_renderdevice.h
+        pdfium/core/fxge/cfx_substfont.cpp
+        pdfium/core/fxge/cfx_substfont.h
+        pdfium/core/fxge/cfx_textrenderoptions.h
+        pdfium/core/fxge/cfx_unicodeencoding.cpp
+        pdfium/core/fxge/cfx_unicodeencoding.h
+        pdfium/core/fxge/dib/blend.cpp
+        pdfium/core/fxge/dib/blend.h
+        pdfium/core/fxge/dib/cfx_bitmapstorer.cpp
+        pdfium/core/fxge/dib/cfx_bitmapstorer.h
+        pdfium/core/fxge/dib/cfx_cmyk_to_srgb.cpp
+        pdfium/core/fxge/dib/cfx_cmyk_to_srgb.h
+        pdfium/core/fxge/dib/cfx_dibbase.cpp
+        pdfium/core/fxge/dib/cfx_dibbase.h
+        pdfium/core/fxge/dib/cfx_dibitmap.cpp
+        pdfium/core/fxge/dib/cfx_dibitmap.h
+        pdfium/core/fxge/dib/cfx_imagestretcher.cpp
+        pdfium/core/fxge/dib/cfx_imagestretcher.h
+        pdfium/core/fxge/dib/cfx_imagetransformer.cpp
+        pdfium/core/fxge/dib/cfx_imagetransformer.h
+        pdfium/core/fxge/dib/cfx_scanlinecompositor.cpp
+        pdfium/core/fxge/dib/cfx_scanlinecompositor.h
+        pdfium/core/fxge/dib/cstretchengine.cpp
+        pdfium/core/fxge/dib/cstretchengine.h
+        pdfium/core/fxge/dib/fx_dib.cpp
+        pdfium/core/fxge/dib/fx_dib.h
+        pdfium/core/fxge/dib/scanlinecomposer_iface.h
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitDingbats.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitFixed.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitFixedBold.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitFixedBoldItalic.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitFixedItalic.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSans.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSansBold.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSansBoldItalic.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSansItalic.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSansMM.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSerif.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSerifBold.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSerifBoldItalic.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSerifItalic.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSerifMM.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/FoxitSymbol.cpp
+        pdfium/core/fxge/fontdata/chromefontdata/chromefontdata.h
+        pdfium/core/fxge/freetype/fx_freetype.cpp
+        pdfium/core/fxge/freetype/fx_freetype.h
+        pdfium/core/fxge/fx_font.cpp
+        pdfium/core/fxge/fx_font.h
+        pdfium/core/fxge/fx_fontencoding.h
+        pdfium/core/fxge/render_defines.h
+        pdfium/core/fxge/renderdevicedriver_iface.cpp
+        pdfium/core/fxge/renderdevicedriver_iface.h
+        pdfium/core/fxge/scoped_font_transform.cpp
+        pdfium/core/fxge/scoped_font_transform.h
+        pdfium/core/fxge/systemfontinfo_iface.h
+        pdfium/core/fxge/text_char_pos.cpp
+        pdfium/core/fxge/text_char_pos.h
+        pdfium/core/fxge/text_glyph_pos.cpp
+        pdfium/core/fxge/text_glyph_pos.h
+
+        pdfium/fpdfsdk/cpdfsdk_annot.cpp
+        pdfium/fpdfsdk/cpdfsdk_annot.h
+        pdfium/fpdfsdk/cpdfsdk_annotiteration.cpp
+        pdfium/fpdfsdk/cpdfsdk_annotiteration.h
+        pdfium/fpdfsdk/cpdfsdk_annotiterator.cpp
+        pdfium/fpdfsdk/cpdfsdk_annotiterator.h
+        pdfium/fpdfsdk/cpdfsdk_appstream.cpp
+        pdfium/fpdfsdk/cpdfsdk_appstream.h
+        pdfium/fpdfsdk/cpdfsdk_baannot.cpp
+        pdfium/fpdfsdk/cpdfsdk_baannot.h
+        pdfium/fpdfsdk/cpdfsdk_customaccess.cpp
+        pdfium/fpdfsdk/cpdfsdk_customaccess.h
+        pdfium/fpdfsdk/cpdfsdk_filewriteadapter.cpp
+        pdfium/fpdfsdk/cpdfsdk_filewriteadapter.h
+        pdfium/fpdfsdk/cpdfsdk_formfillenvironment.cpp
+        pdfium/fpdfsdk/cpdfsdk_formfillenvironment.h
+        pdfium/fpdfsdk/cpdfsdk_helpers.cpp
+        pdfium/fpdfsdk/cpdfsdk_helpers.h
+        pdfium/fpdfsdk/cpdfsdk_interactiveform.cpp
+        pdfium/fpdfsdk/cpdfsdk_interactiveform.h
+        pdfium/fpdfsdk/cpdfsdk_pageview.cpp
+        pdfium/fpdfsdk/cpdfsdk_pageview.h
+        pdfium/fpdfsdk/cpdfsdk_pauseadapter.cpp
+        pdfium/fpdfsdk/cpdfsdk_pauseadapter.h
+        pdfium/fpdfsdk/cpdfsdk_renderpage.cpp
+        pdfium/fpdfsdk/cpdfsdk_renderpage.h
+        pdfium/fpdfsdk/cpdfsdk_widget.cpp
+        pdfium/fpdfsdk/cpdfsdk_widget.h
+        pdfium/fpdfsdk/fpdf_annot.cpp
+        pdfium/fpdfsdk/fpdf_attachment.cpp
+        pdfium/fpdfsdk/fpdf_catalog.cpp
+        pdfium/fpdfsdk/fpdf_dataavail.cpp
+        pdfium/fpdfsdk/fpdf_doc.cpp
+        pdfium/fpdfsdk/fpdf_editimg.cpp
+        pdfium/fpdfsdk/fpdf_editpage.cpp
+        pdfium/fpdfsdk/fpdf_editpath.cpp
+        pdfium/fpdfsdk/fpdf_edittext.cpp
+        pdfium/fpdfsdk/fpdf_ext.cpp
+        pdfium/fpdfsdk/fpdf_flatten.cpp
+        pdfium/fpdfsdk/fpdf_formfill.cpp
+        pdfium/fpdfsdk/fpdf_javascript.cpp
+        pdfium/fpdfsdk/fpdf_ppo.cpp
+        pdfium/fpdfsdk/fpdf_progressive.cpp
+        pdfium/fpdfsdk/fpdf_save.cpp
+        pdfium/fpdfsdk/fpdf_searchex.cpp
+        pdfium/fpdfsdk/fpdf_signature.cpp
+        pdfium/fpdfsdk/fpdf_structtree.cpp
+        pdfium/fpdfsdk/fpdf_sysfontinfo.cpp
+        pdfium/fpdfsdk/fpdf_text.cpp
+        pdfium/fpdfsdk/fpdf_thumbnail.cpp
+        pdfium/fpdfsdk/fpdf_transformpage.cpp
+        pdfium/fpdfsdk/fpdf_view.cpp
+
+        pdfium/fpdfsdk/formfiller/cffl_button.cpp
+        pdfium/fpdfsdk/formfiller/cffl_button.h
+        pdfium/fpdfsdk/formfiller/cffl_checkbox.cpp
+        pdfium/fpdfsdk/formfiller/cffl_checkbox.h
+        pdfium/fpdfsdk/formfiller/cffl_combobox.cpp
+        pdfium/fpdfsdk/formfiller/cffl_combobox.h
+        pdfium/fpdfsdk/formfiller/cffl_fieldaction.cpp
+        pdfium/fpdfsdk/formfiller/cffl_fieldaction.h
+        pdfium/fpdfsdk/formfiller/cffl_formfield.cpp
+        pdfium/fpdfsdk/formfiller/cffl_formfield.h
+        pdfium/fpdfsdk/formfiller/cffl_interactiveformfiller.cpp
+        pdfium/fpdfsdk/formfiller/cffl_interactiveformfiller.h
+        pdfium/fpdfsdk/formfiller/cffl_listbox.cpp
+        pdfium/fpdfsdk/formfiller/cffl_listbox.h
+        pdfium/fpdfsdk/formfiller/cffl_perwindowdata.cpp
+        pdfium/fpdfsdk/formfiller/cffl_perwindowdata.h
+        pdfium/fpdfsdk/formfiller/cffl_pushbutton.cpp
+        pdfium/fpdfsdk/formfiller/cffl_pushbutton.h
+        pdfium/fpdfsdk/formfiller/cffl_radiobutton.cpp
+        pdfium/fpdfsdk/formfiller/cffl_radiobutton.h
+        pdfium/fpdfsdk/formfiller/cffl_textfield.cpp
+        pdfium/fpdfsdk/formfiller/cffl_textfield.h
+        pdfium/fpdfsdk/formfiller/cffl_textobject.cpp
+        pdfium/fpdfsdk/formfiller/cffl_textobject.h
+
+        pdfium/fpdfsdk/pwl/cpwl_button.cpp
+        pdfium/fpdfsdk/pwl/cpwl_button.h
+        pdfium/fpdfsdk/pwl/cpwl_caret.cpp
+        pdfium/fpdfsdk/pwl/cpwl_caret.h
+        pdfium/fpdfsdk/pwl/cpwl_cbbutton.cpp
+        pdfium/fpdfsdk/pwl/cpwl_cbbutton.h
+        pdfium/fpdfsdk/pwl/cpwl_cblistbox.cpp
+        pdfium/fpdfsdk/pwl/cpwl_cblistbox.h
+        pdfium/fpdfsdk/pwl/cpwl_combo_box.cpp
+        pdfium/fpdfsdk/pwl/cpwl_combo_box.h
+        pdfium/fpdfsdk/pwl/cpwl_edit.cpp
+        pdfium/fpdfsdk/pwl/cpwl_edit.h
+        pdfium/fpdfsdk/pwl/cpwl_edit_impl.cpp
+        pdfium/fpdfsdk/pwl/cpwl_edit_impl.h
+        pdfium/fpdfsdk/pwl/cpwl_list_box.cpp
+        pdfium/fpdfsdk/pwl/cpwl_list_box.h
+        pdfium/fpdfsdk/pwl/cpwl_list_ctrl.cpp
+        pdfium/fpdfsdk/pwl/cpwl_list_ctrl.h
+        pdfium/fpdfsdk/pwl/cpwl_sbbutton.cpp
+        pdfium/fpdfsdk/pwl/cpwl_sbbutton.h
+        pdfium/fpdfsdk/pwl/cpwl_scroll_bar.cpp
+        pdfium/fpdfsdk/pwl/cpwl_scroll_bar.h
+        pdfium/fpdfsdk/pwl/cpwl_special_button.cpp
+        pdfium/fpdfsdk/pwl/cpwl_special_button.h
+        pdfium/fpdfsdk/pwl/cpwl_wnd.cpp
+        pdfium/fpdfsdk/pwl/cpwl_wnd.h
+        pdfium/fpdfsdk/pwl/ipwl_fillernotify.h
+
+        pdfium/fxjs/cjs_event_context_stub.cpp
+        pdfium/fxjs/cjs_event_context_stub.h
+        pdfium/fxjs/cjs_runtimestub.cpp
+        pdfium/fxjs/cjs_runtimestub.h
+        pdfium/fxjs/ijs_event_context.h
+        pdfium/fxjs/ijs_runtime.cpp
+        pdfium/fxjs/ijs_runtime.h
+)
+
+if (APPLE)
+    find_library(CoreFoundation_FRAMEWORK CoreFoundation)
+    find_library(CoreGraphics_FRAMEWORK CoreGraphics)
+    target_link_libraries(
+        Pdfium
+        PRIVATE
+            ${CoreFoundation_FRAMEWORK}
+            ${CoreGraphics_FRAMEWORK})
+
+    target_sources(
+        Pdfium
+        PRIVATE
+            pdfium/core/fxge/apple/fx_apple_impl.cpp
+            pdfium/core/fxge/apple/fx_apple_platform.cpp
+            pdfium/core/fxge/apple/fx_apple_platform.h
+            pdfium/core/fxge/apple/fx_quartz_device.cpp
+            pdfium/core/fxge/apple/fx_quartz_device.h
+    )
+elseif (ANDROID)
+    target_sources(
+        Pdfium
+        PRIVATE
+            pdfium/core/fxge/android/cfpf_skiadevicemodule.cpp
+            pdfium/core/fxge/android/cfpf_skiadevicemodule.h
+            pdfium/core/fxge/android/cfpf_skiafont.cpp
+            pdfium/core/fxge/android/cfpf_skiafont.h
+            pdfium/core/fxge/android/cfpf_skiafontmgr.cpp
+            pdfium/core/fxge/android/cfpf_skiafontmgr.h
+            pdfium/core/fxge/android/cfpf_skiapathfont.cpp
+            pdfium/core/fxge/android/cfpf_skiapathfont.h
+            pdfium/core/fxge/android/cfx_androidfontinfo.cpp
+            pdfium/core/fxge/android/cfx_androidfontinfo.h
+            pdfium/core/fxge/android/fx_android_impl.cpp
+    )
+elseif (UNIX)
+    target_sources(
+        Pdfium
+        PRIVATE
+            pdfium/core/fxge/linux/fx_linux_impl.cpp
+    )
+endif()
+
+if (WIN32)
+    target_link_libraries(
+        Pdfium
+        PRIVATE
+            advapi32
+            gdi32
+            user32
+    )
+
+    target_sources(
+        Pdfium
+        PRIVATE
+            pdfium/core/fpdfapi/render/cpdf_scaledrenderbuffer.cpp
+            pdfium/core/fpdfapi/render/cpdf_scaledrenderbuffer.h
+            pdfium/core/fpdfapi/render/cpdf_windowsrenderdevice.cpp
+            pdfium/core/fpdfapi/render/cpdf_windowsrenderdevice.h
+
+            pdfium/core/fxcrt/cfx_fileaccess_windows.cpp
+            pdfium/core/fxcrt/cfx_fileaccess_windows.h
+            pdfium/core/fxcrt/code_point_view.cpp
+            pdfium/core/fxcrt/fx_folder_windows.cpp
+            pdfium/core/fxcrt/win/scoped_select_object.h
+            pdfium/core/fxcrt/win/win_util.cc
+            pdfium/core/fxcrt/win/win_util.h
+
+            pdfium/core/fxge/cfx_windowsrenderdevice.cpp
+            pdfium/core/fxge/cfx_windowsrenderdevice.h
+            pdfium/core/fxge/win32/cfx_psfonttracker.cpp
+            pdfium/core/fxge/win32/cfx_psfonttracker.h
+            pdfium/core/fxge/win32/cfx_psrenderer.cpp
+            pdfium/core/fxge/win32/cfx_psrenderer.h
+            pdfium/core/fxge/win32/cgdi_device_driver.cpp
+            pdfium/core/fxge/win32/cgdi_device_driver.h
+            pdfium/core/fxge/win32/cgdi_display_driver.cpp
+            pdfium/core/fxge/win32/cgdi_display_driver.h
+            pdfium/core/fxge/win32/cgdi_plus_ext.cpp
+            pdfium/core/fxge/win32/cgdi_plus_ext.h
+            pdfium/core/fxge/win32/cgdi_printer_driver.cpp
+            pdfium/core/fxge/win32/cgdi_printer_driver.h
+            pdfium/core/fxge/win32/cps_printer_driver.cpp
+            pdfium/core/fxge/win32/cps_printer_driver.h
+            pdfium/core/fxge/win32/cpsoutput.cpp
+            pdfium/core/fxge/win32/cpsoutput.h
+            pdfium/core/fxge/win32/ctext_only_printer_driver.cpp
+            pdfium/core/fxge/win32/ctext_only_printer_driver.h
+            pdfium/core/fxge/win32/cwin32_platform.cpp
+            pdfium/core/fxge/win32/cwin32_platform.h
+    )
+endif()
+
+if (UNIX)
+    target_sources(
+        Pdfium
+        PRIVATE
+            pdfium/core/fxcrt/cfx_fileaccess_posix.cpp
+            pdfium/core/fxcrt/cfx_fileaccess_posix.h
+            pdfium/core/fxcrt/fx_folder_posix.cpp
+    )
+endif()
+
+if (NOT MSVC)
+    target_compile_options(
+        Pdfium
+        PRIVATE
+            "-Wno-error=return-type"
+            "-Wno-error=free-nonheap-object")
+endif()
+
+install(
+    TARGETS ${pdfium_install_targets}
+    EXPORT PDFiumTargets
+    FILE_SET HEADERS DESTINATION include
+)
+
+if (BUILD_SHARED_LIBS)
+    # This won't include the find_dependency calls required for the link
+    # options of a static library.
+    install(EXPORT PDFiumTargets
+        FILE PDFiumConfig.cmake
+        NAMESPACE Pdfium::
+        DESTINATION share/pdfium)
+else()
+    include(CMakePackageConfigHelpers)
+
+    install(EXPORT PDFiumTargets
+        FILE PDFiumTargets.cmake
+        NAMESPACE Pdfium::
+        DESTINATION share/pdfium)
+
+    write_basic_package_version_file(
+        PDFiumConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY AnyNewerVersion
+    )
+    configure_package_config_file(
+        PDFiumConfig.cmake.in
+        PDFiumConfig.cmake
+        INSTALL_DESTINATION share/pdfium
+    )
+    install(
+        FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/PDFiumConfig.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/PDFiumConfigVersion.cmake
+        DESTINATION share/pdfium
+    )
+endif()

@@ -1,0 +1,14 @@
+include(CMakeFindDependencyMacro)
+
+find_package(Freetype REQUIRED)
+find_package(ICU REQUIRED COMPONENTS data uc)
+find_package(JPEG REQUIRED)
+find_package(LCMS2 QUIET)
+find_package(PNG REQUIRED)
+find_package(TIFF REQUIRED)
+find_package(ZLIB REQUIRED)
+
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/PDFiumTargets.cmake")
+check_required_components("PDFium")
